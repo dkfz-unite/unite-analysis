@@ -35,6 +35,7 @@ public static class ConfigurationExtensions
 
     private static void AddOptions(this IServiceCollection services)
     {
+        services.AddOptions<ApiOptions>();
         services.AddTransient<IElasticOptions, ElasticOptions>();
         services.AddTransient<ISqlOptions, SqlOptions>();
         services.AddTransient<IAnalysisOptions, AnalysisOptions>(); 

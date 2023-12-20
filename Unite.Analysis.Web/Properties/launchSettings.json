@@ -15,6 +15,7 @@
       "launchUrl": "api",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "UNITE_API_KEY": "Defautl32BitApiKeyHasToBeChanged",
         "UNITE_SQL_HOST": "localhost",
         "UNITE_SQL_PORT": "5432",
         "UNITE_SQL_USER": "root",
@@ -33,6 +34,7 @@
       "applicationUrl": "http://localhost:5004",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "UNITE_API_KEY": "Defautl32BitApiKeyHasToBeChanged",
         "UNITE_SQL_HOST": "localhost",
         "UNITE_SQL_PORT": "5432",
         "UNITE_SQL_USER": "root",
