@@ -223,6 +223,8 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
 
         var fileName = string.Format(_dataFileNameTemplate, key);
         var filePath = Path.Join(_options.DataPath, fileName);
+        var fullPath = Path.GetFullPath(filePath);
+        Console.WriteLine(fullPath);
         return File.WriteAllTextAsync(filePath, tsv.ToString());
     }
 
