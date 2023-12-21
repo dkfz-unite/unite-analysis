@@ -15,8 +15,8 @@ public class AnalysisOptions : IAnalysisOptions
 
             var value = option.Trim();
 
-            // if (value.StartsWith("~/"))
-            //     value = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), value[2..]);
+            if (value.StartsWith("~/"))
+                value = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), value[2..]);
 
             return value;
         }
