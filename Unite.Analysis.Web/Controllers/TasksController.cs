@@ -22,7 +22,7 @@ public class TasksController : Controller
     }
 
     [HttpPost("dexp")]
-    public IActionResult CreateDExpTask([FromBody] Expression.Models.Analysis model)
+    public IActionResult CreateDExpTask([FromBody]Expression.Models.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 

@@ -26,10 +26,10 @@ public class AnalysisOptions : IAnalysisOptions
     {
         get
         {
-            var option = Environment.GetEnvironmentVariable("UNITE_ANALYSIS_DESEQ2_URL");
+            var option = Environment.GetEnvironmentVariable("UNITE_ANALYSIS_DESEQ2_HOST");
 
             if (string.IsNullOrWhiteSpace(option))
-                throw new ArgumentNullException("'UNITE_ANALYSIS_DESEQ2_URL' environment variable has to be set");
+                throw new ArgumentNullException("'UNITE_ANALYSIS_DESEQ2_HOST' environment variable has to be set");
 
             return option.Trim();
         }
