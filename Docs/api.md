@@ -22,7 +22,7 @@ Create analysis task.
 
 ### Body
 Depending of the task type, the body is:
-- `dexp` - DESeq2 analysis data in `application/json` format.
+- `dexp` - [DESeq2](./api-model-deseq2.md) analysis data in `application/json` format.
 
 ### Resources
 - `"key"` - unique key of created analysis task.
@@ -58,7 +58,7 @@ Get analysis task results by it's key.
 
 ### Resources
 Depending of the task type, the result is:
-- `dexp` - DESeq2 analysis results.
+- `dexp` - [DESeq2](./api-model-deseq2-result.md) analysis results.
 
 ### Responses
 - `200` - request was processed successfully
@@ -72,7 +72,7 @@ Download analysis task results by it's key.
 
 ### Resources
 Depending of the task type, the download data is:
-- `dexp` - DESeq2 analysis data.
+- `dexp` - DESeq2 analysis data (the same as [result](./api-model-deseq2-result.md)).
 
 ### Responses
 - `200` - request was processed successfully
