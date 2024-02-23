@@ -13,11 +13,11 @@ public enum DatasetDomain
     [EnumMember(Value = "Cts")]
     Cts,
 
-    [EnumMember(Value = "Tissues")]
-    Tissues,
+    [EnumMember(Value = "Materials")]
+    Materials,
 
-    [EnumMember(Value = "Cells")]
-    Cells,
+    [EnumMember(Value = "Lines")]
+    Lines,
 
     [EnumMember(Value = "Organoids")]
     Organoids,

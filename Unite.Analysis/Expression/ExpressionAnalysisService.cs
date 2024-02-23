@@ -12,7 +12,7 @@ using Unite.Data.Entities.Genome;
 using Unite.Data.Entities.Genome.Transcriptomics;
 using Unite.Data.Entities.Images;
 using Unite.Data.Entities.Specimens.Enums;
-using Unite.Data.Entities.Specimens.Tissues.Enums;
+using Unite.Data.Entities.Specimens.Materials.Enums;
 using Unite.Essentials.Tsv;
 using Unite.Indices.Search.Services;
 
@@ -252,8 +252,8 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         {
             DatasetDomain.Donors => LoadDonorCohortData(model),
             DatasetDomain.Mris => LoadImageCohortData(model),
-            DatasetDomain.Tissues => LoadSpecimenCohortData(model),
-            DatasetDomain.Cells => LoadSpecimenCohortData(model),
+            DatasetDomain.Materials => LoadSpecimenCohortData(model),
+            DatasetDomain.Lines => LoadSpecimenCohortData(model),
             DatasetDomain.Organoids => LoadSpecimenCohortData(model),
             DatasetDomain.Xenografts => LoadSpecimenCohortData(model),
             _ => throw new NotSupportedException()
@@ -269,8 +269,8 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
 
         var specimens = await dbContext.Set<BulkExpression>()
             .AsNoTracking()
-            .Include(expression => expression.AnalysedSample.TargetSample.Tissue)
-            .Include(expression => expression.AnalysedSample.TargetSample.CellLine)
+            .Include(expression => expression.AnalysedSample.TargetSample.Material)
+            .Include(expression => expression.AnalysedSample.TargetSample.Line)
             .Include(expression => expression.AnalysedSample.TargetSample.Organoid)
             .Include(expression => expression.AnalysedSample.TargetSample.Xenograft)
             .Where(expression => expression.AnalysedSample.TargetSample.ParentId == null)
@@ -281,13 +281,13 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         var specimensToDonorsMap = specimens
             .GroupBy(specimen => specimen.DonorId)
             .Select(donorGroup => 
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TumorTypeId == TumorType.Primary) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TumorTypeId == TumorType.Metastasis) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TumorTypeId == TumorType.Recurrent) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TypeId == TissueType.Tumor) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TypeId == TissueType.Control) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue != null) ??
-                donorGroup.FirstOrDefault(specimen => specimen.CellLine != null) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Primary) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Metastasis) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Recurrent) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Tumor) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Normal) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material != null) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Line != null) ??
                 donorGroup.FirstOrDefault(specimen => specimen.Organoid != null) ??
                 donorGroup.FirstOrDefault(specimen => specimen.Xenograft != null) ??
                 donorGroup.FirstOrDefault())
@@ -343,8 +343,8 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
 
         Expression<Func<BulkExpression, bool>> imageRelatedSpecimen = expression =>
             expression.AnalysedSample.TargetSample.ParentId == null &&
-            expression.AnalysedSample.TargetSample.TypeId == SpecimenType.Tissue &&
-            expression.AnalysedSample.TargetSample.Tissue.TypeId == TissueType.Tumor;
+            expression.AnalysedSample.TargetSample.TypeId == SpecimenType.Material &&
+            expression.AnalysedSample.TargetSample.Material.TypeId == MaterialType.Tumor;
 
         var specimens = await dbContext.Set<BulkExpression>()
             .AsNoTracking()
@@ -357,11 +357,11 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         var specimensToDonorsMap = specimens
             .GroupBy(specimen => specimen.DonorId)
             .Select(donorGroup => 
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TumorTypeId == TumorType.Primary) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TumorTypeId == TumorType.Metastasis) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TumorTypeId == TumorType.Recurrent) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TypeId == TissueType.Tumor) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Tissue?.TypeId == TissueType.Control) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Primary) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Metastasis) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Recurrent) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Tumor) ??
+                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Normal) ??
                 donorGroup.FirstOrDefault())
             .ToDictionary(specimen => specimen.Id, specimen => specimen.DonorId);
 
