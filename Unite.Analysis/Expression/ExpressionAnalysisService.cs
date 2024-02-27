@@ -1,24 +1,25 @@
 using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Configuration.Options;
+using Unite.Analysis.Expression.Extensions; 
 using Unite.Analysis.Expression.Models;
 using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
 using Unite.Data.Context;
 using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Genome;
+using Unite.Data.Entities.Genome.Analysis;
 using Unite.Data.Entities.Genome.Transcriptomics;
-using Unite.Data.Entities.Images;
-using Unite.Data.Entities.Specimens.Enums;
-using Unite.Data.Entities.Specimens.Materials.Enums;
 using Unite.Essentials.Tsv;
 using Unite.Indices.Search.Services;
 
 using DonorIndex = Unite.Indices.Entities.Donors.DonorIndex;
 using ImageIndex = Unite.Indices.Entities.Images.ImageIndex;
 using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
+
+using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
+using SampleExpressions = (int, Unite.Data.Entities.Genome.Transcriptomics.BulkExpression[]); // SampleId, BulkExpression[]
 
 namespace Unite.Analysis.Expression;
 
@@ -29,8 +30,8 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
     private readonly ISearchService<ImageIndex> _imagesSearchService;
     private readonly ISearchService<SpecimenIndex> _specimensSearchService;
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
-    private readonly DonorsRepository _donorsRepository;
 
+    private const byte _threadsCount = 10;
     private const string _geneIdColumnName = "gene_id";
     private const string _sampleIdColumnName = "sample_id";
     private const string _conditionColumnName = "condition";
@@ -51,7 +52,6 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         _imagesSearchService = imagesSearchService;
         _specimensSearchService = specimensSearchService;
         _dbContextFactory = dbContextFactory;
-        _donorsRepository = new DonorsRepository(dbContextFactory);
     }
 
 
@@ -65,7 +65,7 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
 
         foreach (var cohort in model.Cohorts.OrderBy(cohort => cohort.Order))
         {
-            var cohortSampleExpressionsByGene = await LoadCohortData(cohort);
+            var cohortSampleExpressionsByGene = await LoadDatasetData(cohort);
             
             var cohortSampleNames = cohortSampleExpressionsByGene.Values
                 .SelectMany(geneSampleGroups => geneSampleGroups.Keys)
@@ -200,7 +200,7 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
     }
 
 
-    private Task CreateDataFile(Dictionary<string, string[]> samplesMap, Dictionary<string, Dictionary<string, int>> expressionsMap, string key)
+    private Task CreateDataFile(Dictionary<string, string[]> samplesMap, GeneExpressions expressionsMap, string key)
     {
         var samples = samplesMap.Values.SelectMany(values => values).Distinct().ToArray();
 
@@ -226,7 +226,7 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         return File.WriteAllTextAsync(filePath, tsv.ToString());
     }
 
-    private Task CreateMetadataFile(Dictionary<string, string[]> samplesMap, Dictionary<string, Dictionary<string, int>> expressionsMap, string key)
+    private Task CreateMetadataFile(Dictionary<string, string[]> samplesMap, GeneExpressions expressionsMap, string key)
     {
         var tsv = new StringBuilder();
         tsv.Append($"{_sampleIdColumnName}\t");
@@ -246,189 +246,144 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         return File.WriteAllTextAsync(filePath, tsv.ToString());
     }
 
-    private Task<Dictionary<string, Dictionary<string, int>>> LoadCohortData(DatasetCriteria model)
+    private Task<GeneExpressions> LoadDatasetData(DatasetCriteria model)
     {
         return model.Domain switch
         {
-            DatasetDomain.Donors => LoadDonorCohortData(model),
-            DatasetDomain.Mris => LoadImageCohortData(model),
-            DatasetDomain.Materials => LoadSpecimenCohortData(model),
-            DatasetDomain.Lines => LoadSpecimenCohortData(model),
-            DatasetDomain.Organoids => LoadSpecimenCohortData(model),
-            DatasetDomain.Xenografts => LoadSpecimenCohortData(model),
+            DatasetDomain.Donors => LoadDonorsDatasetData(model),
+            DatasetDomain.Mris => LoadImagesDatasetData(model),
+            DatasetDomain.Materials => LoadSpecimensDatasetData(model),
+            DatasetDomain.Lines => LoadSpecimensDatasetData(model),
+            DatasetDomain.Organoids => LoadSpecimensDatasetData(model),
+            DatasetDomain.Xenografts => LoadSpecimensDatasetData(model),
             _ => throw new NotSupportedException()
         };
     }
 
-    private async Task<Dictionary<string, Dictionary<string, int>>> LoadDonorCohortData(DatasetCriteria model)
+    private async Task<GeneExpressions> LoadDonorsDatasetData(DatasetCriteria model)
     {
-        using var dbContext = _dbContextFactory.CreateDbContext();
+        var stats = await _donorsSearchService.Stats(model.Criteria);
 
-        var donorStats = await _donorsSearchService.Stats(model.Criteria);
-        var donorIds = donorStats.Keys.ToArray();
+        var ids = stats.Keys.Cast<int>().ToArray();
 
-        var specimens = await dbContext.Set<BulkExpression>()
-            .AsNoTracking()
-            .Include(expression => expression.AnalysedSample.TargetSample.Material)
-            .Include(expression => expression.AnalysedSample.TargetSample.Line)
-            .Include(expression => expression.AnalysedSample.TargetSample.Organoid)
-            .Include(expression => expression.AnalysedSample.TargetSample.Xenograft)
-            .Where(expression => expression.AnalysedSample.TargetSample.ParentId == null)
-            .Where(expression => donorIds.Contains(expression.AnalysedSample.TargetSample.DonorId))
-            .Select(expression => expression.AnalysedSample.TargetSample)
-            .ToArrayAsync();
+        var expressions = new GeneExpressions();
 
-        var specimensToDonorsMap = specimens
-            .GroupBy(specimen => specimen.DonorId)
-            .Select(donorGroup => 
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Primary) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Metastasis) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Recurrent) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Tumor) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Normal) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material != null) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Line != null) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Organoid != null) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Xenograft != null) ??
-                donorGroup.FirstOrDefault())
-            .ToDictionary(specimen => specimen.Id, specimen => specimen.DonorId);
+        await ids.Batch(_threadsCount, id => 
+            LoadDonorExpressions(id)
+                .ContinueWith(task => MapSampleExpressions(model.Domain, task.Result, expressions))
+        );
 
-        var specimenIds = specimensToDonorsMap.Keys.ToArray();
-
-        var expressions = await dbContext.Set<BulkExpression>()
-            .AsNoTracking()
-            .Include(expression => expression.Entity)
-            .Include(expression => expression.AnalysedSample.TargetSample)
-            .OrderBy(expression => expression.Entity.ChromosomeId)
-            .ThenBy(expression => expression.Entity.Start)
-            .Where(expression => specimenIds.Contains(expression.AnalysedSample.TargetSampleId))
-            .ToArrayAsync();
-
-        var getSampleId = (BulkExpression expression) =>
-        {
-            var donorId = specimensToDonorsMap[expression.AnalysedSample.TargetSampleId];
-            var sampleId = $"{model.Domain}_{donorId}";
-            return sampleId;
-        };
-
-        var expressionsToDonorsMap = expressions
-            .GroupBy(expression => expression.Entity.StableId)
-            .ToDictionary(
-                geneGroup => geneGroup.Key, 
-                geneGroup => geneGroup.ToDictionary(
-                    expression => getSampleId(expression), 
-                    expression => expression.Reads
-                )
-            );
-
-        return expressionsToDonorsMap;
+        return expressions;
     }
 
-    private async Task<Dictionary<string, Dictionary<string, int>>> LoadImageCohortData(DatasetCriteria model)
+    private async Task<GeneExpressions> LoadImagesDatasetData(DatasetCriteria model)
     {
-        using var dbContext = _dbContextFactory.CreateDbContext();
+        var stats = await _imagesSearchService.Stats(model.Criteria);
 
-        var imageStats = await _imagesSearchService.Stats(model.Criteria);
-        var imageIds = imageStats.Keys.ToArray();
+        var ids = stats.Keys.Cast<int>().ToArray();
 
-        var images = await dbContext.Set<Image>()
-            .AsNoTracking()
-            .Where(image => imageIds.Contains(image.Id))
-            .ToArrayAsync();
+        var expressions = new GeneExpressions();
 
-        var imagesToDonorsMap = images
-            .ToDictionary(image => image.Id, image => image.DonorId);
+        await ids.Batch(_threadsCount, id => 
+            LoadImageExpressions(id)
+                .ContinueWith(task => MapSampleExpressions(model.Domain, task.Result, expressions))
+        );
 
-        var donorIds = imagesToDonorsMap.Values.Distinct().ToArray();
-
-        Expression<Func<BulkExpression, bool>> imageRelatedSpecimen = expression =>
-            expression.AnalysedSample.TargetSample.ParentId == null &&
-            expression.AnalysedSample.TargetSample.TypeId == SpecimenType.Material &&
-            expression.AnalysedSample.TargetSample.Material.TypeId == MaterialType.Tumor;
-
-        var specimens = await dbContext.Set<BulkExpression>()
-            .AsNoTracking()
-            .Include(expression => expression.AnalysedSample.TargetSample)
-            .Where(imageRelatedSpecimen)
-            .Where(expression => donorIds.Contains(expression.AnalysedSample.TargetSample.DonorId))
-            .Select(expression => expression.AnalysedSample.TargetSample)
-            .ToArrayAsync();
-
-        var specimensToDonorsMap = specimens
-            .GroupBy(specimen => specimen.DonorId)
-            .Select(donorGroup => 
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Primary) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Metastasis) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TumorTypeId == TumorType.Recurrent) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Tumor) ??
-                donorGroup.FirstOrDefault(specimen => specimen.Material?.TypeId == MaterialType.Normal) ??
-                donorGroup.FirstOrDefault())
-            .ToDictionary(specimen => specimen.Id, specimen => specimen.DonorId);
-
-        var specimenIds = specimensToDonorsMap.Keys.ToArray();
-
-        var expressions = await dbContext.Set<BulkExpression>()
-            .AsNoTracking()
-            .Include(expression => expression.Entity)
-            .OrderBy(expression => expression.Entity.ChromosomeId)
-            .ThenBy(expression => expression.Entity.Start)
-            .Where(expression => specimenIds.Contains(expression.AnalysedSample.TargetSampleId))
-            .ToArrayAsync();
-
-        var getSampleId = (BulkExpression expression) =>
-        {
-            var donorId = specimensToDonorsMap[expression.AnalysedSample.TargetSampleId];
-            var imageId = imagesToDonorsMap.First(entry => entry.Value == donorId).Key;
-            var sampleId = $"{model.Domain}_{imageId}";
-            return sampleId;
-        };
-
-        var expressionsToImagesMap = expressions
-            .GroupBy(expression => expression.Entity.StableId)
-            .ToDictionary(
-                geneGroup => geneGroup.Key, 
-                geneGroup => geneGroup.ToDictionary(
-                    expression => getSampleId(expression), 
-                    expression => expression.Reads
-                )
-            );
-
-        return expressionsToImagesMap;
+        return expressions;
     }
 
-    private async Task<Dictionary<string, Dictionary<string, int>>> LoadSpecimenCohortData(DatasetCriteria model)
+    private async Task<GeneExpressions> LoadSpecimensDatasetData(DatasetCriteria model)
+    {
+        var stats = await _specimensSearchService.Stats(model.Criteria);
+
+        var ids = stats.Keys.Cast<int>().ToArray();
+
+        var expressions = new GeneExpressions();
+
+        await ids.Batch(_threadsCount, id => 
+            LoadSpecimenExpressions(id)
+                .ContinueWith(task => MapSampleExpressions(model.Domain, task.Result, expressions))
+        );
+
+        return expressions;
+    }
+
+    private async Task<SampleExpressions> LoadDonorExpressions(int id)
+    {
+        var donorRepository = new DonorsRepository(_dbContextFactory);
+
+        var specimenIds = await donorRepository.GetRelatedSpecimens([id]);
+
+        var expressions = await LoadSampleExpressions(specimenIds);
+
+        return (id, expressions);
+    }
+
+    private async Task<SampleExpressions> LoadImageExpressions(int id)
+    {
+        var imageRepository = new ImagesRepository(_dbContextFactory);
+
+        var specimenIds = await imageRepository.GetRelatedSpecimens([id]);
+
+        var expressions = await LoadSampleExpressions(specimenIds);
+
+        return (id, expressions);
+    }
+
+    private async Task<SampleExpressions> LoadSpecimenExpressions(int id)
+    {
+        var expressions = await LoadSampleExpressions([id]);
+
+        return (id, expressions);
+    }
+
+    private async Task<BulkExpression[]> LoadSampleExpressions(int[] specimenIds)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var specimenStats = await _specimensSearchService.Stats(model.Criteria);
-        var specimenIds = specimenStats.Keys.ToArray();
-
-        var expressions = await dbContext.Set<BulkExpression>()
+        var analysedSample = await dbContext.Set<AnalysedSample>()
             .AsNoTracking()
-            .Include(expression => expression.Entity)
-            .OrderBy(expression => expression.Entity.ChromosomeId)
-            .ThenBy(expression => expression.Entity.Start)
-            .Where(expression => specimenIds.Contains(expression.AnalysedSample.TargetSampleId))
-            .ToArrayAsync();
+            .Where(sample => specimenIds.Contains(sample.TargetSampleId))
+            .Where(sample => sample.BulkExpressions.Any())
+            .PickOrDefaultAsync();
 
-        var getSampleId = (BulkExpression expression) =>
+        if (analysedSample != null)
         {
-            var specimenId = expression.AnalysedSample.TargetSampleId;
-            var sampleId = $"{model.Domain}_{specimenId}";
-            return sampleId;
-        };
+            return await dbContext.Set<BulkExpression>()
+                .AsNoTracking()
+                .Include(expression => expression.Entity)
+                .Where(expression => expression.AnalysedSampleId == analysedSample.Id)
+                .OrderBy(expression => expression.Entity.ChromosomeId)
+                .ThenBy(expression => expression.Entity.Start)
+                .ToArrayAsync();
+        }
+        else
+        {
+            return null;
+        }
+        
+    }
 
-        var expressionsToSpecimensMap = expressions
-            .GroupBy(expression => expression.Entity.StableId)
-            .ToDictionary(
-                geneGroup => geneGroup.Key, 
-                geneGroup => geneGroup.ToDictionary(
-                    expression => getSampleId(expression), 
-                    expression => expression.Reads
-                )
-            );
 
-        return expressionsToSpecimensMap;
+    private static void MapSampleExpressions(DatasetDomain domain, SampleExpressions sampleExpressions, GeneExpressions geneExpressions)
+    {
+        var (id, expressions) = sampleExpressions;
+
+        if (expressions != null)
+        {
+            foreach (var expression in expressions)
+            {
+                var geneId = expression.Entity.StableId;
+
+                lock (geneExpressions)
+                {
+                    if (!geneExpressions.ContainsKey(geneId))
+                        geneExpressions.Add(geneId, []);
+
+                    geneExpressions[geneId].Add($"{domain}_{id}", expression.Reads);
+                }
+            }
+        }
     }
 
     private static bool ValidateGeneExpressions(IEnumerable<int?> expressions)
