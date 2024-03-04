@@ -12,5 +12,5 @@ public record Analysis
     /// <summary>
     /// Datasets to analyse.
     /// </summary>
-    public DatasetCriteria[] Cohorts { get; set; }
+    public DatasetCriteria[] Datasets { get; set; }
 }

@@ -58,23 +58,23 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
     public override async Task<AnalysisTaskResult> Prepare(Models.Analysis model)
     {
         var stopwatch = new Stopwatch();
-        var sampleNamesByCohort = new Dictionary<string, string[]>();
+        var sampleNamesByDataset = new Dictionary<string, string[]>();
         var sampleExpressionsByGene = new Dictionary<string, Dictionary<string, int>>();
 
         stopwatch.Restart();
 
-        foreach (var cohort in model.Cohorts.OrderBy(cohort => cohort.Order))
+        foreach (var dataset in model.Datasets.OrderBy(dataset => dataset.Order))
         {
-            var cohortSampleExpressionsByGene = await LoadDatasetData(cohort);
+            var datasetSampleExpressionsByGene = await LoadDatasetData(dataset);
             
-            var cohortSampleNames = cohortSampleExpressionsByGene.Values
+            var datasetSampleNames = datasetSampleExpressionsByGene.Values
                 .SelectMany(geneSampleGroups => geneSampleGroups.Keys)
                 .Distinct()
                 .ToArray();
 
-            sampleNamesByCohort.Add(cohort.Key, cohortSampleNames);
+            sampleNamesByDataset.Add(dataset.Key, datasetSampleNames);
 
-            foreach (var geneGroup in cohortSampleExpressionsByGene)
+            foreach (var geneGroup in datasetSampleExpressionsByGene)
             {
                 if (!sampleExpressionsByGene.ContainsKey(geneGroup.Key))
                     sampleExpressionsByGene.Add(geneGroup.Key, new Dictionary<string, int>());
@@ -87,8 +87,8 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
             }
         }
 
-        await CreateDataFile(sampleNamesByCohort, sampleExpressionsByGene, model.Key);
-        await CreateMetadataFile(sampleNamesByCohort, sampleExpressionsByGene, model.Key);
+        await CreateDataFile(sampleNamesByDataset, sampleExpressionsByGene, model.Key);
+        await CreateMetadataFile(sampleNamesByDataset, sampleExpressionsByGene, model.Key);
 
         stopwatch.Stop();
 
@@ -233,11 +233,11 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         tsv.Append($"{_conditionColumnName}");
         tsv.Append(Environment.NewLine);
 
-        foreach (var cohort in samplesMap)
+        foreach (var dataset in samplesMap)
         {
-            foreach (var sampleId in cohort.Value)
+            foreach (var sampleId in dataset.Value)
             {
-                tsv.AppendLine(string.Join('\t', sampleId, cohort.Key));
+                tsv.AppendLine(string.Join('\t', sampleId, dataset.Key));
             }
         }
 
