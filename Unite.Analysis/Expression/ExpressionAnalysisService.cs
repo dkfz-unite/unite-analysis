@@ -10,7 +10,7 @@ using Unite.Data.Context;
 using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Genome;
 using Unite.Data.Entities.Genome.Analysis;
-using Unite.Data.Entities.Genome.Transcriptomics;
+using Unite.Data.Entities.Genome.Analysis.Rna;
 using Unite.Essentials.Tsv;
 using Unite.Indices.Search.Services;
 
@@ -19,7 +19,7 @@ using ImageIndex = Unite.Indices.Entities.Images.ImageIndex;
 using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
 
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
-using SampleExpressions = (int, Unite.Data.Entities.Genome.Transcriptomics.BulkExpression[]); // SampleId, BulkExpression[]
+using SampleExpressions = (int, Unite.Data.Entities.Genome.Analysis.Rna.GeneExpression[]); // SampleId, BulkExpression[]
 
 namespace Unite.Analysis.Expression;
 
@@ -337,22 +337,22 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         return (id, expressions);
     }
 
-    private async Task<BulkExpression[]> LoadSampleExpressions(int[] specimenIds)
+    private async Task<GeneExpression[]> LoadSampleExpressions(int[] specimenIds)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var analysedSample = await dbContext.Set<AnalysedSample>()
+        var sample = await dbContext.Set<Sample>()
             .AsNoTracking()
-            .Where(sample => specimenIds.Contains(sample.TargetSampleId))
-            .Where(sample => sample.BulkExpressions.Any())
+            .Where(sample => specimenIds.Contains(sample.SpecimenId))
+            .Where(sample => sample.GeneExpressions.Any())
             .PickOrDefaultAsync();
 
-        if (analysedSample != null)
+        if (sample != null)
         {
-            return await dbContext.Set<BulkExpression>()
+            return await dbContext.Set<GeneExpression>()
                 .AsNoTracking()
                 .Include(expression => expression.Entity)
-                .Where(expression => expression.AnalysedSampleId == analysedSample.Id)
+                .Where(expression => expression.SampleId == sample.Id)
                 .OrderBy(expression => expression.Entity.ChromosomeId)
                 .ThenBy(expression => expression.Entity.Start)
                 .ToArrayAsync();

@@ -12,18 +12,18 @@ internal static class SampleExtensions
     /// </summary>
     /// <param name="query">Source query.</param>
     /// <returns>Most appropriate sample or null if not found.</returns>
-    public static Task<AnalysedSample> PickOrDefaultAsync(this IQueryable<AnalysedSample> query)
+    public static Task<Sample> PickOrDefaultAsync(this IQueryable<Sample> query)
     {
         var ordered = query.OrderBy(sample =>
-            (sample.TargetSample.TypeId == SpecimenType.Material && sample.TargetSample.Material.TumorTypeId == TumorType.Primary) ? 1 :
-            (sample.TargetSample.TypeId == SpecimenType.Material && sample.TargetSample.Material.TumorTypeId == TumorType.Recurrent) ? 2 :
-            (sample.TargetSample.TypeId == SpecimenType.Material && sample.TargetSample.Material.TumorTypeId == TumorType.Metastasis) ? 3 :
-            (sample.TargetSample.TypeId == SpecimenType.Material && sample.TargetSample.Material.TypeId == MaterialType.Tumor) ? 4 :
-            (sample.TargetSample.TypeId == SpecimenType.Material && sample.TargetSample.Material.TypeId == MaterialType.Normal) ? 5 :
-            sample.TargetSample.TypeId == SpecimenType.Material ? 6 :
-            sample.TargetSample.TypeId == SpecimenType.Line ? 10 :
-            sample.TargetSample.TypeId == SpecimenType.Organoid ? 20 :
-            sample.TargetSample.TypeId == SpecimenType.Xenograft ? 30 : 40
+            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.Material.TumorTypeId == TumorType.Primary) ? 1 :
+            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.Material.TumorTypeId == TumorType.Recurrent) ? 2 :
+            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.Material.TumorTypeId == TumorType.Metastasis) ? 3 :
+            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.Material.TypeId == MaterialType.Tumor) ? 4 :
+            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.Material.TypeId == MaterialType.Normal) ? 5 :
+            sample.Specimen.TypeId == SpecimenType.Material ? 6 :
+            sample.Specimen.TypeId == SpecimenType.Line ? 10 :
+            sample.Specimen.TypeId == SpecimenType.Organoid ? 20 :
+            sample.Specimen.TypeId == SpecimenType.Xenograft ? 30 : 40
         );
 
         return query.FirstOrDefaultAsync();
