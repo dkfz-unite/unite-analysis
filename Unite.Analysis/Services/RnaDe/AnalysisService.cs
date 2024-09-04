@@ -2,36 +2,17 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Configuration.Options;
-using Unite.Analysis.Expression.Extensions; 
-using Unite.Analysis.Expression.Models;
 using Unite.Analysis.Models;
-using Unite.Analysis.Models.Enums;
 using Unite.Data.Context;
-using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Genome;
-using Unite.Data.Entities.Genome.Analysis;
-using Unite.Data.Entities.Genome.Analysis.Rna;
 using Unite.Essentials.Tsv;
-using Unite.Indices.Search.Services;
-
-using DonorIndex = Unite.Indices.Entities.Donors.DonorIndex;
-using ImageIndex = Unite.Indices.Entities.Images.ImageIndex;
-using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
 
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
-using SampleExpressions = (int, Unite.Data.Entities.Genome.Analysis.Rna.GeneExpression[]); // SampleId, BulkExpression[]
 
-namespace Unite.Analysis.Expression;
+namespace Unite.Analysis.Services.RnaDe;
 
-public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string>
+public class AnalysisService : AnalysisService<Models.Analysis, string>
 {
-    private readonly IAnalysisOptions _options;
-    private readonly ISearchService<DonorIndex> _donorsSearchService;
-    private readonly ISearchService<ImageIndex> _imagesSearchService;
-    private readonly ISearchService<SpecimenIndex> _specimensSearchService;
-    private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
-
-    private const byte _threadsCount = 10;
     private const string _geneIdColumnName = "gene_id";
     private const string _sampleIdColumnName = "sample_id";
     private const string _conditionColumnName = "condition";
@@ -40,22 +21,23 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
     private const string _resultsFileNameTemplate = "{0}_results.tsv";
     private const string _resultsFinalFileNameTemplate = "{0}_results_final.tsv";
 
-    public ExpressionAnalysisService(
+    private readonly IAnalysisOptions _options;
+    private readonly DataLoader _dataLoader;
+    private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
+
+
+    public AnalysisService(
         IAnalysisOptions options,
-        ISearchService<DonorIndex> donorsSearchService,
-        ISearchService<ImageIndex> imagesSearchService,
-        ISearchService<SpecimenIndex> specimensSearchService,
+        DataLoader dataLoader,
         IDbContextFactory<DomainDbContext> dbContextFactory)
     {
         _options = options;
-        _donorsSearchService = donorsSearchService;
-        _imagesSearchService = imagesSearchService;
-        _specimensSearchService = specimensSearchService;
+        _dataLoader = dataLoader;
         _dbContextFactory = dbContextFactory;
     }
 
 
-    public override async Task<AnalysisTaskResult> Prepare(Models.Analysis model)
+    public override async Task<AnalysisTaskResult> Prepare(Models.Analysis model, params object[] args)
     {
         var stopwatch = new Stopwatch();
         var sampleNamesByDataset = new Dictionary<string, string[]>();
@@ -65,7 +47,7 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
 
         foreach (var dataset in model.Datasets.OrderBy(dataset => dataset.Order))
         {
-            var datasetSampleExpressionsByGene = await LoadDatasetData(dataset);
+            var datasetSampleExpressionsByGene = await _dataLoader.LoadDatasetData(dataset);
             
             var datasetSampleNames = datasetSampleExpressionsByGene.Values
                 .SelectMany(geneSampleGroups => geneSampleGroups.Keys)
@@ -95,14 +77,14 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds);
     }
 
-    public override Task<AnalysisTaskResult> Process(string key)
+    public override Task<AnalysisTaskResult> Process(string key, params object[] args)
     {
-        var url = $"{_options.DESeq2Url}/api/run?key={key}";
+        var url = $"{_options.RnaDeUrl}/api/run?key={key}";
 
         return ProcessRemotely(url);
     }
 
-    public override async Task<string> LoadResult(string key)
+    public override async Task<string> Load(string key, params object[] args)
     {
         var fileName = string.Format(_resultsFileNameTemplate, key);
         var filePath = Path.Join(_options.DataPath, fileName);
@@ -126,12 +108,12 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
                     gene => (Id: gene.Id, Symbol: gene.Symbol ?? gene.StableId)
                 );
 
-            var mapRaw = new ClassMap<AnalysisResults>()
+            var mapRaw = new ClassMap<Models.Results>()
                 .Map(x => x.GeneStableId, "ID")
                 .Map(x => x.Log2FoldChange, "log2FoldChange")
                 .Map(x => x.PValueAdjusted, "padj");
 
-            var mapFinal = new ClassMap<AnalysisResults>()
+            var mapFinal = new ClassMap<Models.Results>()
                 .Map(x => x.GeneId, "geneId")
                 .Map(x => x.GeneStableId, "geneStableId")
                 .Map(x => x.GeneSymbol, "geneSymbol")
@@ -142,7 +124,7 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
 
             var dataRaw = TsvReader.Read(tsvRaw, mapRaw);
 
-            var dataFinal = dataRaw.Select(x => new AnalysisResults
+            var dataFinal = dataRaw.Select(x => new Models.Results
             {
                 GeneId = genesMap[x.GeneStableId].Id,
                 GeneStableId = x.GeneStableId,
@@ -164,7 +146,7 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         }
     }
 
-    public override Task<string> DownloadResult(string key)
+    public override Task<string> Download(string key, params object[] args)
     {
         var fileNameFinal = string.Format(_resultsFinalFileNameTemplate, key);
         var filePathFinal = Path.Join(_options.DataPath, fileNameFinal);
@@ -174,7 +156,7 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         return null;        
     }
 
-    public override Task DeleteData(string key)
+    public override Task Delete(string key, params object[] args)
     {
         var dataFileName = string.Format(_dataFileNameTemplate, key);
         var dataFilePath = Path.Join(_options.DataPath, dataFileName);
@@ -246,145 +228,6 @@ public class ExpressionAnalysisService : AnalysisService<Models.Analysis, string
         return File.WriteAllTextAsync(filePath, tsv.ToString());
     }
 
-    private Task<GeneExpressions> LoadDatasetData(DatasetCriteria model)
-    {
-        return model.Domain switch
-        {
-            DatasetDomain.Donors => LoadDonorsDatasetData(model),
-            DatasetDomain.Mris => LoadImagesDatasetData(model),
-            DatasetDomain.Materials => LoadSpecimensDatasetData(model),
-            DatasetDomain.Lines => LoadSpecimensDatasetData(model),
-            DatasetDomain.Organoids => LoadSpecimensDatasetData(model),
-            DatasetDomain.Xenografts => LoadSpecimensDatasetData(model),
-            _ => throw new NotSupportedException()
-        };
-    }
-
-    private async Task<GeneExpressions> LoadDonorsDatasetData(DatasetCriteria model)
-    {
-        var stats = await _donorsSearchService.Stats(model.Criteria);
-
-        var ids = stats.Keys.Cast<int>().ToArray();
-
-        var expressions = new GeneExpressions();
-
-        await ids.Batch(_threadsCount, id => 
-            LoadDonorExpressions(id)
-                .ContinueWith(task => MapSampleExpressions(model.Domain, task.Result, expressions))
-        );
-
-        return expressions;
-    }
-
-    private async Task<GeneExpressions> LoadImagesDatasetData(DatasetCriteria model)
-    {
-        var stats = await _imagesSearchService.Stats(model.Criteria);
-
-        var ids = stats.Keys.Cast<int>().ToArray();
-
-        var expressions = new GeneExpressions();
-
-        await ids.Batch(_threadsCount, id => 
-            LoadImageExpressions(id)
-                .ContinueWith(task => MapSampleExpressions(model.Domain, task.Result, expressions))
-        );
-
-        return expressions;
-    }
-
-    private async Task<GeneExpressions> LoadSpecimensDatasetData(DatasetCriteria model)
-    {
-        var stats = await _specimensSearchService.Stats(model.Criteria);
-
-        var ids = stats.Keys.Cast<int>().ToArray();
-
-        var expressions = new GeneExpressions();
-
-        await ids.Batch(_threadsCount, id => 
-            LoadSpecimenExpressions(id)
-                .ContinueWith(task => MapSampleExpressions(model.Domain, task.Result, expressions))
-        );
-
-        return expressions;
-    }
-
-    private async Task<SampleExpressions> LoadDonorExpressions(int id)
-    {
-        var donorRepository = new DonorsRepository(_dbContextFactory);
-
-        var specimenIds = await donorRepository.GetRelatedSpecimens([id]);
-
-        var expressions = await LoadSampleExpressions(specimenIds);
-
-        return (id, expressions);
-    }
-
-    private async Task<SampleExpressions> LoadImageExpressions(int id)
-    {
-        var imageRepository = new ImagesRepository(_dbContextFactory);
-
-        var specimenIds = await imageRepository.GetRelatedSpecimens([id]);
-
-        var expressions = await LoadSampleExpressions(specimenIds);
-
-        return (id, expressions);
-    }
-
-    private async Task<SampleExpressions> LoadSpecimenExpressions(int id)
-    {
-        var expressions = await LoadSampleExpressions([id]);
-
-        return (id, expressions);
-    }
-
-    private async Task<GeneExpression[]> LoadSampleExpressions(int[] specimenIds)
-    {
-        using var dbContext = _dbContextFactory.CreateDbContext();
-
-        var sample = await dbContext.Set<Sample>()
-            .AsNoTracking()
-            .Where(sample => specimenIds.Contains(sample.SpecimenId))
-            .Where(sample => sample.GeneExpressions.Any())
-            .PickOrDefaultAsync();
-
-        if (sample != null)
-        {
-            return await dbContext.Set<GeneExpression>()
-                .AsNoTracking()
-                .Include(expression => expression.Entity)
-                .Where(expression => expression.SampleId == sample.Id)
-                .OrderBy(expression => expression.Entity.ChromosomeId)
-                .ThenBy(expression => expression.Entity.Start)
-                .ToArrayAsync();
-        }
-        else
-        {
-            return null;
-        }
-        
-    }
-
-
-    private static void MapSampleExpressions(DatasetDomain domain, SampleExpressions sampleExpressions, GeneExpressions geneExpressions)
-    {
-        var (id, expressions) = sampleExpressions;
-
-        if (expressions != null)
-        {
-            foreach (var expression in expressions)
-            {
-                var geneId = expression.Entity.StableId;
-
-                lock (geneExpressions)
-                {
-                    if (!geneExpressions.ContainsKey(geneId))
-                        geneExpressions.Add(geneId, []);
-
-                    geneExpressions[geneId].Add($"{domain}_{id}", expression.Reads);
-                }
-            }
-        }
-    }
 
     private static bool ValidateGeneExpressions(IEnumerable<int?> expressions)
     {

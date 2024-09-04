@@ -6,6 +6,7 @@ public class AnalysisTaskResult
 {
     public double? Elapsed { get; set; }
     public AnalysisTaskStatus Status { get; set; }
+    public string Message { get; set; }
 
     public AnalysisTaskResult(double elapsed)
     {
@@ -24,13 +25,13 @@ public class AnalysisTaskResult
         return new(elapsed, AnalysisTaskStatus.Success);
     }
 
-    public static AnalysisTaskResult Rejected(double? elapsed = null)
+    public static AnalysisTaskResult Rejected(double? elapsed = null, string message = null)
     {
-        return new(elapsed, AnalysisTaskStatus.Rejected);
+        return new(elapsed, AnalysisTaskStatus.Rejected) { Message = message };
     }
 
-    public static AnalysisTaskResult Failed(double? elapsed = null)
+    public static AnalysisTaskResult Failed(double? elapsed = null, string message = null)
     {
-        return new(elapsed, AnalysisTaskStatus.Failed);
+        return new (elapsed, AnalysisTaskStatus.Failed) { Message = message };
     }
 }

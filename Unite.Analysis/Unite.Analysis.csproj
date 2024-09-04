@@ -4,8 +4,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Unite.Data.Context" Version="8.1.0" />
-    <PackageReference Include="Unite.Indices.Search" Version="8.2.0" />
+    <PackageReference Include="Unite.Data.Context" Version="8.3.0" />
+    <PackageReference Include="Unite.Indices.Search" Version="8.3.0" />
     <PackageReference Include="Unite.Essentials.Tsv" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
   </ItemGroup>
 </Project>

@@ -22,7 +22,7 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
-    public string DESeq2Url
+    public string RnaDeUrl
     {
         get
         {
@@ -30,6 +30,19 @@ public class AnalysisOptions : IAnalysisOptions
 
             if (string.IsNullOrWhiteSpace(option))
                 throw new ArgumentNullException("'UNITE_ANALYSIS_DESEQ2_HOST' environment variable has to be set");
+
+            return option.Trim();
+        }
+    }
+
+    public string RnascUrl
+    {
+        get
+        {
+            var option = Environment.GetEnvironmentVariable("UNITE_ANALYSIS_RNASC_HOST");
+
+            if (string.IsNullOrWhiteSpace(option))
+                throw new ArgumentNullException("'UNITE_ANALYSIS_RNASC_HOST' environment variable has to be set");
 
             return option.Trim();
         }

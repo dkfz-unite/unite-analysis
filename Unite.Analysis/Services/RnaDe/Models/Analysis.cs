@@ -1,6 +1,6 @@
 using Unite.Analysis.Models;
 
-namespace Unite.Analysis.Expression.Models;
+namespace Unite.Analysis.Services.RnaDe.Models;
 
 public record Analysis
 {
