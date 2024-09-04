@@ -24,7 +24,8 @@
         "UNITE_ELASTIC_USER": "elastic",
         "UNITE_ELASTIC_PASSWORD": "Long-pa55w0rd",
         "UNITE_ANALYSIS_DATA_PATH": "~/mnt/analysis",
-        "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300"
+        "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300",
+        "UNITE_ANALYSIS_RNASC_HOST": "http://localhost:5302"
       }
     },
     "http": {
@@ -43,7 +44,8 @@
         "UNITE_ELASTIC_USER": "elastic",
         "UNITE_ELASTIC_PASSWORD": "Long-pa55w0rd",
         "UNITE_ANALYSIS_DATA_PATH": "~/mnt/analysis",
-        "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300"
+        "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300",
+        "UNITE_ANALYSIS_RNASC_HOST": "http://localhost:5302"
       }
     }
   }

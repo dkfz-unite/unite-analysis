@@ -1,7 +1,8 @@
 using System.Text.Json;
-using Unite.Analysis.Expression;
 using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
+using Unite.Analysis.Web.Configuration.Options;
+using Unite.Analysis.Web.Handlers.Helpers;
 using Unite.Analysis.Web.Services;
 using Unite.Data.Entities.Tasks.Enums;
 
@@ -9,18 +10,24 @@ namespace Unite.Analysis.Web.Handlers;
 
 public class AnalysisPreparingHandler
 {
+    private readonly ApiOptions _apiOptions;
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly ExpressionAnalysisService _expressionAnalysisService;
+    private readonly Analysis.Services.RnaDe.AnalysisService _expressionAnalysisService;
+    private readonly Analysis.Services.Rnasc.AnalysisService _scAnalysisService;
     private readonly ILogger _logger;
 
 
     public AnalysisPreparingHandler(
+        ApiOptions apiOptions,
         AnalysisTaskService analysisTaskService,
-        ExpressionAnalysisService expressionAnalysisService,
+        Analysis.Services.RnaDe.AnalysisService expressionAnalysisService,
+        Analysis.Services.Rnasc.AnalysisService scAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
+        _apiOptions = apiOptions;
         _analysisTaskService = analysisTaskService;
         _expressionAnalysisService = expressionAnalysisService;
+        _scAnalysisService = scAnalysisService;
         _logger = logger;
     }
 
@@ -33,11 +40,12 @@ public class AnalysisPreparingHandler
        });
     }
 
-    private async Task<byte> PrepareAnalysisTask(Unite.Data.Entities.Tasks.Task task)
+    private async Task<byte> PrepareAnalysisTask(Data.Entities.Tasks.Task task)
     {
         var result = task.AnalysisTypeId switch
         {
-            AnalysisTaskType.DExp => await PrepareDExpTask(task.Data),
+            AnalysisTaskType.RNA_DE => await PrepareRnaDeTask(task.Data),
+            AnalysisTaskType.RNASC => await PrepareRnascTask(task.Data),
             _ => throw new NotImplementedException()
         };
 
@@ -49,10 +57,19 @@ public class AnalysisPreparingHandler
         return (byte)result.Status;
     }
 
-    private Task<AnalysisTaskResult> PrepareDExpTask(string data)
+    private Task<AnalysisTaskResult> PrepareRnaDeTask(string data)
     {
-        var model = JsonSerializer.Deserialize<Analysis.Expression.Models.Analysis>(data);
+        var token = TokenHelper.Generate(_apiOptions.Key);
+        var model = JsonSerializer.Deserialize<Analysis.Services.RnaDe.Models.Analysis>(data);
 
-        return _expressionAnalysisService.Prepare(model);
+        return _expressionAnalysisService.Prepare(model, token);
+    }
+
+    private Task<AnalysisTaskResult> PrepareRnascTask(string data)
+    {
+        var token = TokenHelper.Generate(_apiOptions.Key);
+        var model = JsonSerializer.Deserialize<Analysis.Services.Rnasc.Models.Analysis>(data);
+
+        return _scAnalysisService.Prepare(model, token);
     }
 }

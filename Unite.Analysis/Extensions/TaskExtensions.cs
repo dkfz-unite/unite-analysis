@@ -1,4 +1,4 @@
-namespace Unite.Analysis.Expression.Extensions;
+namespace Unite.Analysis.Extensions;
 
 internal static class TaskExtensions
 {

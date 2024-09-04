@@ -1,5 +1,4 @@
 ﻿using Unite.Analysis.Configuration.Options;
-using Unite.Analysis.Expression;
 using Unite.Analysis.Web.Configuration.Options;
 using Unite.Analysis.Web.Handlers;
 using Unite.Analysis.Web.HostedServices;
@@ -27,7 +26,10 @@ public static class ConfigurationExtensions
         services.AddHostedService<AnalysisPreparingHostedService>();
         services.AddTransient<AnalysisPreparingHandler>();
         services.AddTransient<AnalysisTaskService>();
-        services.AddTransient<ExpressionAnalysisService>();
+        services.AddTransient<Analysis.Services.RnaDe.DataLoader>();
+        services.AddTransient<Analysis.Services.RnaDe.AnalysisService>();
+        services.AddTransient<Analysis.Services.Rnasc.ContextLoader>();
+        services.AddTransient<Analysis.Services.Rnasc.AnalysisService>();
 
         services.AddHostedService<AnalysisProcessingHostedService>();
         services.AddTransient<AnalysisProcessingHandler>();
@@ -35,7 +37,7 @@ public static class ConfigurationExtensions
 
     private static void AddOptions(this IServiceCollection services)
     {
-        services.AddOptions<ApiOptions>();
+        services.AddTransient<ApiOptions>();
         services.AddTransient<IElasticOptions, ElasticOptions>();
         services.AddTransient<ISqlOptions, SqlOptions>();
         services.AddTransient<IAnalysisOptions, AnalysisOptions>(); 

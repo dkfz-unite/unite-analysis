@@ -1,6 +1,6 @@
-namespace Unite.Analysis.Expression.Models;
+namespace Unite.Analysis.Services.RnaDe.Models;
 
-public class AnalysisResults
+public class Results
 {
     private int _geneId;
     private string _geneStableId;
