@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Configuration.Options;
+using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 using Unite.Data.Context;
 using Unite.Data.Entities.Genome;
@@ -11,17 +12,16 @@ using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Col
 
 namespace Unite.Analysis.Services.RnaDe;
 
-public class AnalysisService : AnalysisService<Models.Analysis, string>
+public class AnalysisService : AnalysisService<Models.Analysis>
 {
     private const string _geneIdColumnName = "gene_id";
     private const string _sampleIdColumnName = "sample_id";
     private const string _conditionColumnName = "condition";
-    private const string _dataFileNameTemplate = "{0}_data.tsv";
-    private const string _metadataFileNameTemplate = "{0}_metadata.tsv";
-    private const string _resultsFileNameTemplate = "{0}_results.tsv";
-    private const string _resultsFinalFileNameTemplate = "{0}_results_final.tsv";
+    private const string _dataFileName = "data.tsv";
+    private const string _metadataFileName = "metadata.tsv";
+    private const string _resultsFileName = "results.tsv";
+    private const string _resultsFinalFileName = "results_final.tsv";
 
-    private readonly IAnalysisOptions _options;
     private readonly DataLoader _dataLoader;
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
 
@@ -29,9 +29,8 @@ public class AnalysisService : AnalysisService<Models.Analysis, string>
     public AnalysisService(
         IAnalysisOptions options,
         DataLoader dataLoader,
-        IDbContextFactory<DomainDbContext> dbContextFactory)
+        IDbContextFactory<DomainDbContext> dbContextFactory) : base(options)
     {
-        _options = options;
         _dataLoader = dataLoader;
         _dbContextFactory = dbContextFactory;
     }
@@ -42,6 +41,7 @@ public class AnalysisService : AnalysisService<Models.Analysis, string>
         var stopwatch = new Stopwatch();
         var sampleNamesByDataset = new Dictionary<string, string[]>();
         var sampleExpressionsByGene = new Dictionary<string, Dictionary<string, int>>();
+        var directoryPath = GetWorkingDirectoryPath(model.Key);
 
         stopwatch.Restart();
 
@@ -69,37 +69,26 @@ public class AnalysisService : AnalysisService<Models.Analysis, string>
             }
         }
 
-        await CreateDataFile(sampleNamesByDataset, sampleExpressionsByGene, model.Key);
-        await CreateMetadataFile(sampleNamesByDataset, sampleExpressionsByGene, model.Key);
+        await CreateDataFile(sampleNamesByDataset, sampleExpressionsByGene, directoryPath);
+        await CreateMetadataFile(sampleNamesByDataset, sampleExpressionsByGene, directoryPath);
 
         stopwatch.Stop();
 
         return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds);
     }
 
-    public override Task<AnalysisTaskResult> Process(string key, params object[] args)
+    public override async Task<AnalysisTaskResult> Process(string key, params object[] args)
     {
+        var path = GetWorkingDirectoryPath(key);
         var url = $"{_options.RnaDeUrl}/api/run?key={key}";
 
-        return ProcessRemotely(url);
-    }
+        var result = await ProcessRemotely(url);
 
-    public override async Task<string> Load(string key, params object[] args)
-    {
-        var fileName = string.Format(_resultsFileNameTemplate, key);
-        var filePath = Path.Join(_options.DataPath, fileName);
-
-        var fileNameFinal = string.Format(_resultsFinalFileNameTemplate, key);
-        var filePathFinal = Path.Join(_options.DataPath, fileNameFinal);
-
-        if (File.Exists(filePathFinal))
+        if (result.Status == Analysis.Models.Enums.AnalysisTaskStatus.Success)
         {
-            // Read the final results
-            return await File.ReadAllTextAsync(filePathFinal);   
-        }
-        else if (File.Exists(filePath))
-        {
-            // Compress the results, save and return them
+            var filePath = Path.Join(path, _resultsFileName);
+            var filePathFinal = Path.Join(path, _resultsFinalFileName);
+
             using var dbContext = _dbContextFactory.CreateDbContext();
 
             var genesMap = dbContext.Set<Gene>()
@@ -136,53 +125,43 @@ public class AnalysisService : AnalysisService<Models.Analysis, string>
             var tsvFinal = TsvWriter.Write(dataFinal, mapFinal);
 
             await File.WriteAllTextAsync(filePathFinal, tsvFinal);
-
-            return tsvFinal;
         }
-        else
-        {
-            // Return no results
-            return null;
-        }
+        
+        return result;
     }
 
-    public override Task<string> Download(string key, params object[] args)
+    public override async Task<Stream> Load(string key, params object[] args)
     {
-        var fileNameFinal = string.Format(_resultsFinalFileNameTemplate, key);
-        var filePathFinal = Path.Join(_options.DataPath, fileNameFinal);
-        if (File.Exists(filePathFinal))
-            return File.ReadAllTextAsync(filePathFinal);
+        var path = Path.Join(GetWorkingDirectoryPath(key), _resultsFinalFileName);
 
-        return null;        
+        var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+
+        return await Task.FromResult(stream);
+    }
+
+    public override async Task<Stream> Download(string key, params object[] args)
+    {
+        var path = Path.Join(GetWorkingDirectoryPath(key), _resultsFinalFileName);
+
+        var stream = await ArchiveManager.Archive(path, "gz");
+
+        return await Task.FromResult(stream);
     }
 
     public override Task Delete(string key, params object[] args)
     {
-        var dataFileName = string.Format(_dataFileNameTemplate, key);
-        var dataFilePath = Path.Join(_options.DataPath, dataFileName);
-        if (File.Exists(dataFilePath))
-            File.Delete(dataFilePath);
+       var path = GetWorkingDirectoryPath(key);
 
-        var metadataFileName = string.Format(_metadataFileNameTemplate, key);
-        var metadataFilePath = Path.Join(_options.DataPath, metadataFileName);
-        if (File.Exists(metadataFilePath))
-            File.Delete(metadataFilePath);
-
-        var resultsFileName = string.Format(_resultsFileNameTemplate, key);
-        var resultsFilePath = Path.Join(_options.DataPath, resultsFileName);
-        if (File.Exists(resultsFilePath))
-            File.Delete(resultsFilePath);
-
-        var resultsFinalFileName = string.Format(_resultsFinalFileNameTemplate, key);
-        var resultsFinalFilePath = Path.Join(_options.DataPath, resultsFinalFileName);
-        if (File.Exists(resultsFinalFilePath))
-            File.Delete(resultsFinalFilePath);
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+        }
 
         return Task.CompletedTask;
     }
 
 
-    private Task CreateDataFile(Dictionary<string, string[]> samplesMap, GeneExpressions expressionsMap, string key)
+    private static Task CreateDataFile(Dictionary<string, string[]> samplesMap, GeneExpressions expressionsMap, string directoryPath)
     {
         var samples = samplesMap.Values.SelectMany(values => values).Distinct().ToArray();
 
@@ -203,12 +182,11 @@ public class AnalysisService : AnalysisService<Models.Analysis, string>
             }
         }
 
-        var fileName = string.Format(_dataFileNameTemplate, key);
-        var filePath = Path.Join(_options.DataPath, fileName);
+        var filePath = Path.Join(directoryPath, _dataFileName);
         return File.WriteAllTextAsync(filePath, tsv.ToString());
     }
 
-    private Task CreateMetadataFile(Dictionary<string, string[]> samplesMap, GeneExpressions expressionsMap, string key)
+    private static Task CreateMetadataFile(Dictionary<string, string[]> samplesMap, GeneExpressions expressionsMap, string directoryPath)
     {
         var tsv = new StringBuilder();
         tsv.Append($"{_sampleIdColumnName}\t");
@@ -223,11 +201,9 @@ public class AnalysisService : AnalysisService<Models.Analysis, string>
             }
         }
 
-        var fileName = string.Format(_metadataFileNameTemplate, key);
-        var filePath = Path.Join(_options.DataPath, fileName);
+        var filePath = Path.Join(directoryPath, _metadataFileName);
         return File.WriteAllTextAsync(filePath, tsv.ToString());
     }
-
 
     private static bool ValidateGeneExpressions(IEnumerable<int?> expressions)
     {

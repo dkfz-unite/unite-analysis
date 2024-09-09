@@ -1,15 +1,26 @@
 using System.Diagnostics;
+using Unite.Analysis.Configuration.Options;
+using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 
-namespace Unite.Analysis;
+namespace Unite.Analysis.Services;
 
 /// <summary>
 /// Analysis service interface.
 /// </summary>
 /// <typeparam name="TModel">Analysis model type.</typeparam>
 /// <typeparam name="TResult">Analysis result type.</typeparam>
-public abstract class AnalysisService<TModel, TResult> where TModel : class
+public abstract class AnalysisService<TModel> where TModel : class
 {
+    protected readonly IAnalysisOptions _options;
+
+
+    public AnalysisService(IAnalysisOptions options)
+    {
+        _options = options;
+    }
+
+
     /// <summary>
     /// Prepare required analysis data for further processing.
     /// </summary>
@@ -25,21 +36,21 @@ public abstract class AnalysisService<TModel, TResult> where TModel : class
     public abstract Task<AnalysisTaskResult> Process(string key, params object[] args);
 
     /// <summary>
-    /// Load analysis result.
+    /// Load analysis results metadata.
     /// </summary>
     /// <param name="key">Analysis task key.</param>
     /// <returns>Analysis results.</returns>
-    public abstract Task<TResult> Load(string key, params object[] args);
+    public abstract Task<Stream> Load(string key, params object[] args);
 
     /// <summary>
-    /// Download analysis result.
+    /// Download analysis results data.
     /// </summary>
     /// <param name="key">Analysis task key.</param>
     /// <returns>Analysis results.</returns>
-    public abstract Task<TResult> Download(string key, params object[] args);
+    public abstract Task<Stream> Download(string key, params object[] args);
 
     /// <summary>
-    /// Delete analysis task, it's data and result.
+    /// Delete analysis task, it's data and results data.
     /// </summary>
     /// <param name="key">Analysis task key.</param>
     public abstract Task Delete(string key, params object[] args);
@@ -73,5 +84,10 @@ public abstract class AnalysisService<TModel, TResult> where TModel : class
             else 
                 throw new NotImplementedException();
         }
+    }
+
+    protected string GetWorkingDirectoryPath(string key)
+    {
+        return DirectoryManager.EnsureCreated(_options.DataPath, key);
     }
 }

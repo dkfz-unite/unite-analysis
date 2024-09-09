@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Elasticsearch.Net;
 using Microsoft.EntityFrameworkCore;
 using Unite.Essentials.Extensions;
 using Unite.Data.Context;
@@ -10,7 +9,7 @@ namespace Unite.Analysis.Web.Services;
 public class AnalysisTaskService
 {
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
-    private ILogger _logger;
+    private readonly ILogger _logger;
 
 
     public AnalysisTaskService(
@@ -26,7 +25,7 @@ public class AnalysisTaskService
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var task = new Unite.Data.Entities.Tasks.Task
+        var task = new Data.Entities.Tasks.Task
         {
             AnalysisTypeId = type,
             Target = key,
@@ -40,18 +39,18 @@ public class AnalysisTaskService
         return task.Target;
     }
 
-    public Unite.Data.Entities.Tasks.Task Get(string key)
+    public Data.Entities.Tasks.Task Get(string key)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var task = dbContext.Set<Unite.Data.Entities.Tasks.Task>()
+        var task = dbContext.Set<Data.Entities.Tasks.Task>()
             .AsNoTracking()
             .FirstOrDefault(task => task.Target == key);
 
         return task;
     }
 
-    public Unite.Data.Entities.Tasks.Task Find(TaskStatusType? status)
+    public Data.Entities.Tasks.Task Find(TaskStatusType? status)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
@@ -62,7 +61,7 @@ public class AnalysisTaskService
             .FirstOrDefault();
     }
 
-    public void Update(Unite.Data.Entities.Tasks.Task task, TaskStatusType? status)
+    public void Update(Data.Entities.Tasks.Task task, TaskStatusType? status)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
@@ -72,7 +71,7 @@ public class AnalysisTaskService
         dbContext.SaveChanges();
     }
 
-    public void Delete (Unite.Data.Entities.Tasks.Task task)
+    public void Delete (Data.Entities.Tasks.Task task)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
@@ -95,7 +94,7 @@ public class AnalysisTaskService
         TaskStatusType? endStatus,
         int tasksLimit,
         int tasksInterval,
-        Func<Unite.Data.Entities.Tasks.Task, Task<byte>> handler)
+        Func<Data.Entities.Tasks.Task, Task<byte>> handler)
     {
         var jobs = new Dictionary<long, Task>();
 

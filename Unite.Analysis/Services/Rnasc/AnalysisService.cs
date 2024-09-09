@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
@@ -8,17 +9,15 @@ using Unite.Analysis.Services.Rnasc.Models;
 
 namespace Unite.Analysis.Services.Rnasc;
 
-public class AnalysisService : AnalysisService<Models.Analysis, Stream>
+public class AnalysisService : AnalysisService<Models.Analysis>
 {
-    private readonly IAnalysisOptions _options;
     private readonly ContextLoader _contextLoader;
 
 
     public AnalysisService(
         IAnalysisOptions options,
-        ContextLoader contextLoader)
+        ContextLoader contextLoader) : base(options)
     {
-        _options = options;
         _contextLoader = contextLoader;
     }
 
@@ -29,7 +28,7 @@ public class AnalysisService : AnalysisService<Models.Analysis, Stream>
 
         stopwatch.Restart();
 
-        var directoryPath = DirectoryManager.EnsureCreated(_options.DataPath, model.Key);
+        var directoryPath = GetWorkingDirectoryPath(model.Key);
 
         var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault());
 
@@ -53,16 +52,20 @@ public class AnalysisService : AnalysisService<Models.Analysis, Stream>
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(_options.DataPath, key, "data.json");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), "data.json");
 
-        return await ArchiveManager.Archive(path, "gz");
+        var stream = new FileStream(path, FileMode.Open);
+
+        return await Task.FromResult(stream);
     }
 
     public async override Task<Stream> Download(string key, params object[] args)
     {
-        var path = Path.Combine(_options.DataPath, key, "data.h5ad");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), "data.h5ad");
 
-        return await ArchiveManager.Archive(path, "gz");
+        var stream = await ArchiveManager.Archive(path, "zip");
+
+        return stream;
     }
 
     public override Task Delete(string key, params object[] args)
