@@ -6,12 +6,12 @@ public static class DirectoryManager
     {
         var directoryPath = Path.Combine(path, name);
 
-        if (Directory.Exists(directoryPath))
+        if (!Directory.Exists(directoryPath))
         {
-            Directory.Delete(directoryPath, true);
+            Directory.CreateDirectory(directoryPath);
         }
 
-        Directory.CreateDirectory(directoryPath);
+        // Directory.CreateDirectory(directoryPath);
 
         return directoryPath;
     }

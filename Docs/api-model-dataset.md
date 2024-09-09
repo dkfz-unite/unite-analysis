@@ -39,10 +39,10 @@ Dataset domains can be of the following types:
 - `Donors` - Donors data.
 - `Mris` - MRI images data.
 - `Cts` - CT images data.
-- `Tissues` - Tissue (all donor derived) specimens data.
-- `Cells` - Cell line specimens data.
-- `Organoids` - Organoid specimens data.
-- `Xenografts` - Xenograft specimens data.
+- `Materials` - Dall donor derived materials data.
+- `Lines` - Cell lines data.
+- `Organoids` - Organoids data.
+- `Xenografts` - Xenografts data.
 - `Genes` - Genes data.
 - `Ssms` - Simple somatic mutations data.
 - `Cnvs` - Copy number variants data.

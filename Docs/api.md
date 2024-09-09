@@ -1,28 +1,41 @@
 # Analysis API
-This API allows to create and manage analysis tasks.
+Allows to create and manage analysis tasks.
 
-## General
-General API endpoints.
+> [!Note]
+> API is accessible for authorized users only and requires `JWT` token as `Authorization` header (read more about [Identity Service](https://github.com/dkfz-unite/unite-identity)).
 
-## GET: [api](http://localhost:5004/api) - [api/analysis](https://localhost/api/analysis)
+API is **proxied** to main API and can be accessed at [[host]/api/analysis](http://localhost/api/analysis) (**without** `api` prefix).
+
+## Overview
+- get:[api](#get-api) - health check.
+- post:[api/task/{type}](#post-apitasktype) - create analysis task.
+- get:[api/task/{key}/status](#get-apitaskkeystatus) - get analysis task status.
+- get:[api/task/{key}/meta](#get-apitaskkeymeta) - get analysis task results metadata.
+- get:[api/task/{key}/data](#get-apitaskkeydata) - download analysis task results data.
+- delete:[api/task/{key}](#delete-apitaskkey) - delete analysis task data.
+
+
+## GET: [api](http://localhost:5004/api)
 Health check.
 
 ### Responses
 `"2022-03-17T09:45:10.9359202Z"` - Current UTC date and time in JSON format, if service is up and running
 
 
-## Tasks
-API is accessible for authorized users only and requires `Authorization: Bearer [token]` to be set in request headers.
+## POST: [api/task/{type}](http://localhost:5004/api/task/{type})
+Create analysis task of given type.
 
-To read more about authorization visit [Identity Service](https://github.com/dkfz-unite/unite-identity) page.
+### Parameters
+- `type` - task type.
 
-
-## POST: [api/tasks/{type}](http://localhost:5004/api/tasks/{type}) - [api/analysis/tasks/dexp](https://localhost/api/analysis/tasks/{type})
-Create analysis task.
+#### Task types:
+- `rna-de` - [Bulk RNA differential expression analysis](./api-model-rna_de.md).
+- `rnasc` - [Single cell RNA analysis](./api-model-rnasc.md).
 
 ### Body
-Depending of the task type, the body is:
-- `dexp` - [DESeq2](./api-model-deseq2.md) analysis data in `application/json` format.
+Depends on the task type:
+- [rna-de](./api-analysis-rna_de.md#model)
+- [rnasc](./api-analysis-rnasc.md#model)
 
 ### Resources
 - `"key"` - unique key of created analysis task.
@@ -33,13 +46,16 @@ Depending of the task type, the body is:
 - `401` - missing JWT token
 
 
-## GET: [api/tasks/{key}](http://localhost:5004/api/tasks/{key}) - [api/analysis/tasks/{key}](https://localhost/api/analysis/tasks{key})
-Get analysis task status by it's key.
+## GET: [api/task/{key}/status](http://localhost:5004/api/task/{key}/status)
+Get analysis task status.
+
+### Parameters
+- `key` - task key.
 
 ### Resources
 - `"status"` - task status type.
 
-Task status types:
+#### Task status types:
 - `Preparing` - task is being prepared.
 - `Prepared` - task is prepared.
 - `Processing` - task is being processed.
@@ -53,12 +69,16 @@ Task status types:
 - `404` - task with given key was not found
 
 
-## GET: [api/tasks/{key}/results](http://localhost:5004/api/tasks/{key}/results) - [api/analysis/tasks/{key}/results](https://localhost/api/analysis/tasks/{key}/results)
-Get analysis task results by it's key.
+## GET: [api/task/{key}/meta](http://localhost:5004/api/task/{key}/meta)
+Get analysis task results metadata.
+
+### Parameters
+- `key` - task key.
 
 ### Resources
-Depending of the task type, the result is:
-- `dexp` - [DESeq2](./api-model-deseq2-result.md) analysis results.
+Depends on the task type:
+- [rna-de](./api-analysis-rna_de.md#results-metadata)
+- [rnasc](./api-analysis-rnasc.md#results-metadata)
 
 ### Responses
 - `200` - request was processed successfully
@@ -67,12 +87,16 @@ Depending of the task type, the result is:
 - `404` - task with given key was not found
 
 
-## GET: [api/tasks/{key}/data](http://localhost:5004/api/tasks/{key}/data) - [api/analysis/tasks/{key}/data](https://localhost/api/analysis/tasks/{key}/data)
-Download analysis task results by it's key.
+## GET: [api/task/{key}/data](http://localhost:5004/api/task/{key}/data)
+Download analysis task results data
+
+### Parameters
+- `key` - task key.
 
 ### Resources
-Depending of the task type, the download data is:
-- `dexp` - DESeq2 analysis data (the same as [result](./api-model-deseq2-result.md)).
+A file (or archive) to download. Depends on the task type:
+- [rna-de](./api-analysis-rna_de.md#results-data)
+- [rnasc](./api-analysis-rnasc.md#results-data)
 
 ### Responses
 - `200` - request was processed successfully
@@ -81,8 +105,11 @@ Depending of the task type, the download data is:
 - `404` - task with given key was not found
 
 
-## DELETE: [api/tasks/{key}](http://localhost:5004/api/tasks/{key}) - [api/analysis/tasks/{key}](https://localhost/api/analysis/tasks/{key})
-Delete analysis task by it's key (if task was completed or failed).
+## DELETE: [api/task/{key}](http://localhost:5004/api/task/{key})
+Delete analysis task and all it's related data.
+
+### Parameters
+- `key` - task key.
 
 ### Responses
 - `200` - request was processed successfully

@@ -3,28 +3,28 @@ using Microsoft.AspNetCore.Mvc;
 using Unite.Analysis.Web.Services;
 using Unite.Data.Entities.Tasks.Enums;
 
-namespace Unite.Analysis.Web.Controllers.Analysis;
+namespace Unite.Analysis.Web.Controllers;
 
 [Route("api/[controller]")]
 [Authorize]
-public class TasksController : Controller
+public class TaskController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly Unite.Analysis.Services.RnaDe.AnalysisService _expressionAnalysisService;
-    private readonly Unite.Analysis.Services.Rnasc.AnalysisService _scAnalysisService;
+    private readonly Analysis.Services.RnaDe.AnalysisService _rnaDeAnalysisService;
+    private readonly Analysis.Services.Rnasc.AnalysisService _rnascAnalysisService;
 
-    public TasksController(
+    public TaskController(
         AnalysisTaskService analysisTaskService,
-        Unite.Analysis.Services.RnaDe.AnalysisService expressionAnalysisService,
-        Unite.Analysis.Services.Rnasc.AnalysisService scAnalysisService)
+        Analysis.Services.RnaDe.AnalysisService rnaDeAnalysisService,
+        Analysis.Services.Rnasc.AnalysisService rnascAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
-        _expressionAnalysisService = expressionAnalysisService;
-        _scAnalysisService = scAnalysisService;
+        _rnaDeAnalysisService = rnaDeAnalysisService;
+        _rnascAnalysisService = rnascAnalysisService;
     }
 
     [HttpPost("rna-de")]
-    public IActionResult CreateDExpTask([FromBody]Unite.Analysis.Services.RnaDe.Models.Analysis model)
+    public IActionResult CreateRnaDeTask([FromBody]Analysis.Services.RnaDe.Models.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 
@@ -34,7 +34,7 @@ public class TasksController : Controller
     }
 
     [HttpPost("rnasc")]
-    public IActionResult CreateScTask([FromBody]Unite.Analysis.Services.Rnasc.Models.Analysis model)
+    public IActionResult CreateRnascTask([FromBody]Analysis.Services.Rnasc.Models.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 
@@ -43,7 +43,7 @@ public class TasksController : Controller
         return Ok(model.Key);
     }
 
-    [HttpGet("{key}")]
+    [HttpGet("{key}/status")]
     public IActionResult GetTaskStatus(string key)
     {
         var task = _analysisTaskService.Get(key);
@@ -54,8 +54,8 @@ public class TasksController : Controller
         return Ok(task.StatusTypeId);
     }
 
-    [HttpGet("{key}/results")]
-    public async Task<IActionResult> GetTaskResults(string key)
+    [HttpGet("{key}/meta")]
+    public async Task<IActionResult> GetTaskMetadata(string key)
     {
         var task = _analysisTaskService.Get(key);
 
@@ -63,9 +63,9 @@ public class TasksController : Controller
             return NotFound();
 
         if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            return Ok(await _expressionAnalysisService.Load(key));
+            return Ok(await _rnaDeAnalysisService.Load(key));
         else if (task.AnalysisTypeId == AnalysisTaskType.RNASC)
-            return Ok(await _scAnalysisService.Load(key));
+            return Ok(await _rnascAnalysisService.Load(key));
         
         return BadRequest("Task analysis type is not supported");
     }
@@ -79,9 +79,9 @@ public class TasksController : Controller
             return NotFound();
 
         if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            return Ok(await _expressionAnalysisService.Download(key));
+            return Ok(await _rnaDeAnalysisService.Download(key));
         else if (task.AnalysisTypeId == AnalysisTaskType.RNASC)
-            return Ok(await _scAnalysisService.Download(key));
+            return Ok(await _rnascAnalysisService.Download(key));
 
         return BadRequest("Task analysis type is not supported");
     }
@@ -99,9 +99,9 @@ public class TasksController : Controller
             return BadRequest("Task can't be deleted");
 
         if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            await _expressionAnalysisService.Delete(key);
+            await _rnaDeAnalysisService.Delete(key);
         else if (task.AnalysisTypeId == AnalysisTaskType.RNASC)
-            await _scAnalysisService.Delete(key);
+            await _rnascAnalysisService.Delete(key);
 
         _analysisTaskService.Delete(task);
 
