@@ -9,7 +9,7 @@ public class Options
     /// Calculate quality control metrics.
     /// </summary>
     [JsonPropertyName("qc")]
-    public bool QC { get; set; } = true;
+    public bool QC { get; set; } = false;
 
     /// <summary>
     /// Make data sparse.

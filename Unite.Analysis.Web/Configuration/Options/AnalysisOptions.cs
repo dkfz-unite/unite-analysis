@@ -22,6 +22,16 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
+    public string DataHost
+    {
+        get
+        {
+            var option = Environment.GetEnvironmentVariable("UNITE_ANALYSIS_DATA_HOST");
+
+            return option?.Trim();
+        }
+    }
+
     public string RnaDeUrl
     {
         get
