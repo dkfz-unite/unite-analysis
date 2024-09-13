@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
@@ -34,7 +33,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
 
         await MetaLoader.PrepareMetadata(context, directoryPath);
 
-        await DataLoader.DownloadResources(context, directoryPath, args[0].ToString());
+        await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
 
         WriteOptions(model.Options, directoryPath);
 
@@ -45,27 +44,39 @@ public class AnalysisService : AnalysisService<Models.Analysis>
 
     public async override Task<AnalysisTaskResult> Process(string key, params object[] args)
     {
+        var path = GetWorkingDirectoryPath(key);
+
         var url = $"{_options.RnascUrl}/api/run?key={key}";
 
-        return await ProcessRemotely(url);
+        await ProcessRemotely(url);
+
+        if (Directory.Exists(path))
+        {
+            foreach (var subPath in Directory.GetDirectories(path))
+            {
+                Directory.Delete(subPath, true);
+            }
+        }
+
+        return AnalysisTaskResult.Success();
     }
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "data.json");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.meta.json");
 
-        var stream = new FileStream(path, FileMode.Open);
+        var stream = File.OpenRead(path);
 
         return await Task.FromResult(stream);
     }
 
     public async override Task<Stream> Download(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "data.h5ad");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.data.h5ad");
 
-        var stream = await ArchiveManager.Archive(path, "zip");
+        var stream = File.OpenRead(path);
 
-        return stream;
+        return await Task.FromResult(stream);
     }
 
     public override Task Delete(string key, params object[] args)

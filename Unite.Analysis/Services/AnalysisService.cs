@@ -89,5 +89,5 @@ public abstract class AnalysisService<TModel> where TModel : class
     protected string GetWorkingDirectoryPath(string key)
     {
         return DirectoryManager.EnsureCreated(_options.DataPath, key);
-    }
+    }   
 }

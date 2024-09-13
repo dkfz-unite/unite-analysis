@@ -11,8 +11,25 @@ public static class DirectoryManager
             Directory.CreateDirectory(directoryPath);
         }
 
-        // Directory.CreateDirectory(directoryPath);
-
         return directoryPath;
+    }
+
+    public static void Delete(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+        }
+    }
+
+    public static void DeleteSubdirectories(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            foreach(var directoryPath in Directory.GetDirectories(path))
+            {
+                Directory.Delete(directoryPath, true);
+            }
+        }
     }
 }

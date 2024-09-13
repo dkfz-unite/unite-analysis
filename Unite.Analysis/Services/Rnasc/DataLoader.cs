@@ -6,16 +6,16 @@ namespace Unite.Analysis.Services.Rnasc;
 
 public class DataLoader
 {
-    public static async Task DownloadResources(AnalysisContext context, string workingDirectoryPath, string token)
+    public static async Task DownloadResources(AnalysisContext context, string workingDirectoryPath, string token, string host = null)
     {
         foreach (var sample in context.Samples)
         {
-            await DownloadResource(sample.Value, sample.Value.GetKey(context), workingDirectoryPath, token);
+            await DownloadResource(sample.Value, sample.Value.GetKey(context), workingDirectoryPath, token, host);
         }
     }
 
 
-    private static async Task DownloadResource(Sample sample, string key, string workingDirectoryPath, string token)
+    private static async Task DownloadResource(Sample sample, string key, string workingDirectoryPath, string token, string host = null)
     {
         var resource = sample.Resources.FirstOrDefault(resource => resource.Type == "rnasc-exp");
 
@@ -28,9 +28,9 @@ public class DataLoader
             var featuresFilePath = Path.Combine(sampleDirectoryPath, GetFileName("features", "tsv", resource.Archive));
             var barcodesFilePath = Path.Combine(sampleDirectoryPath, GetFileName("barcodes", "tsv", resource.Archive));
 
-            var matrixDownloadTask = DownloadManager.Download(matrixFilePath, $"{resource.Url}", token);
-            var featuresDownloadTask = DownloadManager.Download(featuresFilePath, $"{resource.Url}/features", token);
-            var barcodesDownloadTask = DownloadManager.Download(barcodesFilePath, $"{resource.Url}/barcodes", token);
+            var matrixDownloadTask = DownloadManager.Download(matrixFilePath, $"{resource.Url}", token, host);
+            var featuresDownloadTask = DownloadManager.Download(featuresFilePath, $"{resource.Url}/features", token, host);
+            var barcodesDownloadTask = DownloadManager.Download(barcodesFilePath, $"{resource.Url}/barcodes", token, host);
             await Task.WhenAll(matrixDownloadTask, featuresDownloadTask, barcodesDownloadTask);
         }
         else

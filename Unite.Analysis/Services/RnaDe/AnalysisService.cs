@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Configuration.Options;
-using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 using Unite.Data.Context;
 using Unite.Data.Entities.Genome;
@@ -134,7 +133,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
     {
         var path = Path.Join(GetWorkingDirectoryPath(key), _resultsFinalFileName);
 
-        var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+        var stream = File.OpenRead(path);
 
         return await Task.FromResult(stream);
     }
@@ -143,7 +142,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
     {
         var path = Path.Join(GetWorkingDirectoryPath(key), _resultsFinalFileName);
 
-        var stream = await ArchiveManager.Archive(path, "gz");
+        var stream = File.OpenRead(path);
 
         return await Task.FromResult(stream);
     }
