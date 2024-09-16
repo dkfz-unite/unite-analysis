@@ -92,8 +92,8 @@ public class MetaLoader
                 {
                     metadataEntry.Specimen.Material = new MaterialMetadata()
                     {
-                        Type = specimen.Material.TypeId.ToDefinitionString(),
-                        TumorType = specimen.Material.TumorTypeId.ToDefinitionString(),
+                        Type = specimen.Material.TypeId?.ToDefinitionString(),
+                        TumorType = specimen.Material.TumorTypeId?.ToDefinitionString(),
                         Source = specimen.Material.Source?.Value
                     };
                 }
@@ -102,9 +102,9 @@ public class MetaLoader
                 {
                     metadataEntry.Specimen.Line = new LineMetadata()
                     {
-                        CellsSpecies = specimen.Line.CellsSpeciesId.ToDefinitionString(),
-                        CellsType = specimen.Line.CellsTypeId.ToDefinitionString(),
-                        CellsCultureType = specimen.Line.CellsCultureTypeId.ToDefinitionString(),
+                        CellsSpecies = specimen.Line.CellsSpeciesId?.ToDefinitionString(),
+                        CellsType = specimen.Line.CellsTypeId?.ToDefinitionString(),
+                        CellsCultureType = specimen.Line.CellsCultureTypeId?.ToDefinitionString(),
                     };
                 }
 
@@ -202,6 +202,9 @@ public class MetaLoader
 
     private static int[] DefineGroups(IEnumerable<int?> values, int? desiredMin = 0, int? desiredMax = null)
     {
+        if (values.IsEmpty())
+            return [0];
+
         var min = desiredMin ?? values.Select(value => value ?? 0).Min();
         var max = desiredMax ?? values.Select(value => value ?? 0).Max();
 
@@ -212,6 +215,9 @@ public class MetaLoader
 
     private static int[] DefineGroups(IEnumerable<double?> values, int? desiredMin = null, int? desiredMax = null)
     {
+        if (values.IsEmpty())
+            return [0];
+
         var min = desiredMin ?? (int)values.Select(value => value ?? 0).Min();
         var max = desiredMax ?? (int)values.Select(value => value ?? 0).Max();
 
