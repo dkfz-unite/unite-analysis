@@ -1,8 +1,8 @@
 using Unite.Analysis.Helpers;
-using Unite.Analysis.Services.Rnasc.Extensions;
+using Unite.Analysis.Services.SCell.Extensions;
 using Unite.Data.Entities.Genome.Analysis;
 
-namespace Unite.Analysis.Services.Rnasc;
+namespace Unite.Analysis.Services.SCell;
 
 public class DataLoader
 {

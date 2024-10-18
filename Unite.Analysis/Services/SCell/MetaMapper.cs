@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
-using Unite.Analysis.Services.Rnasc.Models;
+using Unite.Analysis.Services.SCell.Models;
 using Unite.Essentials.Tsv;
 using Unite.Essentials.Tsv.Converters;
 
-namespace Unite.Analysis.Services.Rnasc;
+namespace Unite.Analysis.Services.SCell;
 
 public class MetaMapper
 {

@@ -2,11 +2,10 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
-using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
-using Unite.Analysis.Services.Rnasc.Models;
+using Unite.Analysis.Services.SCell.Models;
 
-namespace Unite.Analysis.Services.Rnasc;
+namespace Unite.Analysis.Services.SCell;
 
 public class AnalysisService : AnalysisService<Models.Analysis>
 {
@@ -46,7 +45,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.RnascUrl}/api/run?key={key}";
+        var url = $"{_options.SCellUrl}/api/run?key={key}";
 
         await ProcessRemotely(url);
 

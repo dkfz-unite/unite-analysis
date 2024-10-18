@@ -11,7 +11,7 @@ using Unite.Indices.Search.Services;
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
 using SampleExpressions = (int, Unite.Data.Entities.Genome.Analysis.Rna.GeneExpression[]); // SampleId, BulkExpression[]
 
-namespace Unite.Analysis.Services.RnaDe;
+namespace Unite.Analysis.Services.DESeq2;
 
 public class DataLoader
 {
