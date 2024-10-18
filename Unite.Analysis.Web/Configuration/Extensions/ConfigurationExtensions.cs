@@ -26,10 +26,12 @@ public static class ConfigurationExtensions
         services.AddHostedService<AnalysisPreparingHostedService>();
         services.AddTransient<AnalysisPreparingHandler>();
         services.AddTransient<AnalysisTaskService>();
-        services.AddTransient<Analysis.Services.RnaDe.DataLoader>();
-        services.AddTransient<Analysis.Services.RnaDe.AnalysisService>();
-        services.AddTransient<Analysis.Services.Rnasc.ContextLoader>();
-        services.AddTransient<Analysis.Services.Rnasc.AnalysisService>();
+        services.AddTransient<Analysis.Services.DESeq2.DataLoader>();
+        services.AddTransient<Analysis.Services.DESeq2.AnalysisService>();
+        services.AddTransient<Analysis.Services.SCell.ContextLoader>();
+        services.AddTransient<Analysis.Services.SCell.AnalysisService>();
+        services.AddTransient<Analysis.Services.KMeier.ContextLoader>();
+        services.AddTransient<Analysis.Services.KMeier.AnalysisService>();
 
         services.AddHostedService<AnalysisProcessingHostedService>();
         services.AddTransient<AnalysisProcessingHandler>();

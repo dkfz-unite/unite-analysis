@@ -10,22 +10,25 @@ public class AnalysisProcessingHandler
 {    
     private readonly ApiOptions _apiOptions;
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly Analysis.Services.RnaDe.AnalysisService _expressionAnalysisService;
-    private readonly Analysis.Services.Rnasc.AnalysisService _scAnalysisService;
+    private readonly Analysis.Services.DESeq2.AnalysisService _deseq2AnalysisService;
+    private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
+    private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
     private readonly ILogger _logger;
 
 
     public AnalysisProcessingHandler(
         ApiOptions apiOptions,
         AnalysisTaskService analysisTaskService,
-        Analysis.Services.RnaDe.AnalysisService expressionAnalysisService,
-        Analysis.Services.Rnasc.AnalysisService scAnalysisService,
+        Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
+        Analysis.Services.SCell.AnalysisService scellAnalysisService,
+        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
     {
         _apiOptions = apiOptions;
         _analysisTaskService = analysisTaskService;
-        _expressionAnalysisService = expressionAnalysisService;
-        _scAnalysisService = scAnalysisService;
+        _deseq2AnalysisService = deseq2AnalysisService;
+        _scellAnalysisService = scellAnalysisService;
+        _kmeierAnalysisService = kmeierAnalysisService;
         _logger = logger;
     }
 
@@ -42,11 +45,13 @@ public class AnalysisProcessingHandler
     private async Task<byte> ProcessAnalysisTask(Unite.Data.Entities.Tasks.Task task)
     {
         var token = TokenHelper.Generate(_apiOptions.Key);
+
         var result = task.AnalysisTypeId switch
         {
-            AnalysisTaskType.RNA_DE => await _expressionAnalysisService.Process(task.Target, token),
-            AnalysisTaskType.RNASC => await _scAnalysisService.Process(task.Target, token),
-            _ => throw new NotImplementedException()
+            AnalysisTaskType.DESEQ2 => await _deseq2AnalysisService.Process(task.Target, token),
+            AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.KMEIER => await _kmeierAnalysisService.Process(task.Target, token),
+            _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 
         if (result.Status == AnalysisTaskStatus.Success)

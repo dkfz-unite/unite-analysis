@@ -26,7 +26,8 @@
         "UNITE_ANALYSIS_DATA_PATH": "~/mnt/analysis",
         "UNITE_ANALYSIS_DATA_HOST": "http://localhost:5400",
         "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300",
-        "UNITE_ANALYSIS_RNASC_HOST": "http://localhost:5302"
+        "UNITE_ANALYSIS_SCELL_HOST": "http://localhost:5302",
+        "UNITE_ANALYSIS_KMEIER_HOST": "http://localhost:5304"
       }
     },
     "http": {
@@ -47,7 +48,8 @@
         "UNITE_ANALYSIS_DATA_PATH": "~/mnt/analysis",
         "UNITE_ANALYSIS_DATA_HOST": "http://localhost:5400",
         "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300",
-        "UNITE_ANALYSIS_RNASC_HOST": "http://localhost:5302"
+        "UNITE_ANALYSIS_SCELL_HOST": "http://localhost:5302",
+        "UNITE_ANALYSIS_KMEIER_HOST": "http://localhost:5304"
       }
     }
   }

@@ -1,6 +1,6 @@
 using Unite.Analysis.Models;
 
-namespace Unite.Analysis.Services.RnaDe.Models;
+namespace Unite.Analysis.Services.KMeier.Models;
 
 public record Analysis
 {

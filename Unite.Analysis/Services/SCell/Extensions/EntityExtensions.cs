@@ -1,4 +1,4 @@
-namespace Unite.Analysis.Services.Rnasc.Extensions;
+namespace Unite.Analysis.Services.SCell.Extensions;
 
 public static class EntityExtensions
 {

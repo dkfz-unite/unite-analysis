@@ -1,4 +1,4 @@
-namespace Unite.Analysis.Services.Rnasc.Models;
+namespace Unite.Analysis.Services.SCell.Models;
 
 public class Metadata
 {

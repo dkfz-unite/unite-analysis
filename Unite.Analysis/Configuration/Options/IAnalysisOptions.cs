@@ -4,6 +4,7 @@ public interface IAnalysisOptions
 {
     string DataPath { get; }
     string DataHost { get; }
-    string RnaDeUrl { get; }
-    string RnascUrl { get; }
+    string DESeq2Url { get; }
+    string SCellUrl { get; }
+    string KMeierUrl { get; }
 }

@@ -1,8 +1,8 @@
 using Unite.Analysis.Models;
 
-namespace Unite.Analysis.Services.Rnasc.Models;
+namespace Unite.Analysis.Services.DESeq2.Models;
 
-public class Analysis
+public record Analysis
 {
     /// <summary>
     /// Analysis key. Used to identify the analysis in the queue and UI.
@@ -13,9 +13,4 @@ public class Analysis
     /// Datasets to analyse.
     /// </summary>
     public DatasetCriteria[] Datasets { get; set; }
-
-    /// <summary>
-    /// Analysis options.
-    /// </summary>
-    public Options Options { get; set; } = new();
 }

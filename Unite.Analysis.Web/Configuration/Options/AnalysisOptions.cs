@@ -32,31 +32,40 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
-    public string RnaDeUrl
+    public string DESeq2Url
     {
         get
         {
-            var option = Environment.GetEnvironmentVariable("UNITE_ANALYSIS_DESEQ2_HOST");
-
-            if (string.IsNullOrWhiteSpace(option))
-                throw new ArgumentNullException("'UNITE_ANALYSIS_DESEQ2_HOST' environment variable has to be set");
-
-            return option.Trim();
+            return GetOption("UNITE_ANALYSIS_DESEQ2_HOST");
         }
     }
 
-    public string RnascUrl
+    public string SCellUrl
     {
         get
         {
-            var option = Environment.GetEnvironmentVariable("UNITE_ANALYSIS_RNASC_HOST");
+            return GetOption("UNITE_ANALYSIS_SCELL_HOST");
+        }
+    }
 
-            if (string.IsNullOrWhiteSpace(option))
-                throw new ArgumentNullException("'UNITE_ANALYSIS_RNASC_HOST' environment variable has to be set");
-
-            return option.Trim();
+    public string KMeierUrl
+    {
+        get
+        {
+            return GetOption("UNITE_ANALYSIS_KMEIER_HOST");
         }
     }
 
     public int? Limit { get; }
+
+
+    private static string GetOption(string name)
+    {
+        var option = Environment.GetEnvironmentVariable(name);
+
+        if (string.IsNullOrWhiteSpace(option))
+            throw new ArgumentNullException($"'{name}' environment variable has to be set");
+
+        return option.Trim();
+    }
 }

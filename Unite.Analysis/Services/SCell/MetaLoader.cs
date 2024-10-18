@@ -1,9 +1,9 @@
-using Unite.Analysis.Services.Rnasc.Extensions;
-using Unite.Analysis.Services.Rnasc.Models;
+using Unite.Analysis.Services.SCell.Extensions;
+using Unite.Analysis.Services.SCell.Models;
 using Unite.Essentials.Extensions;
 using Unite.Essentials.Tsv;
 
-namespace Unite.Analysis.Services.Rnasc;
+namespace Unite.Analysis.Services.SCell;
 
 public class MetaLoader
 {

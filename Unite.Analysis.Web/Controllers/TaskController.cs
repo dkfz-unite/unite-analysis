@@ -10,35 +10,48 @@ namespace Unite.Analysis.Web.Controllers;
 public class TaskController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly Analysis.Services.RnaDe.AnalysisService _rnaDeAnalysisService;
-    private readonly Analysis.Services.Rnasc.AnalysisService _rnascAnalysisService;
+    private readonly Analysis.Services.DESeq2.AnalysisService _deseq2DeAnalysisService;
+    private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
+    private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
 
     public TaskController(
         AnalysisTaskService analysisTaskService,
-        Analysis.Services.RnaDe.AnalysisService rnaDeAnalysisService,
-        Analysis.Services.Rnasc.AnalysisService rnascAnalysisService)
+        Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
+        Analysis.Services.SCell.AnalysisService scellAnalysisService,
+        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
-        _rnaDeAnalysisService = rnaDeAnalysisService;
-        _rnascAnalysisService = rnascAnalysisService;
+        _kmeierAnalysisService = kmeierAnalysisService;
+        _deseq2DeAnalysisService = deseq2AnalysisService;
+        _scellAnalysisService = scellAnalysisService;
     }
 
-    [HttpPost("rna-de")]
-    public IActionResult CreateRnaDeTask([FromBody]Analysis.Services.RnaDe.Models.Analysis model)
+    [HttpPost("deseq2")]
+    public IActionResult CreateDESeq2Task([FromBody]Analysis.Services.DESeq2.Models.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 
-        _analysisTaskService.Create(model.Key, model, AnalysisTaskType.RNA_DE);
+        _analysisTaskService.Create(model.Key, model, AnalysisTaskType.DESEQ2);
 
         return Ok(model.Key);
     }
 
-    [HttpPost("rnasc")]
-    public IActionResult CreateRnascTask([FromBody]Analysis.Services.Rnasc.Models.Analysis model)
+    [HttpPost("scell")]
+    public IActionResult CreateSCellTask([FromBody]Analysis.Services.SCell.Models.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 
-        _analysisTaskService.Create(model.Key, model, AnalysisTaskType.RNASC);
+        _analysisTaskService.Create(model.Key, model, AnalysisTaskType.SCELL);
+
+        return Ok(model.Key);
+    }
+
+    [HttpPost("kmeier")]
+    public IActionResult CreateKmeierTask([FromBody]Analysis.Services.KMeier.Models.Analysis model)
+    {
+        model.Key = Guid.NewGuid().ToString();
+
+        _analysisTaskService.Create(model.Key, model, AnalysisTaskType.KMEIER);
 
         return Ok(model.Key);
     }
@@ -62,10 +75,12 @@ public class TaskController : Controller
         if (task == null)
             return NotFound();
 
-        if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            return Ok(await _rnaDeAnalysisService.Load(key));
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNASC)
-            return Ok(await _rnascAnalysisService.Load(key));
+        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
+            return Ok(await _deseq2DeAnalysisService.Load(key));
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            return Ok(await _scellAnalysisService.Load(key));
+        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
+            return Ok(await _kmeierAnalysisService.Load(key));
         
         return BadRequest("Task analysis type is not supported");
     }
@@ -78,10 +93,12 @@ public class TaskController : Controller
         if (task == null)
             return NotFound();
 
-        if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            return Ok(await _rnaDeAnalysisService.Download(key));
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNASC)
-            return Ok(await _rnascAnalysisService.Download(key));
+        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
+            return Ok(await _deseq2DeAnalysisService.Download(key));
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            return Ok(await _scellAnalysisService.Download(key));
+        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
+            return Ok(await _kmeierAnalysisService.Download(key));
 
         return BadRequest("Task analysis type is not supported");
     }
@@ -98,10 +115,12 @@ public class TaskController : Controller
         if (!statuses.Contains(task.StatusTypeId))
             return BadRequest("Task can't be deleted");
 
-        if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            await _rnaDeAnalysisService.Delete(key);
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNASC)
-            await _rnascAnalysisService.Delete(key);
+        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
+            await _deseq2DeAnalysisService.Delete(key);
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            await _scellAnalysisService.Delete(key);
+        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
+            await _kmeierAnalysisService.Delete(key);
 
         _analysisTaskService.Delete(task);
 

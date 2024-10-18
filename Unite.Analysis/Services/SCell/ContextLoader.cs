@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Extensions;
 using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
-using Unite.Analysis.Services.Rnasc.Extensions;
+using Unite.Analysis.Services.SCell.Extensions;
 using Unite.Data.Context;
 using Unite.Data.Context.Extensions.Queryable;
 using Unite.Data.Context.Repositories;
 using Unite.Indices.Search.Services;
 
-namespace Unite.Analysis.Services.Rnasc;
+namespace Unite.Analysis.Services.SCell;
 
 public class ContextLoader
 {

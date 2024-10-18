@@ -1,4 +1,4 @@
-namespace Unite.Analysis.Services.Rnasc;
+namespace Unite.Analysis.Services.SCell;
 
 public class AnalysisContext
 {
