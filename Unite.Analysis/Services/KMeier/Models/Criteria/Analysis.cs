@@ -1,8 +1,8 @@
 using Unite.Analysis.Models;
 
-namespace Unite.Analysis.Services.SCell.Models;
+namespace Unite.Analysis.Services.KMeier.Models.Criteria;
 
-public class Analysis
+public record Analysis
 {
     /// <summary>
     /// Analysis key. Used to identify the analysis in the queue and UI.
@@ -16,6 +16,6 @@ public class Analysis
 
     /// <summary>
     /// Analysis options.
-    /// </summary>
-    public Options Options { get; set; } = new();
+    /// </summary> 
+    public Options Options { get; set; }
 }

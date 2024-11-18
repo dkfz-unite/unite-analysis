@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Unite.Analysis.Services.SCell.Models.Enums;
+using Unite.Analysis.Services.SCell.Models.Criteria.Enums;
 
-namespace Unite.Analysis.Services.SCell.Models;
+namespace Unite.Analysis.Services.SCell.Models.Criteria;
 
 public class Options
 {

@@ -11,7 +11,7 @@ using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Col
 
 namespace Unite.Analysis.Services.DESeq2;
 
-public class AnalysisService : AnalysisService<Models.Analysis>
+public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
     private const string _geneIdColumnName = "gene_id";
     private const string _sampleIdColumnName = "sample_id";
@@ -35,7 +35,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
     }
 
 
-    public override async Task<AnalysisTaskResult> Prepare(Models.Analysis model, params object[] args)
+    public override async Task<AnalysisTaskResult> Prepare(Models.Criteria.Analysis model, params object[] args)
     {
         var stopwatch = new Stopwatch();
         var sampleNamesByDataset = new Dictionary<string, string[]>();
@@ -96,12 +96,12 @@ public class AnalysisService : AnalysisService<Models.Analysis>
                     gene => (Id: gene.Id, Symbol: gene.Symbol ?? gene.StableId)
                 );
 
-            var mapRaw = new ClassMap<Models.Results>()
+            var mapRaw = new ClassMap<Models.Data.Results>()
                 .Map(x => x.GeneStableId, "ID")
                 .Map(x => x.Log2FoldChange, "log2FoldChange")
                 .Map(x => x.PValueAdjusted, "padj");
 
-            var mapFinal = new ClassMap<Models.Results>()
+            var mapFinal = new ClassMap<Models.Data.Results>()
                 .Map(x => x.GeneId, "geneId")
                 .Map(x => x.GeneStableId, "geneStableId")
                 .Map(x => x.GeneSymbol, "geneSymbol")
@@ -112,7 +112,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
 
             var dataRaw = TsvReader.Read(tsvRaw, mapRaw);
 
-            var dataFinal = dataRaw.Select(x => new Models.Results
+            var dataFinal = dataRaw.Select(x => new Models.Data.Results
             {
                 GeneId = genesMap[x.GeneStableId].Id,
                 GeneStableId = x.GeneStableId,

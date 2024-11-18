@@ -15,6 +15,7 @@ public static class TokenHelper
         
         var descriptor = new SecurityTokenDescriptor
         {
+            // Uncomment this line in development purposes
             // Subject = new System.Security.Claims.ClaimsIdentity([new System.Security.Claims.Claim("id", "analysis@unite.net")]),
             Expires = DateTime.UtcNow.AddMinutes(10),
             SigningCredentials = credentials

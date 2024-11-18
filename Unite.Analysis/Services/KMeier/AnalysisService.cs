@@ -1,10 +1,11 @@
 using System.Diagnostics;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Models;
+using Unite.Analysis.Models.Enums;
 
 namespace Unite.Analysis.Services.KMeier;
 
-public class AnalysisService : AnalysisService<Models.Analysis>
+public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
     private readonly ContextLoader _contextLoader;
 
@@ -16,17 +17,17 @@ public class AnalysisService : AnalysisService<Models.Analysis>
     }
     
 
-    public override async Task<AnalysisTaskResult> Prepare(Models.Analysis model, params object[] args)
+    public override async Task<AnalysisTaskResult> Prepare(Models.Criteria.Analysis model, params object[] args)
     {
         var stopwatch = new Stopwatch();
 
         stopwatch.Restart();
 
-        var directoryPath = GetWorkingDirectoryPath(model.Key);
+        var path = GetWorkingDirectoryPath(model.Key);
 
-        var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault());
+        var context = await _contextLoader.Load(model.Datasets);
 
-        await MetaLoader.PrepareMetadata(context, directoryPath);
+        await MetaWriter.Write(context, model.Options, path);
 
         stopwatch.Stop();
 
@@ -35,16 +36,24 @@ public class AnalysisService : AnalysisService<Models.Analysis>
 
     public override async Task<AnalysisTaskResult> Process(string key, params object[] args)
     {
+        var path = GetWorkingDirectoryPath(key);
+
         var url = $"{_options.KMeierUrl}/api/run?key={key}";
 
-        await ProcessRemotely(url);
+        var analysisResult = await ProcessRemotely(url);
 
-        return AnalysisTaskResult.Success();
+        if (analysisResult.Status == AnalysisTaskStatus.Success)
+        {
+            await OutputWriter.ProcessOutput(path);
+            await OutputWriter.ArchiveOutput(path);
+        }
+
+        return analysisResult;
     }
 
     public override async Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.tsv");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.OutputFileName);
 
         var stream = File.OpenRead(path);
 
@@ -53,7 +62,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
 
     public override async Task<Stream> Download(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.tsv");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ArchiveFileName);
 
         var stream = File.OpenRead(path);
 
@@ -62,11 +71,11 @@ public class AnalysisService : AnalysisService<Models.Analysis>
 
     public override Task Delete(string key, params object[] args)
     {
-        var directoryPath = Path.Combine(_options.DataPath, key);
+        var path = GetWorkingDirectoryPath(key);
 
-        if (Directory.Exists(directoryPath))
+        if (Directory.Exists(path))
         {
-            Directory.Delete(directoryPath, true);
+            Directory.Delete(path, true);
         }
 
         return Task.CompletedTask;

@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using Unite.Analysis.Services.SCell.Models;
+using Unite.Analysis.Services.SCell.Models.Data;
 using Unite.Essentials.Tsv;
 using Unite.Essentials.Tsv.Converters;
 

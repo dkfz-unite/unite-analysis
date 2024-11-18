@@ -3,11 +3,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Models;
-using Unite.Analysis.Services.SCell.Models;
+using Unite.Analysis.Services.SCell.Models.Criteria;
 
 namespace Unite.Analysis.Services.SCell;
 
-public class AnalysisService : AnalysisService<Models.Analysis>
+public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
     private readonly ContextLoader _contextLoader;
 
@@ -20,7 +20,7 @@ public class AnalysisService : AnalysisService<Models.Analysis>
     }
 
 
-    public override async Task<AnalysisTaskResult> Prepare(Models.Analysis model, params object[] args)
+    public override async Task<AnalysisTaskResult> Prepare(Models.Criteria.Analysis model, params object[] args)
     {
         var stopwatch = new Stopwatch();
 

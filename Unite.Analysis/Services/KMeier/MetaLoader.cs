@@ -1,68 +1,55 @@
-using Unite.Analysis.Services.KMeier.Models;
-using Unite.Essentials.Tsv;
+using Unite.Analysis.Services.KMeier.Models.Context;
+using Unite.Analysis.Services.KMeier.Models.Criteria;
+using Unite.Analysis.Services.KMeier.Models.Input;
 
 namespace Unite.Analysis.Services.KMeier;
 
-public static class MetaLoader
+internal static class MetaLoader
 {
-    public static async Task PrepareMetadata(AnalysisContext context, string workingDirectoryPath)
+    public static Metadata[] Load(AnalysisContext context, Options options)
     {
-        var entries = Load(context).Filter();
+        var entries = Load(context, options.Progression).Filter().ToArray();
 
         Validate(entries);
 
-        var map = MetaMapper.Map(entries);
-
-        var tsv = TsvWriter.Write(entries, map);
-
-        File.WriteAllText(Path.Combine(workingDirectoryPath, "input.tsv"), tsv);
-
-        await Task.CompletedTask;
+        return entries;
     }
 
 
-    private static Metadata[] Load(AnalysisContext context)
+    private static IEnumerable<Metadata> Load(AnalysisContext context, bool progression)
     {
-        var metadataEntries = new List<Metadata>();
-
-        foreach(var donor in context.Donors)
+        foreach (var dataset in context.Datasets)
         {
-            var metadataEntry = new Metadata
+            foreach (var donor in dataset.Donors)
             {
-                Id = context.GetSampleKey(donor.Key),
-                DiagnisosDate = donor.Value.ClinicalData?.DiagnosisDate,
-                VitalStatus = donor.Value.ClinicalData?.VitalStatus,
-                VitalStatusChangeDate = donor.Value.ClinicalData?.VitalStatusChangeDate,
-                VitalStatusChangeDay = donor.Value.ClinicalData?.VitalStatusChangeDay
-            };
-
-            metadataEntries.Add(metadataEntry);
+                yield return new Metadata
+                {
+                    DonorId = donor.ReferenceId,
+                    DatasetId = dataset.Name,
+                    EnrolmentDate = donor.ClinicalData?.DiagnosisDate,
+                    Status = progression ? donor.ClinicalData?.ProgressionStatus : !donor.ClinicalData?.VitalStatus,
+                    StatusChangeDate = progression ? donor.ClinicalData?.ProgressionStatusChangeDate : donor.ClinicalData?.VitalStatusChangeDate,
+                    StatusChangeDay = progression ? donor.ClinicalData?.ProgressionStatusChangeDay : donor.ClinicalData?.VitalStatusChangeDay
+                };
+            }
         }
-
-        return metadataEntries.ToArray();
     }
 
-    private static Metadata[] Filter(this Metadata[] entries)
+    private static IEnumerable<Metadata> Filter(this IEnumerable<Metadata> entries)
     {
-        return entries.Where(entry => {
-            
-            if (entry.DiagnisosDate == null)
-                return false;
+        return entries.Where(entry =>
+        {
+            var hasStatus = entry.Status != null;
+            var hasStatusChangeDate = entry.EnrolmentDate != null && entry.StatusChangeDate != null;
+            var hasStatusChangeDay = entry.StatusChangeDay != null;
 
-            if (entry.VitalStatus == null)
-                return false;
-
-            if (entry.VitalStatusChangeDate == null && entry.VitalStatusChangeDay == null)
-                return false;
-
-            return true;
-
-        }).ToArray();
+            return hasStatus && (hasStatusChangeDate || hasStatusChangeDay);
+        });
     }
 
-    private static void Validate (Metadata[] entries)
+    private static void Validate(this IEnumerable<Metadata> entries)
     {
-        if (entries.Length < 2)
-            throw new InvalidOperationException("The dataset requires at least two unique donors with survival time data.");
+        if (entries.Count() < 2)
+            throw new InvalidOperationException("The dataset requires at least two unique donors with survival estimation.");
     }
 }
