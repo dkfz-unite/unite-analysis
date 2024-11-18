@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace Unite.Analysis.Services.SCell.Models.Enums;
+namespace Unite.Analysis.Services.SCell.Models.Criteria.Enums;
 
 public enum EmbeddingType
 {

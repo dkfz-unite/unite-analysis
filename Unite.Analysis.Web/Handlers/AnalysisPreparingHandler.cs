@@ -48,9 +48,9 @@ public class AnalysisPreparingHandler
 
         var result = task.AnalysisTypeId switch
         {
-            AnalysisTaskType.DESEQ2 => await _deseq2AnalysisService.Prepare(Parse<Analysis.Services.DESeq2.Models.Analysis>(task.Data), token),
-            AnalysisTaskType.SCELL => await _scellAnalysisService.Prepare(Parse<Analysis.Services.SCell.Models.Analysis>(task.Data), token),
-            AnalysisTaskType.KMEIER => await _kmeierAnalysisService.Prepare(Parse<Analysis.Services.KMeier.Models.Analysis>(task.Data), token),
+            AnalysisTaskType.DESEQ2 => await _deseq2AnalysisService.Prepare(Parse<Analysis.Services.DESeq2.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.SCELL => await _scellAnalysisService.Prepare(Parse<Analysis.Services.SCell.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.KMEIER => await _kmeierAnalysisService.Prepare(Parse<Analysis.Services.KMeier.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 

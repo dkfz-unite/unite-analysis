@@ -1,28 +1,27 @@
-using Unite.Analysis.Services.KMeier.Models;
+using Unite.Analysis.Services.KMeier.Models.Input;
 using Unite.Essentials.Tsv;
 using Unite.Essentials.Tsv.Converters;
 
 namespace Unite.Analysis.Services.KMeier;
 
-public static class MetaMapper
+internal static class MetaMapper
 {
     private static readonly IConverter<DateOnly?> _dateConverter = new DateConverter();
     private static readonly IConverter<bool?> _boolConverter = new BoolConverter();
 
     public static ClassMap<Metadata> Map(Metadata[] entries)
     {
-        var map = new ClassMap<Metadata>()
-            .Map(entry => entry.Id, "sample_id")
-            .Map(entry => entry.DiagnisosDate, "diagnosis_date", _dateConverter)
-            .Map(entry => entry.VitalStatus, "vital_status", _boolConverter)
-            .Map(entry => entry.VitalStatusChangeDate, "vital_status_change_date", _dateConverter)
-            .Map(entry => entry.VitalStatusChangeDay, "vital_status_change_day");
-
-        return map;
+       return new ClassMap<Metadata>()
+            .Map(entry => entry.DatasetId, "dataset_id")
+            .Map(entry => entry.DonorId, "donor_id")
+            .Map(entry => entry.EnrolmentDate, "enrolment_date", _dateConverter)
+            .Map(entry => entry.Status, "status", _boolConverter)
+            .Map(entry => entry.StatusChangeDate, "status_change_date", _dateConverter)
+            .Map(entry => entry.StatusChangeDay, "status_change_day");
     }
 }
 
-public class DateConverter : IConverter<DateOnly?>
+internal class DateConverter : IConverter<DateOnly?>
 {
     public object Convert(string value, string row)
     {
@@ -44,7 +43,7 @@ public class DateConverter : IConverter<DateOnly?>
     }
 }
 
-public class BoolConverter : IConverter<bool?>
+internal class BoolConverter : IConverter<bool?>
 {
     public object Convert(string value, string row)
     {

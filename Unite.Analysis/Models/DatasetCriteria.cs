@@ -11,6 +11,11 @@ public record DatasetCriteria
     public string Key { get; set; }
 
     /// <summary>
+    /// Dataset name. The name of the dataset in the analysis data.
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
     /// Dataset order. The order of the dataset in the analysis data.
     /// </summary>
     public int Order { get; set; }

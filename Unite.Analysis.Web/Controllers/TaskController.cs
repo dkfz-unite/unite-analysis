@@ -27,7 +27,7 @@ public class TaskController : Controller
     }
 
     [HttpPost("deseq2")]
-    public IActionResult CreateDESeq2Task([FromBody]Analysis.Services.DESeq2.Models.Analysis model)
+    public IActionResult CreateDESeq2Task([FromBody]Analysis.Services.DESeq2.Models.Criteria.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 
@@ -37,7 +37,7 @@ public class TaskController : Controller
     }
 
     [HttpPost("scell")]
-    public IActionResult CreateSCellTask([FromBody]Analysis.Services.SCell.Models.Analysis model)
+    public IActionResult CreateSCellTask([FromBody]Analysis.Services.SCell.Models.Criteria.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 
@@ -47,7 +47,7 @@ public class TaskController : Controller
     }
 
     [HttpPost("kmeier")]
-    public IActionResult CreateKmeierTask([FromBody]Analysis.Services.KMeier.Models.Analysis model)
+    public IActionResult CreateKmeierTask([FromBody]Analysis.Services.KMeier.Models.Criteria.Analysis model)
     {
         model.Key = Guid.NewGuid().ToString();
 

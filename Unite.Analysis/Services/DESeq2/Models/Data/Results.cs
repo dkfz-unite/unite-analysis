@@ -1,4 +1,4 @@
-namespace Unite.Analysis.Services.DESeq2.Models;
+namespace Unite.Analysis.Services.DESeq2.Models.Data;
 
 public class Results
 {

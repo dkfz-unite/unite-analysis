@@ -1,4 +1,4 @@
-namespace Unite.Analysis.Services.SCell;
+namespace Unite.Analysis.Services.SCell.Models.Context;
 
 public class AnalysisContext
 {
@@ -10,22 +10,22 @@ public class AnalysisContext
     /// <summary>
     /// Donors cached per donor identifier.
     /// </summary>
-    public Dictionary<int, Data.Entities.Donors.Donor> Donors { get; set; }
+    public Dictionary<int, Unite.Data.Entities.Donors.Donor> Donors { get; set; }
 
     /// <summary>
     /// Images cached per image identifier.
     /// </summary> 
-    public Dictionary<int, Data.Entities.Images.Image> Images { get; set; }
+    public Dictionary<int, Unite.Data.Entities.Images.Image> Images { get; set; }
 
     /// <summary>
     /// Specimens cached per specimen identifier.
     /// </summary>
-    public Dictionary<int, Data.Entities.Specimens.Specimen> Specimens { get; set; }
+    public Dictionary<int, Unite.Data.Entities.Specimens.Specimen> Specimens { get; set; }
 
     /// <summary>
     /// Samples cached per sample identifier.
     /// </summary>
-    public Dictionary<int, Data.Entities.Genome.Analysis.Sample> Samples { get; set; }
+    public Dictionary<int, Unite.Data.Entities.Genome.Analysis.Sample> Samples { get; set; }
 
 
     public AnalysisContext(byte sampleType)
@@ -64,7 +64,7 @@ public class AnalysisContext
         }
     }
 
-    public Data.Entities.Donors.Donor GetSampleDonor(int id)
+    public Unite.Data.Entities.Donors.Donor GetSampleDonor(int id)
     {
         var sample = Samples[id];
         var specimen = Specimens[sample.SpecimenId];
@@ -73,7 +73,7 @@ public class AnalysisContext
         return donor;
     }
 
-    public Data.Entities.Images.Image GetSampleImage(int id)
+    public Unite.Data.Entities.Images.Image GetSampleImage(int id)
     {
         var sample = Samples[id];
         var specimen = Specimens[sample.SpecimenId];
@@ -82,7 +82,7 @@ public class AnalysisContext
         return image;
     }
 
-    public Data.Entities.Specimens.Specimen GetSampleSpecimen(int id)
+    public Unite.Data.Entities.Specimens.Specimen GetSampleSpecimen(int id)
     {
         var sample = Samples[id];
         var specimen = Specimens[sample.SpecimenId];
@@ -90,7 +90,7 @@ public class AnalysisContext
         return specimen;
     }
 
-    public Data.Entities.Donors.Donor GetDonor(Data.Entities.Genome.Analysis.Sample sample)
+    public Unite.Data.Entities.Donors.Donor GetDonor(Unite.Data.Entities.Genome.Analysis.Sample sample)
     {
         var specimen = Specimens[sample.SpecimenId];
         var donor = Donors[specimen.DonorId];

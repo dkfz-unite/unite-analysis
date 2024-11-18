@@ -1,5 +1,6 @@
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Services.SCell.Extensions;
+using Unite.Analysis.Services.SCell.Models.Context;
 using Unite.Data.Entities.Genome.Analysis;
 
 namespace Unite.Analysis.Services.SCell;

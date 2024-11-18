@@ -3,6 +3,7 @@ using Unite.Analysis.Extensions;
 using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
 using Unite.Analysis.Services.SCell.Extensions;
+using Unite.Analysis.Services.SCell.Models.Context;
 using Unite.Data.Context;
 using Unite.Data.Context.Extensions.Queryable;
 using Unite.Data.Context.Repositories;

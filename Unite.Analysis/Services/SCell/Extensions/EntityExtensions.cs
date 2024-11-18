@@ -1,3 +1,5 @@
+using Unite.Analysis.Services.SCell.Models.Context;
+
 namespace Unite.Analysis.Services.SCell.Extensions;
 
 public static class EntityExtensions
