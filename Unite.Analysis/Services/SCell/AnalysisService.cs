@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Models;
+using Unite.Analysis.Models.Enums;
 using Unite.Analysis.Services.SCell.Models.Criteria;
 
 namespace Unite.Analysis.Services.SCell;
@@ -47,17 +48,20 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var url = $"{_options.SCellUrl}/api/run?key={key}";
 
-        await ProcessRemotely(url);
+        var analysisResult = await ProcessRemotely(url);
 
-        if (Directory.Exists(path))
+        if (analysisResult.Status == AnalysisTaskStatus.Success)
         {
-            foreach (var subPath in Directory.GetDirectories(path))
+            if (Directory.Exists(path))
             {
-                Directory.Delete(subPath, true);
+                foreach (var subPath in Directory.GetDirectories(path))
+                {
+                    Directory.Delete(subPath, true);
+                }
             }
         }
 
-        return AnalysisTaskResult.Success();
+        return analysisResult;
     }
 
     public async override Task<Stream> Load(string key, params object[] args)
