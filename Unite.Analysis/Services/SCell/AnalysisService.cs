@@ -47,22 +47,17 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var url = $"{_options.SCellUrl}/api/run?key={key}";
 
-        await ProcessRemotely(url);
+        var analysisResult = await ProcessRemotely(url);
 
-        if (Directory.Exists(path))
-        {
-            foreach (var subPath in Directory.GetDirectories(path))
-            {
-                Directory.Delete(subPath, true);
-            }
-        }
+        await OutputWriter.ProcessOutput(path);
+        await OutputWriter.ArchiveOutput(path);
 
-        return AnalysisTaskResult.Success();
+        return analysisResult;
     }
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.meta.json");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultMetaFileName);
 
         var stream = File.OpenRead(path);
 
@@ -71,7 +66,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Download(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.data.h5ad");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ArchiveFileName);
 
         var stream = File.OpenRead(path);
 
