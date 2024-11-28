@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Models;
-using Unite.Analysis.Models.Enums;
 using Unite.Analysis.Services.SCell.Models.Criteria;
 
 namespace Unite.Analysis.Services.SCell;
@@ -50,23 +49,15 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var analysisResult = await ProcessRemotely(url);
 
-        if (analysisResult.Status == AnalysisTaskStatus.Success)
-        {
-            if (Directory.Exists(path))
-            {
-                foreach (var subPath in Directory.GetDirectories(path))
-                {
-                    Directory.Delete(subPath, true);
-                }
-            }
-        }
+        await OutputWriter.ProcessOutput(path);
+        await OutputWriter.ArchiveOutput(path);
 
         return analysisResult;
     }
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.meta.json");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultMetaFileName);
 
         var stream = File.OpenRead(path);
 
@@ -75,7 +66,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Download(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), "result.data.h5ad");
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ArchiveFileName);
 
         var stream = File.OpenRead(path);
 
