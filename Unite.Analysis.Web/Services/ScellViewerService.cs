@@ -8,7 +8,8 @@ namespace Unite.Analysis.Web.Services;
 
 public class ScellViewerService
 {
-    private static readonly string _imageName = "ghcr.io/dkfz-unite/unite-analysis-scell-view:latest";
+    private static readonly string _imageNameDeploy = "ghcr.io/dkfz-unite/unite-analysis-scell-view:latest";
+    private static readonly string _imageNameBuild = "unite.analysis.scell.view";
     private static readonly string _containerName = "unite.analysis.scell.view";
     private static readonly string _containerAlias = "view.scell.analysis.unite.net";
 
@@ -21,7 +22,7 @@ public class ScellViewerService
     }
     
 
-    public async Task<string> Spawn(string key)
+    public async Task<string> Spawn(string key, bool local)
     {
         if (ContainersCache.TryGet(key, out var record))
             return $"{record.RemoteUrl}|{record.LocalUrl}";
@@ -29,7 +30,8 @@ public class ScellViewerService
         using var client = CreateClient();
 
         var number = await GetNumber(client, _containerName);
-        var path = await GetPath(client, _options.DataPath);
+        var dataPath = await GetDataPath(client, _options.DataPath);
+        var certsPath = await GetCertificatesPath(client);
         var network = await GetNetwork(client, "unite");
         var instanceName = GetName(number);
         var instanceAlias = GetAlias(number);
@@ -37,7 +39,7 @@ public class ScellViewerService
 
         var parameters = new CreateContainerParameters
         {
-            Image = _imageName,
+            Image = await GetImage(client, local),
             Name = instanceName,
             Env =
             [
@@ -48,11 +50,13 @@ public class ScellViewerService
             {
                 PortBindings = new Dictionary<string, IList<PortBinding>>
                 { 
-                    { "80/tcp", [new PortBinding() { HostIP = "127.0.0.1", HostPort = instancePort }] }
+                    { "443/tcp", [new PortBinding() { HostIP = "127.0.0.1", HostPort = $"{instancePort}" }] },
+                    // { "80/tcp", [new PortBinding() { HostIP = "127.0.0.1", HostPort = $"{instancePort + 1}" }] }
                 },
                 Binds =
                 [
-                    $"{path}:/data/:rw"
+                    $"{dataPath}:/data/:rw",
+                    $"{certsPath}:/https/:ro"
                 ],
                 NetworkMode = network.ID,
                 AutoRemove = true,
@@ -74,8 +78,8 @@ public class ScellViewerService
             {
                 Name = instanceName,
                 LastActive = DateTime.UtcNow,
-                LocalUrl = $"http://localhost:{instancePort}",
-                RemoteUrl = $"http://{instanceAlias}"
+                LocalUrl = $"https://localhost:{instancePort}",
+                RemoteUrl = $"https://{instanceAlias}"
             };
 
             ContainersCache.Add(key, record);
@@ -95,8 +99,15 @@ public class ScellViewerService
 
         try
         {
-            var handler = new HttpClientHandler { UseProxy = false };
+            var handler = new HttpClientHandler
+            { 
+                UseProxy = false, 
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+
             using var client = new HttpClient(handler);
+
             var respone = await client.GetAsync(local ? record.LocalUrl : record.RemoteUrl);
 
             return respone.IsSuccessStatusCode;;
@@ -142,12 +153,26 @@ public class ScellViewerService
         return string.Join('.', parts);
     }
 
-    private static string GetPort(int number)
+    private static int GetPort(int number)
     {
-        return $"543{number:00}";
+        return int.Parse($"543{number:00}");
     }
 
-    private static async Task<string> GetPath(DockerClient client, string path)
+    private static async Task<string> GetImage(DockerClient client, bool local)
+    {
+        var images = await client.Images.ListImagesAsync(new ImagesListParameters() { All = true });
+
+        var buildImage = images.FirstOrDefault(image => image.RepoTags.Any(tag => tag.Contains(_imageNameBuild)));
+
+        var deployImage = images.FirstOrDefault(image => image.RepoTags.Any(tag => tag.Contains(_imageNameDeploy)));
+
+        if (local)
+            return buildImage?.ID ?? deployImage?.ID;
+        else
+            return deployImage?.ID ?? buildImage?.ID;
+    }
+
+    private static async Task<string> GetDataPath(DockerClient client, string path)
     {
         var parameters = new ContainersListParameters() { All = true };
         var containers = await client.Containers.ListContainersAsync(parameters);
@@ -160,6 +185,23 @@ public class ScellViewerService
 
         if (mount == null)
             return path;
+
+        return mount.Source["/host_mnt".Length..];
+    }
+
+    private static async Task<string> GetCertificatesPath(DockerClient client)
+    {
+        var parameters = new ContainersListParameters() { All = true };
+        var containers = await client.Containers.ListContainersAsync(parameters);
+        var container = containers.FirstOrDefault(container => container.Names.Any(name => name.Contains("unite.portal")));
+
+        if (container == null)
+            return null;
+
+        var mount = container.Mounts.FirstOrDefault(mount => mount.Destination == "/https");
+
+        if (mount == null)
+            return null;
 
         return mount.Source["/host_mnt".Length..];
     }

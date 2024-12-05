@@ -30,7 +30,9 @@ public class ScellController : Controller
     [HttpPost("{key}")]
     public async Task<IActionResult> Post(string key)
     {
-        var name = await _viewerService.Spawn(key);
+        var local = _environment.IsDevelopment();
+
+        var name = await _viewerService.Spawn(key, local);
 
         return Ok(name);
     }
