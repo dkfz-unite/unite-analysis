@@ -9,16 +9,16 @@ namespace Unite.Analysis.Web.Controllers;
 [Authorize]
 public class TasksController : Controller
 {
-    private readonly AnalysisRecordsService _analysisTasksService;
+    private readonly AnalysisRecordsService _analysisRecordsService;
 
-    public TasksController(AnalysisRecordsService analysisTasksService)
+    public TasksController(AnalysisRecordsService analysisRecordsService)
     {
-        _analysisTasksService = analysisTasksService;
+        _analysisRecordsService = analysisRecordsService;
     }
 
     [HttpPost()]
     public async Task<IEnumerable<GenericAnalysis>> Load([FromBody]GenericAnalysis model)
 	{
-		return await _analysisTasksService.Load(model.UserId);
+		return await _analysisRecordsService.Load(model.UserId);
 	}
 }
