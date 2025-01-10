@@ -9,9 +9,9 @@ namespace Unite.Analysis.Web.Controllers;
 [Authorize]
 public class TasksController : Controller
 {
-    private readonly AnalysisTasksService _analysisTasksService;
+    private readonly AnalysisRecordsService _analysisTasksService;
 
-    public TasksController(AnalysisTasksService analysisTasksService)
+    public TasksController(AnalysisRecordsService analysisTasksService)
     {
         _analysisTasksService = analysisTasksService;
     }

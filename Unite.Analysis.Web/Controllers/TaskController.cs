@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Unite.Analysis.Web.Services;
 using Unite.Analysis.Models;
 using Unite.Data.Entities.Tasks.Enums;
+using Unite.Essentials.Extensions;
 
 namespace Unite.Analysis.Web.Controllers;
 
@@ -11,17 +12,20 @@ namespace Unite.Analysis.Web.Controllers;
 public class TaskController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
+    private readonly AnalysisRecordService _analysisRecordsService;
     private readonly Analysis.Services.DESeq2.AnalysisService _deseq2DeAnalysisService;
     private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
 
     public TaskController(
         AnalysisTaskService analysisTaskService,
+        AnalysisRecordService analysisRecordsService,
         Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
         Analysis.Services.SCell.AnalysisService scellAnalysisService,
         Analysis.Services.KMeier.AnalysisService kmeierAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
+        _analysisRecordsService = analysisRecordsService;
         _kmeierAnalysisService = kmeierAnalysisService;
         _deseq2DeAnalysisService = deseq2AnalysisService;
         _scellAnalysisService = scellAnalysisService;
@@ -30,32 +34,39 @@ public class TaskController : Controller
     [HttpPost("kmeier")]
     public async Task<IActionResult> CreateKmeierTask([FromBody]TypedAnalysis<Analysis.Services.KMeier.Models.Criteria.Analysis> model)
     {
-        GenericAnalysis genericAnalysis = GenericAnalysis.From(model);
-        model.Id = await _analysisTaskService.Add(genericAnalysis);
-        _analysisTaskService.Create(model.Id, model, AnalysisTaskType.KMEIER);
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordsService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.KMEIER);
         
-        return Ok(model.Id);
+        return Ok(model.Data.Id);
     }
 
     [HttpPost("deseq2")]
     public async Task<IActionResult> CreateDESeq2Task([FromBody]TypedAnalysis<Analysis.Services.DESeq2.Models.Criteria.Analysis> model)
     {
-        GenericAnalysis genericAnalysis = GenericAnalysis.From(model);
-        model.Id = await _analysisTaskService.Add(genericAnalysis);
-        _analysisTaskService.Create(model.Id, model, AnalysisTaskType.DESEQ2);
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordsService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DESEQ2);
         
-        return Ok(model.Id);
+        return Ok(model.Data.Id);
     }
 
     [HttpPost("scell")]
     public async Task<IActionResult> CreateSCellTask([FromBody]TypedAnalysis<Analysis.Services.SCell.Models.Criteria.Analysis> model)
     {
-        GenericAnalysis genericAnalysis = GenericAnalysis.From(model);
-        model.Id = await _analysisTaskService.Add(genericAnalysis);
-        _analysisTaskService.Create(model.Id, model, AnalysisTaskType.SCELL);
+        var entry = GenericAnalysis.From(model);
 
-        return Ok(model.Id);
+        model.Data.Id = await _analysisRecordsService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SCELL);
+
+        return Ok(model.Data.Id);
     }
+
     [HttpPut("{id}/status")]
     public async Task<IActionResult> GetTaskStatus(string id)
     {
@@ -63,11 +74,10 @@ public class TaskController : Controller
 
         if (task == null)
             return NotFound();
-        else
-        {
-            await _analysisTaskService.Update(id, task.StatusTypeId.Value.ToString());
-            return Ok(task.StatusTypeId);
-        }
+        
+        await _analysisRecordsService.Update(id, task.StatusTypeId.Value.ToDefinitionString());
+        
+        return Ok(task.StatusTypeId);
     }
 
     [HttpGet("{id}/meta")]
@@ -126,7 +136,7 @@ public class TaskController : Controller
             await _kmeierAnalysisService.Delete(id);
 
         _analysisTaskService.Delete(task);
-        await _analysisTaskService.Delete(id);
+        await _analysisRecordsService.Delete(id);
 
         return Ok();
     }

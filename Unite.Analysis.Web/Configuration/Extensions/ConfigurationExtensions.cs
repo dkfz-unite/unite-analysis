@@ -31,11 +31,13 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.KMeier.ContextLoader>();
         services.AddTransient<Analysis.Services.KMeier.AnalysisService>();
 
+        services.AddTransient<AnalysisTaskService>();
+        services.AddTransient<AnalysisRecordService>();
+        services.AddTransient<AnalysisRecordsService>();
+        services.AddTransient<ScellViewerService>();
+
         services.AddHostedService<AnalysisPreparingHostedService>();
         services.AddTransient<AnalysisPreparingHandler>();
-        services.AddTransient<AnalysisTaskService>();
-        services.AddTransient<AnalysisTasksService>();
-        services.AddTransient<ScellViewerService>();
 
         services.AddHostedService<AnalysisProcessingHostedService>();
         services.AddTransient<AnalysisProcessingHandler>();

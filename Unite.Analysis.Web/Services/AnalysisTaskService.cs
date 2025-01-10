@@ -4,7 +4,6 @@ using Unite.Essentials.Extensions;
 using Unite.Data.Context;
 using Unite.Data.Entities.Tasks.Enums;
 using Unite.Cache.Configuration.Options;
-using Unite.Analysis.Models;
 using MongoDB.Driver;
 
 namespace Unite.Analysis.Web.Services;
@@ -150,21 +149,4 @@ public class AnalysisTaskService
             }
         }
     }
-
-    public async Task<string> Add(GenericAnalysis data)
-	{
-		return await _analysesRepository.AddAsync(data);
-	}
-
-    public async Task Update(string id, string taskStatusType)
-	{
-		var analysis = _analysesRepository.Find(id).Document;
-        analysis.Status = taskStatusType;
-        await _analysesRepository.UpdateAsync(id, analysis);
-	}
-
-    public async Task Delete(string id)
-	{
-		await _analysesRepository.DeleteAsync(id);
-	}
 }
