@@ -2,15 +2,17 @@ using Unite.Analysis.Models;
 
 namespace Unite.Analysis.Services.DESeq2.Models.Criteria;
 
-public record Analysis
+public record Analysis: AnalysisData
 {
-    /// <summary>
-    /// Analysis key. Used to identify the analysis in the queue and UI.
-    /// </summary>
-    public string Key { get; set; }
+    public string UserId { get; set; }
 
-    /// <summary>
-    /// Datasets to analyse.
-    /// </summary>
-    public DatasetCriteria[] Datasets { get; set; }
+    public string Name { get; set; }
+
+    public string Description { get; set; }
+
+    public string Date { get; set; }
+
+    public string Status { get; set; }
+
+    public string Type { get; set; }
 }

@@ -26,7 +26,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         stopwatch.Restart();
 
-        var directoryPath = GetWorkingDirectoryPath(model.Key);
+        var directoryPath = GetWorkingDirectoryPath(model.Id);
 
         var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault());
 

@@ -8,7 +8,7 @@ public record DatasetCriteria
     /// <summary>
     /// Dataset key. Identifies the dataset in the analysis data.
     /// </summary>
-    public string Key { get; set; }
+    public string Id { get; set; }
 
     /// <summary>
     /// Dataset name. The name of the dataset in the analysis data.
