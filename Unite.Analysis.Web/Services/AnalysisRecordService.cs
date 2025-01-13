@@ -32,4 +32,10 @@ public class AnalysisRecordService
 	{
 		await _analysesRepository.DeleteAsync(id);
 	}
+
+	public async Task<IEnumerable<GenericAnalysis>> Get(string userId)
+	{
+		var analyses = await _analysesRepository.WhereAsync(item => item.Document.UserId == userId);
+        return analyses.Select(analysis => analysis.Document with { Id = analysis.Id });
+	}
 }

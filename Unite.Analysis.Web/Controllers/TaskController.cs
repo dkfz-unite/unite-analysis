@@ -119,25 +119,48 @@ public class TaskController : Controller
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(string id)
     {
-        var task = _analysisTaskService.Get(id);
-        var statuses = new TaskStatusType?[] {TaskStatusType.Processed, TaskStatusType.Failed};
+        var deleteTask = await Delete(id);
 
-        if (task == null)
+        if(deleteTask == "Not Found")
             return NotFound();
-
-        if (!statuses.Contains(task.StatusTypeId))
+        else if(deleteTask == "Task can't be deleted")
             return BadRequest("Task can't be deleted");
+        else
+        {
+            return Ok();
+        }
+    }
 
-        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
-            await _deseq2DeAnalysisService.Delete(id);
-        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
-            await _scellAnalysisService.Delete(id);
-        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
-            await _kmeierAnalysisService.Delete(id);
+    public async Task<string> Delete(string id)
+    {
+        var task = _analysisTaskService.Get(id);
+            var statuses = new TaskStatusType?[] {TaskStatusType.Processed, TaskStatusType.Failed};
 
-        _analysisTaskService.Delete(task);
-        await _analysisRecordsService.Delete(id);
+            if (task == null)
+                return "Not Found";
 
-        return Ok();
+            if (!statuses.Contains(task.StatusTypeId))
+                return "Task can't be deleted";
+
+            if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
+                await _deseq2DeAnalysisService.Delete(id);
+            else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+                await _scellAnalysisService.Delete(id);
+            else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
+                await _kmeierAnalysisService.Delete(id);
+
+            _analysisTaskService.Delete(task);
+            await _analysisRecordsService.Delete(id);
+            return "";
+    }
+
+    [HttpDelete("{userId}/deleteUser")]
+    public async Task DeleteUser(string userId)
+    {
+        var userAnalyses = await _analysisRecordsService.Get(userId);
+        foreach (var dataset in userAnalyses)
+        {
+            await Delete(dataset.Id);
+        }
     }
 }

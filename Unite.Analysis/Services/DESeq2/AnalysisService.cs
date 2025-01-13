@@ -79,7 +79,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     public override async Task<AnalysisTaskResult> Process(string key, params object[] args)
     {
         var path = GetWorkingDirectoryPath(key);
-        var url = $"{_options.DESeq2Url}/api/run?key={key}";// needs to be checked
+        var url = $"{_options.DESeq2Url}/api/run?key={key}";
 
         var result = await ProcessRemotely(url);
 
