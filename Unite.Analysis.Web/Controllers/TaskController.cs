@@ -154,7 +154,7 @@ public class TaskController : Controller
             return "";
     }
 
-    [HttpDelete("{userId}/deleteUser")]
+    [HttpDelete("{userId}/delete")]
     public async Task DeleteUser(string userId)
     {
         var userAnalyses = await _analysisRecordsService.Get(userId);
