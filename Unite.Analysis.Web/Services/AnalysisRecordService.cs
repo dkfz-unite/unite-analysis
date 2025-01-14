@@ -8,12 +8,10 @@ public class AnalysisRecordService
 {
     private readonly AnalysesRepository _analysesRepository;
 
-
     public AnalysisRecordService(IMongoOptions options)
     {
         _analysesRepository = new AnalysesRepository(options);
     }
-
 
     public async Task<string> Add(GenericAnalysis data)
 	{

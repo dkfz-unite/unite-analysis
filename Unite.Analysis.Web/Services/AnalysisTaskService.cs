@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Unite.Essentials.Extensions;
 using Unite.Data.Context;
 using Unite.Data.Entities.Tasks.Enums;
-using Unite.Cache.Configuration.Options;
-using MongoDB.Driver;
+// using Unite.Cache.Configuration.Options;
+// using MongoDB.Driver;
 
 namespace Unite.Analysis.Web.Services;
 
@@ -13,16 +13,16 @@ public class AnalysisTaskService
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
     private readonly ILogger _logger;
 
-    private readonly Repositories.AnalysesRepository _analysesRepository;
+    // private readonly Repositories.AnalysesRepository _analysesRepository;
 
     public AnalysisTaskService(
         IDbContextFactory<DomainDbContext> dbContextFactory,
-        ILogger<AnalysisTaskService> logger,
-        IMongoOptions options)
+        ILogger<AnalysisTaskService> logger)
+        // IMongoOptions options)
     {
         _dbContextFactory = dbContextFactory;
         _logger = logger;
-        _analysesRepository = new Repositories.AnalysesRepository(options);
+        // _analysesRepository = new Repositories.AnalysesRepository(options);
     }
 
 
