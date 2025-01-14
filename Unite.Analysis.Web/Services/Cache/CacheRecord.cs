@@ -3,21 +3,18 @@ namespace Unite.Analysis.Web.Services.Cache;
 public class CacheRecord
 {
     public string Name;
+    public int Number;
     public DateTime LastActive;
-    public string LocalUrl;
-    public string RemoteUrl;
-
 
     public CacheRecord()
     {
         
     }
 
-    public CacheRecord(string name, DateTime lastActive, string localUrl, string remoteUrl)
+    public CacheRecord(string name, int number, DateTime lastActive)
     {
         Name = name;
+        Number = number;
         LastActive = lastActive;
-        LocalUrl = localUrl;
-        RemoteUrl = remoteUrl;
-    } 
+    }
 }

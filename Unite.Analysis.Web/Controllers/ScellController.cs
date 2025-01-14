@@ -16,17 +16,12 @@ public class ScellController : Controller
         _viewerService = viewerService;
     }
 
-    [HttpGet("{key}")]
-    public async Task<IActionResult> Get(string key)
-    {
-        var local = _environment.IsDevelopment();
-
-        var success = await _viewerService.Ping(key, local);
-
-        return Ok(success);
-    }
     
-
+    /// <summary>
+    /// Spawns a new single cell viewer instance.
+    /// </summary>
+    /// <param name="key">Analysis key.</param>
+    /// <returns>Created instance number.</returns>
     [HttpPost("{key}")]
     public async Task<IActionResult> Post(string key)
     {
@@ -37,6 +32,11 @@ public class ScellController : Controller
         return Ok(name);
     }
 
+    /// <summary>
+    /// Kills a single cell viewer instance.
+    /// </summary>
+    /// <param name="key">Analysis key.</param>
+    /// <returns></returns>
     [HttpDelete("{key}")]
     public async Task<IActionResult> Delete(string key)
     {

@@ -8,10 +8,11 @@ namespace Unite.Analysis.Web.Services;
 
 public class ScellViewerService
 {
-    private static readonly string _imageNameDeploy = "ghcr.io/dkfz-unite/unite-analysis-scell-view:latest";
-    private static readonly string _imageNameBuild = "unite.analysis.scell.view";
-    private static readonly string _containerName = "unite.analysis.scell.view";
-    private static readonly string _containerAlias = "view.scell.analysis.unite.net";
+    private static readonly string _imageNameDeploy = "ghcr.io/dkfz-unite/unite-cellxgene:latest";
+    private static readonly string _imageNameBuild = "unite-cellxgene";
+    private static readonly string _containerName = "unite.analysis.scell.view{n}";
+    private static readonly string _containerAlias = "view{n}.scell.analysis.unite.net";
+    private static readonly string _containerPort = "543{n}";
 
     private readonly IAnalysisOptions _options;
 
@@ -25,38 +26,35 @@ public class ScellViewerService
     public async Task<string> Spawn(string key, bool local)
     {
         if (ContainersCache.TryGet(key, out var record))
-            return $"{record.RemoteUrl}|{record.LocalUrl}";
+            return $"{record.Number:00}";
 
         using var client = CreateClient();
 
-        var number = await GetNumber(client, _containerName);
-        var dataPath = await GetDataPath(client, _options.DataPath);
-        var certsPath = await GetCertificatesPath(client);
         var network = await GetNetwork(client, "unite");
-        var instanceName = GetName(number);
-        var instanceAlias = GetAlias(number);
-        var instancePort = GetPort(number);
+        var path = await GetDataPath(client, _options.DataPath);
+        var number = await GetNumber(client, _containerName.Replace("{n}", ""));
+        var name = GetName(number);
+        var alias = GetAlias(number);
+        var port = GetPort(number);
 
         var parameters = new CreateContainerParameters
         {
             Image = await GetImage(client, local),
-            Name = instanceName,
+            Name = name,
             Env =
             [
-                $"ASPNETCORE_ENVIRONMENT=Release", 
+                $"URL_PREFIX=/viewer/cxg{number:00}",
                 $"FILE_PATH={key}/result.data.h5ad"
             ],
             HostConfig = new HostConfig
             {
                 PortBindings = new Dictionary<string, IList<PortBinding>>
                 { 
-                    { "443/tcp", [new PortBinding() { HostIP = "127.0.0.1", HostPort = $"{instancePort}" }] },
-                    // { "80/tcp", [new PortBinding() { HostIP = "127.0.0.1", HostPort = $"{instancePort + 1}" }] }
+                    { "80/tcp", [new PortBinding() { HostIP = "127.0.0.1", HostPort = $"{port}" }] }
                 },
                 Binds =
                 [
-                    $"{dataPath}:/data/:rw",
-                    $"{certsPath}:/https/:ro"
+                    $"{path}:/app/data/:rw"
                 ],
                 NetworkMode = network.ID,
                 AutoRemove = true,
@@ -64,7 +62,7 @@ public class ScellViewerService
             },
             NetworkingConfig = new NetworkingConfig
             {
-                EndpointsConfig = new Dictionary<string, EndpointSettings> { { network.Name, new() { Aliases = [instanceName, instanceAlias] } } }
+                EndpointsConfig = new Dictionary<string, EndpointSettings> { { network.Name, new() { Aliases = [name, alias] } } }
             }
         };
 
@@ -76,45 +74,18 @@ public class ScellViewerService
         {
             record = new CacheRecord
             {
-                Name = instanceName,
-                LastActive = DateTime.UtcNow,
-                LocalUrl = $"https://localhost:{instancePort}",
-                RemoteUrl = $"https://{instanceAlias}"
+                Name = name,
+                Number = number,
+                LastActive = DateTime.UtcNow
             };
 
             ContainersCache.Add(key, record);
             
-            return string.Join(" | ", record.RemoteUrl, record.LocalUrl);;
+            return $"{number:00}";
         }
         else
         {
             return null;
-        }
-    }
-
-    public async Task<bool> Ping(string key, bool local)
-    {
-        if (!ContainersCache.TryGet(key, out var record))
-            return false;
-
-        try
-        {
-            var handler = new HttpClientHandler
-            { 
-                UseProxy = false, 
-                ClientCertificateOptions = ClientCertificateOption.Manual,
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-            };
-
-            using var client = new HttpClient(handler);
-
-            var respone = await client.GetAsync(local ? record.LocalUrl : record.RemoteUrl);
-
-            return respone.IsSuccessStatusCode;;
-        }
-        catch
-        {
-            return false;
         }
     }
 
@@ -143,19 +114,17 @@ public class ScellViewerService
 
     private static string GetName(int number)
     {
-        return $"{_containerName}{number:00}";
+        return _containerName.Replace("{n}", $"{number:00}");
     }
 
     private static string GetAlias(int number)
     {
-        var parts = _containerAlias.Split('.');
-        parts[0] += $"{number:00}";
-        return string.Join('.', parts);
+        return _containerAlias.Replace("{n}", $"{number:00}");
     }
 
-    private static int GetPort(int number)
+    private static string GetPort(int number)
     {
-        return int.Parse($"543{number:00}");
+        return _containerPort.Replace("{n}", $"{number:00}");
     }
 
     private static async Task<string> GetImage(DockerClient client, bool local)
@@ -189,37 +158,20 @@ public class ScellViewerService
         return mount.Source["/host_mnt".Length..];
     }
 
-    private static async Task<string> GetCertificatesPath(DockerClient client)
-    {
-        var parameters = new ContainersListParameters() { All = true };
-        var containers = await client.Containers.ListContainersAsync(parameters);
-        var container = containers.FirstOrDefault(container => container.Names.Any(name => name.Contains("unite.portal")));
-
-        if (container == null)
-            return null;
-
-        var mount = container.Mounts.FirstOrDefault(mount => mount.Destination == "/https");
-
-        if (mount == null)
-            return null;
-
-        return mount.Source["/host_mnt".Length..];
-    }
-
-    private static async Task<int> GetNumber(DockerClient client, string name)
+    private static async Task<int> GetNumber(DockerClient client, string containerName)
     {
         var parameters = new ContainersListParameters() { All = true };
         var containers = await client.Containers.ListContainersAsync(parameters);
 
         var actualNumbers = containers
-            .Where(container => container.Names.Any(cintainerName => cintainerName.Contains(name)))
-            .Select(container => container.Names.First(cintainerName => cintainerName.Contains(name)))
-            .Select(cintainerName => cintainerName.TrimStart('/'))
-            .Select(cintainerName => int.Parse(cintainerName[(name.Length+1)..]))
+            .Where(container => container.Names.Any(name => name.Contains(containerName)))
+            .Select(container => container.Names.First(name => name.Contains(containerName)))
+            .Select(name => name.TrimStart('/'))
+            .Select(name => int.Parse(name[(containerName.Length+1)..]))
             .ToArray();
 
         var cachedNumbers = ContainersCache.Records
-            .Select(record => int.Parse(record.Value.Name[name.Length..]));
+            .Select(record => record.Value.Number);
 
         var mergedNumbers = actualNumbers.Concat(cachedNumbers).Distinct();
 
@@ -228,11 +180,11 @@ public class ScellViewerService
         return number;
     }
 
-    private static async Task<NetworkResponse> GetNetwork(DockerClient client, string name)
+    private static async Task<NetworkResponse> GetNetwork(DockerClient client, string networkName)
     {
         var networks = await client.Networks.ListNetworksAsync();
 
-        var network = networks.FirstOrDefault(n => n.Name == name);
+        var network = networks.FirstOrDefault(network => network.Name == networkName);
 
         return network;
     }
