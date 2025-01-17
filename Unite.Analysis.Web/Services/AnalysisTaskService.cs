@@ -11,7 +11,6 @@ public class AnalysisTaskService
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
     private readonly ILogger _logger;
 
-
     public AnalysisTaskService(
         IDbContextFactory<DomainDbContext> dbContextFactory,
         ILogger<AnalysisTaskService> logger)

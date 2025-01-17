@@ -3,6 +3,7 @@ using Unite.Analysis.Web.Configuration.Options;
 using Unite.Analysis.Web.Handlers;
 using Unite.Analysis.Web.HostedServices;
 using Unite.Analysis.Web.Services;
+using Unite.Cache.Configuration.Options;
 using Unite.Data.Context.Configuration.Extensions;
 using Unite.Data.Context.Configuration.Options;
 using Unite.Indices.Context.Configuration.Options;
@@ -30,10 +31,13 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.KMeier.ContextLoader>();
         services.AddTransient<Analysis.Services.KMeier.AnalysisService>();
 
+        services.AddTransient<AnalysisTaskService>();
+        services.AddTransient<AnalysisRecordService>();
+        services.AddTransient<AnalysisRecordsService>();
+        services.AddTransient<ScellViewerService>();
+
         services.AddHostedService<AnalysisPreparingHostedService>();
         services.AddTransient<AnalysisPreparingHandler>();
-        services.AddTransient<AnalysisTaskService>();
-        services.AddTransient<ScellViewerService>();
 
         services.AddHostedService<AnalysisProcessingHostedService>();
         services.AddTransient<AnalysisProcessingHandler>();
@@ -44,6 +48,7 @@ public static class ConfigurationExtensions
         services.AddTransient<ApiOptions>();
         services.AddTransient<IElasticOptions, ElasticOptions>();
         services.AddTransient<ISqlOptions, SqlOptions>();
+        services.AddTransient<IMongoOptions, MongoOptions>();
         services.AddTransient<IAnalysisOptions, AnalysisOptions>(); 
         services.AddTransient<AnalysisOptions>();
     }
