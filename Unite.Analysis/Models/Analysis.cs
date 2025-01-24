@@ -26,10 +26,15 @@ public record TypedAnalysis<T> : Analysis where T : AnalysisData
 
 public record GenericAnalysis : Analysis
 {
+    private static readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     public string Data { get; set; }
 
     public static GenericAnalysis From<T>(TypedAnalysis<T> analysis) where T : AnalysisData
-    {
+    {       
         return new GenericAnalysis
         {
             Id = analysis.Id,
@@ -39,7 +44,7 @@ public record GenericAnalysis : Analysis
             Date = analysis.Date,
             Status = analysis.Status,
             Type = analysis.Type,
-            Data = JsonSerializer.Serialize(analysis.Data)
+            Data = JsonSerializer.Serialize(analysis.Data, _serializerOptions)
         };
     }
 }

@@ -1,17 +1,17 @@
 using Unite.Analysis.Web.Handlers;
 using Unite.Essentials.Extensions;
 
-namespace Unite.Analysis.Web.HostedServices;
+namespace Unite.Analysis.Web.Workers;
 
-public class AnalysisPreparingHostedService : BackgroundService
+public class MonitoringWorker : BackgroundService
 {
-    private readonly AnalysisPreparingHandler _handler;
+    private readonly MonitoringHandler _handler;
     private readonly ILogger _logger;
 
 
-    public AnalysisPreparingHostedService(
-        AnalysisPreparingHandler handler,
-        ILogger<AnalysisPreparingHostedService> logger)
+    public MonitoringWorker(
+        MonitoringHandler handler,
+        ILogger<MonitoringWorker> logger)
     {
         _handler = handler;
         _logger = logger;
@@ -20,9 +20,9 @@ public class AnalysisPreparingHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Analysis preparing service started");
+        _logger.LogInformation("Monitoring service started");
 
-        cancellationToken.Register(() => _logger.LogInformation("Analysis preparing service stopped"));
+        cancellationToken.Register(() => _logger.LogInformation("Monitoring service stopped"));
 
         // Delay 5 seconds to let the web api start working
         await Task.Delay(5000, cancellationToken);
@@ -31,7 +31,7 @@ public class AnalysisPreparingHostedService : BackgroundService
         {
             try
             {
-                _handler.Handle();
+                await _handler.Handle();
             }
             catch (Exception exception)
             {
@@ -39,7 +39,7 @@ public class AnalysisPreparingHostedService : BackgroundService
             }
             finally
             {
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(10000, cancellationToken);
             }
         }
     }

@@ -9,34 +9,36 @@ namespace Unite.Analysis.Web.Controllers;
 
 [Route("api/[controller]")]
 [Authorize]
-public class TaskController : Controller
+public class AnalysisController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly AnalysisRecordService _analysisRecordsService;
+    private readonly AnalysisRecordService _analysisRecordService;
     private readonly Analysis.Services.DESeq2.AnalysisService _deseq2DeAnalysisService;
     private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
 
-    public TaskController(
+
+    public AnalysisController(
         AnalysisTaskService analysisTaskService,
-        AnalysisRecordService analysisRecordsService,
+        AnalysisRecordService analysisRecordService,
         Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
         Analysis.Services.SCell.AnalysisService scellAnalysisService,
         Analysis.Services.KMeier.AnalysisService kmeierAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
-        _analysisRecordsService = analysisRecordsService;
+        _analysisRecordService = analysisRecordService;
         _kmeierAnalysisService = kmeierAnalysisService;
         _deseq2DeAnalysisService = deseq2AnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
+    
     
     [HttpPost("kmeier")]
     public async Task<IActionResult> CreateKmeierTask([FromBody]TypedAnalysis<Analysis.Services.KMeier.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
-        model.Data.Id = await _analysisRecordsService.Add(entry);
+        model.Data.Id = await _analysisRecordService.Add(entry);
 
         _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.KMEIER);
         
@@ -48,7 +50,7 @@ public class TaskController : Controller
     {
         var entry = GenericAnalysis.From(model);
 
-        model.Data.Id = await _analysisRecordsService.Add(entry);
+        model.Data.Id = await _analysisRecordService.Add(entry);
 
         _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DESEQ2);
         
@@ -60,7 +62,7 @@ public class TaskController : Controller
     {
         var entry = GenericAnalysis.From(model);
 
-        model.Data.Id = await _analysisRecordsService.Add(entry);
+        model.Data.Id = await _analysisRecordService.Add(entry);
 
         _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SCELL);
 
@@ -75,7 +77,7 @@ public class TaskController : Controller
         if (task == null)
             return NotFound();
         
-        await _analysisRecordsService.Update(id, task.StatusTypeId.Value.ToDefinitionString());
+        await _analysisRecordService.Update(id, task.StatusTypeId.Value.ToDefinitionString());
         
         return Ok(task.StatusTypeId);
     }
@@ -119,48 +121,27 @@ public class TaskController : Controller
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(string id)
     {
-        var deleteTask = await Delete(id);
-
-        if(deleteTask == "Not Found")
-            return NotFound();
-        else if(deleteTask == "Task can't be deleted")
-            return BadRequest("Task can't be deleted");
-        else
-        {
-            return Ok();
-        }
-    }
-
-    public async Task<string> Delete(string id)
-    {
         var task = _analysisTaskService.Get(id);
-            var statuses = new TaskStatusType?[] {TaskStatusType.Processed, TaskStatusType.Failed};
 
-            if (task == null)
-                return "Not Found";
+        if (task == null)
+            return NotFound();
 
-            if (!statuses.Contains(task.StatusTypeId))
-                return "Task can't be deleted";
+        var statuses = new TaskStatusType?[] {TaskStatusType.Processed, TaskStatusType.Failed};
 
-            if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
-                await _deseq2DeAnalysisService.Delete(id);
-            else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
-                await _scellAnalysisService.Delete(id);
-            else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
-                await _kmeierAnalysisService.Delete(id);
+        if (!statuses.Contains(task.StatusTypeId))
+            return BadRequest("Task can't be deleted while in progress.");
 
-            _analysisTaskService.Delete(task);
-            await _analysisRecordsService.Delete(id);
-            return "";
-    }
+        _analysisTaskService.Delete(task);
 
-    [HttpDelete("{userId}/delete")]
-    public async Task DeleteUser(string userId)
-    {
-        var userAnalyses = await _analysisRecordsService.Get(userId);
-        foreach (var dataset in userAnalyses)
-        {
-            await Delete(dataset.Id);
-        }
+        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
+            await _deseq2DeAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            await _scellAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
+            await _kmeierAnalysisService.Delete(id);
+
+        await _analysisRecordService.Delete(id);
+
+        return Ok();
     }
 }

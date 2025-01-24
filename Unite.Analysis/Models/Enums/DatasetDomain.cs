@@ -1,39 +1,41 @@
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Unite.Analysis.Models.Enums;
 
+[JsonConverter(typeof(JsonStringEnumMemberConverter))]
 public enum DatasetDomain
 {
-    [EnumMember(Value = "Donors")]
+    [EnumMember(Value = "donors")]
     Donors,
 
-    [EnumMember(Value = "Mris")]
+    [EnumMember(Value = "mris")]
     Mris,
 
-    [EnumMember(Value = "Cts")]
+    [EnumMember(Value = "cts")]
     Cts,
 
-    [EnumMember(Value = "Materials")]
+    [EnumMember(Value = "materials")]
     Materials,
 
-    [EnumMember(Value = "Lines")]
+    [EnumMember(Value = "lines")]
     Lines,
 
-    [EnumMember(Value = "Organoids")]
+    [EnumMember(Value = "organoids")]
     Organoids,
 
-    [EnumMember(Value = "Xenografts")]
+    [EnumMember(Value = "xenografts")]
     Xenografts,
 
-    [EnumMember(Value = "Genes")]
+    [EnumMember(Value = "genes")]
     Genes,
 
-    [EnumMember(Value = "Ssms")]
+    [EnumMember(Value = "ssms")]
     Ssms,
 
-    [EnumMember(Value = "Cnvs")]
+    [EnumMember(Value = "cnvs")]
     Cnvs,
 
-    [EnumMember(Value = "Svs")]
+    [EnumMember(Value = "svs")]
     Svs
 }

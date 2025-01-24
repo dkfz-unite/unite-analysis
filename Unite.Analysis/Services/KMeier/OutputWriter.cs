@@ -17,37 +17,50 @@ public class OutputWriter
 
     public static async Task ProcessOutput(string path)
     {
-        var rankTsv = await File.ReadAllTextAsync(Path.Combine(path, RankFileName));
-        var rankRecords = TsvReader.Read<RankRecord>(rankTsv).ToArray();
+        var result = new Output();
 
-        var resultTsv = await File.ReadAllTextAsync(Path.Combine(path, ResultFileName));
-        var resultRecords = TsvReader.Read<ResultRecord>(resultTsv).ToArray();
+        var resultPath = Path.Combine(path, ResultFileName);
+        var hasResult = File.Exists(resultPath);
 
-        var rank = new Rank
+        if (hasResult)
         {
-            Chi2 = rankRecords[0].Chi2,
-            P = rankRecords[0].P
-        };
+            var resultTsv = await File.ReadAllTextAsync(resultPath);
+            var resultRecords = TsvReader.Read<ResultRecord>(resultTsv).ToArray();
+            var curves = resultRecords.GroupBy(x => x.DatasetId).ToDictionary
+            (
+                group => group.Key,
+                group => new Curve
+                {
+                    Time = group.Select(record => record.Time).ToArray(),
+                    SurvivalProb = group.Select(record => record.SurvivalProb).ToArray(),
+                    ConfIntLower = group.Select(record => record.ConfIntLower).ToArray(),
+                    ConfIntUpper = group.Select(record => record.ConfIntUpper).ToArray()
+                }
+            );
 
-        var curves = resultRecords.GroupBy(x => x.DatasetId).ToDictionary
-        (
-            group => group.Key,
-            group => new Curve
+            result.Curves = curves;
+        }
+
+
+        var rankPath = Path.Combine(path, RankFileName);
+        var hasRank = File.Exists(rankPath);
+
+        if (hasRank)
+        {
+            var rankTsv = await File.ReadAllTextAsync(rankPath);
+            var rankRecords = TsvReader.Read<RankRecord>(rankTsv).ToArray();
+            var rank = new Rank
             {
-                Time = group.Select(record => record.Time).ToArray(),
-                SurvivalProb = group.Select(record => record.SurvivalProb).ToArray(),
-                ConfIntLower = group.Select(record => record.ConfIntLower).ToArray(),
-                ConfIntUpper = group.Select(record => record.ConfIntUpper).ToArray()
-            }
-        );
+                Chi2 = rankRecords[0].Chi2,
+                P = rankRecords[0].P
+            };
 
-        var result = new Output
-        {
-            Rank = rank,
-            Curves = curves
-        };
+            result.Rank = rank;
+        }
+
 
         var outputJson = JsonSerializer.Serialize(result);
+
         await File.WriteAllTextAsync(Path.Combine(path, OutputFileName), outputJson);
     }
 
@@ -56,13 +69,26 @@ public class OutputWriter
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
-        archive.CreateEntryFromFile(Path.Combine(path, ResultFileName), ResultFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, RankFileName), RankFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, CensoredFileName), CensoredFileName);
+        var resultPath = Path.Combine(path, ResultFileName);
+        if (File.Exists(resultPath))
+        {
+            archive.CreateEntryFromFile(resultPath, ResultFileName);
+            File.Delete(resultPath);
+        }
 
-        File.Delete(Path.Combine(path, ResultFileName));
-        File.Delete(Path.Combine(path, RankFileName));
-        File.Delete(Path.Combine(path, CensoredFileName));
+        var rankPath = Path.Combine(path, RankFileName);
+        if (File.Exists(rankPath))
+        {
+            archive.CreateEntryFromFile(rankPath, RankFileName);
+            File.Delete(rankPath);
+        }
+
+        var censoredPath = Path.Combine(path, CensoredFileName);
+        if (File.Exists(censoredPath))
+        {
+            archive.CreateEntryFromFile(censoredPath, CensoredFileName);
+            File.Delete(censoredPath);
+        }
 
         await Task.CompletedTask;
     }

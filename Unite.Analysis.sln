@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unite.Analysis", "Unite.Ana
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unite.Analysis.Web", "Unite.Analysis.Web\Unite.Analysis.Web.csproj", "{39CA8936-606D-481F-AF8C-CB0CBDD46CB9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unite.Orchestrator", "Unite.Orchestrator\Unite.Orchestrator.csproj", "{F64D2DBD-297C-4FF9-8259-8A4B1EE42327}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{39CA8936-606D-481F-AF8C-CB0CBDD46CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39CA8936-606D-481F-AF8C-CB0CBDD46CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39CA8936-606D-481F-AF8C-CB0CBDD46CB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F64D2DBD-297C-4FF9-8259-8A4B1EE42327}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F64D2DBD-297C-4FF9-8259-8A4B1EE42327}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F64D2DBD-297C-4FF9-8259-8A4B1EE42327}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F64D2DBD-297C-4FF9-8259-8A4B1EE42327}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
