@@ -39,11 +39,12 @@ public class AnalysesController : Controller
 	}
 
     [HttpDelete()]
-    public async Task<IActionResult> Delete([FromBody] SearchModel model)
+    public async Task<IActionResult> Delete([FromQuery] string userId)
     {
         // Issue: Analyses should be removed only if they are complete or failed.
         // Skipped temporarily due to proper handling difficulties.
 
+        var model = new SearchModel(userId);
         var entries = await _analysisRecordsService.Load(model);
 
         foreach (var entry in entries)
