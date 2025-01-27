@@ -26,11 +26,21 @@ public static class DownloadManager
 
     private static Uri CreateUri(string url, string host)
     {
-        var uri = url.StartsWith("http") ? new Uri(url) : new Uri($"http://{url}");
+        var sourceUri = new UriBuilder(url);
+        sourceUri.Scheme ??= "http";
 
-        if (host == null)
-            return uri;
+        if (host != null)
+        {
+            var targetUri = new UriBuilder(host);
+            targetUri.Scheme ??= "http";
+            targetUri.Path = sourceUri.Path;
+            targetUri.Query = sourceUri.Query;
+
+            return targetUri.Uri;
+        }
         else
-            return new Uri(url.Replace(uri.Host, host));
+        {
+            return sourceUri.Uri;
+        }
     }
 }

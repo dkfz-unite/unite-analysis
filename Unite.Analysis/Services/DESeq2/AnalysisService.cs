@@ -40,7 +40,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         var stopwatch = new Stopwatch();
         var sampleNamesByDataset = new Dictionary<string, string[]>();
         var sampleExpressionsByGene = new Dictionary<string, Dictionary<string, int>>();
-        var directoryPath = GetWorkingDirectoryPath(model.Key);
+        var directoryPath = GetWorkingDirectoryPath(model.Id);
 
         stopwatch.Restart();
 
@@ -53,7 +53,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
                 .Distinct()
                 .ToArray();
 
-            sampleNamesByDataset.Add(dataset.Key, datasetSampleNames);
+            sampleNamesByDataset.Add(dataset.Id, datasetSampleNames);
 
             foreach (var geneGroup in datasetSampleExpressionsByGene)
             {

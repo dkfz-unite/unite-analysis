@@ -10,8 +10,10 @@ WORKDIR /src
 RUN dotnet nuget add source https://nuget.pkg.github.com/dkfz-unite/index.json -n github -u ${USER} -p ${TOKEN} --store-password-in-clear-text
 COPY ["Unite.Analysis/Unite.Analysis.csproj", "Unite.Analysis/"]
 COPY ["Unite.Analysis.Web/Unite.Analysis.Web.csproj", "Unite.Analysis.Web/"]
+COPY ["Unite.Orchestrator/Unite.Orchestrator.csproj", "Unite.Orchestrator/"]
 RUN dotnet restore "Unite.Analysis/Unite.Analysis.csproj"
 RUN dotnet restore "Unite.Analysis.Web/Unite.Analysis.Web.csproj"
+RUN dotnet restore "Unite.Orchestrator/Unite.Orchestrator.csproj"
 
 FROM restore as build
 COPY . .

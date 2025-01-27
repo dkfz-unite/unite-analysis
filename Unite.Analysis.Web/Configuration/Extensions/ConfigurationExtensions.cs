@@ -1,12 +1,16 @@
 ﻿using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Web.Configuration.Options;
 using Unite.Analysis.Web.Handlers;
-using Unite.Analysis.Web.HostedServices;
+using Unite.Analysis.Web.Workers;
 using Unite.Analysis.Web.Services;
+using Unite.Cache.Configuration.Options;
 using Unite.Data.Context.Configuration.Extensions;
 using Unite.Data.Context.Configuration.Options;
 using Unite.Indices.Context.Configuration.Options;
 using Unite.Indices.Search.Configuration.Extensions;
+using Unite.Orchestrator;
+using Unite.Orchestrator.Configuration.Options;
+using Unite.Orchestrator.Docker;
 
 
 namespace Unite.Analysis.Web.Configuration.Extensions;
@@ -30,13 +34,22 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.KMeier.ContextLoader>();
         services.AddTransient<Analysis.Services.KMeier.AnalysisService>();
 
-        services.AddHostedService<AnalysisPreparingHostedService>();
-        services.AddTransient<AnalysisPreparingHandler>();
         services.AddTransient<AnalysisTaskService>();
-        services.AddTransient<ScellViewerService>();
+        services.AddTransient<AnalysisRecordService>();
+        services.AddTransient<AnalysisRecordsService>();
 
-        services.AddHostedService<AnalysisProcessingHostedService>();
+        services.AddSingleton(ClientService.CreateClient());
+        services.AddTransient<DockerService>();
+        services.AddTransient<CxgViewerService>();
+
+        services.AddHostedService<AnalysisPreparingWorker>();
+        services.AddTransient<AnalysisPreparingHandler>();
+
+        services.AddHostedService<AnalysisProcessingWorker>();
         services.AddTransient<AnalysisProcessingHandler>();
+
+        services.AddHostedService<MonitoringWorker>();
+        services.AddTransient<MonitoringHandler>();
     }
 
     private static void AddOptions(this IServiceCollection services)
@@ -44,7 +57,10 @@ public static class ConfigurationExtensions
         services.AddTransient<ApiOptions>();
         services.AddTransient<IElasticOptions, ElasticOptions>();
         services.AddTransient<ISqlOptions, SqlOptions>();
-        services.AddTransient<IAnalysisOptions, AnalysisOptions>(); 
+        services.AddTransient<IMongoOptions, MongoOptions>();
+        services.AddTransient<IAnalysisOptions, AnalysisOptions>();
+        services.AddTransient<IOrchestratorOptions, OrchOptions>();
+        services.AddTransient<ICxgViewerOptions, CxgOptions>();
         services.AddTransient<AnalysisOptions>();
     }
 }

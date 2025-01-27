@@ -23,11 +23,20 @@
         "UNITE_ELASTIC_HOST": "http://localhost:9200",
         "UNITE_ELASTIC_USER": "elastic",
         "UNITE_ELASTIC_PASSWORD": "Long-pa55w0rd",
+        "UNITE_MONGO_HOST": "localhost",
+        "UNITE_MONGO_PORT": "27017",
+        "UNITE_MONGO_USER": "root",
+        "UNITE_MONGO_PASSWORD": "Long-pa55w0rd",
+        "UNITE_ANALYSIS_IDLE_TIMEOUT": "1",
         "UNITE_ANALYSIS_DATA_PATH": "~/mnt/analysis",
         "UNITE_ANALYSIS_DATA_HOST": "http://localhost:5400",
         "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300",
         "UNITE_ANALYSIS_SCELL_HOST": "http://localhost:5302",
-        "UNITE_ANALYSIS_KMEIER_HOST": "http://localhost:5304"
+        "UNITE_ANALYSIS_KMEIER_HOST": "http://localhost:5304",
+        "UNITE_VIEWER_CXG_IMAGE": "ghcr.io/dkfz-unite/unite-cellxgene:latest",
+        "UNITE_VIEWER_CXG_NAME": "unite.viewer.cxg{n}",
+        "UNITE_VIEWER_CXG_ALIAS": "cxg{n}.viewer.unite.net",
+        "UNITE_VIEWER_CXG_PORTS": "54301-54399"
       }
     },
     "http": {
@@ -45,11 +54,20 @@
         "UNITE_ELASTIC_HOST": "http://localhost:9200",
         "UNITE_ELASTIC_USER": "elastic",
         "UNITE_ELASTIC_PASSWORD": "Long-pa55w0rd",
+        "UNITE_MONGO_HOST": "localhost",
+        "UNITE_MONGO_PORT": "27017",
+        "UNITE_MONGO_USER": "root",
+        "UNITE_MONGO_PASSWORD": "Long-pa55w0rd",
+        "UNITE_ANALYSIS_IDLE_TIMEOUT": "1",
         "UNITE_ANALYSIS_DATA_PATH": "~/mnt/analysis",
         "UNITE_ANALYSIS_DATA_HOST": "http://localhost:5400",
         "UNITE_ANALYSIS_DESEQ2_HOST": "http://localhost:5300",
         "UNITE_ANALYSIS_SCELL_HOST": "http://localhost:5302",
-        "UNITE_ANALYSIS_KMEIER_HOST": "http://localhost:5304"
+        "UNITE_ANALYSIS_KMEIER_HOST": "http://localhost:5304",
+        "UNITE_VIEWER_CXG_IMAGE": "ghcr.io/dkfz-unite/unite-cellxgene:latest",
+        "UNITE_VIEWER_CXG_NAME": "unite.viewer.cxg{n}",
+        "UNITE_VIEWER_CXG_ALIAS": "cxg{n}.viewer.unite.net",
+        "UNITE_VIEWER_CXG_PORTS": "54301-54399"
       }
     }
   }
