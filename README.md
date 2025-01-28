@@ -53,7 +53,7 @@ To configure the application, change environment variables in either docker or [
 - `UNITE_ANALYSIS_DATA_PATH` - Path to analysis data directory (`/mnt/data`).
 - `UNITE_ANALYSIS_DESEQ2_URL` - Path to the service for DESeq2 analysis (`http://deseq2.analysis.unite.net`).
 - `UNITE_ANALYSIS_SCELL_URL` - Path to the service for scRNA dataset creation analysis (`http://scell.analysis.unite.net`).
-- `UNITE_ANALYSIS_KMEIER-URL` - Path to the service for Kaplan-Meier survival curve estimation analysis (`http://kmeier.analysis.unite.net`).
+- `UNITE_ANALYSIS_KMEIER_URL` - Path to the service for Kaplan-Meier survival curve estimation analysis (`http://kmeier.analysis.unite.net`).
 
 > [!NOTE]
 > For local development purposes we recommend to use **default** values.

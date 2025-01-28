@@ -60,7 +60,7 @@ Options defining which steps of the analysis should be performed.
 {
     "datasets": [
         {
-            "key": "8b4e6a2c-2b4b-4e3e-9c6d-5a4f1d3b9e0f",
+            "id": "8b4e6a2c-2b4b-4e3e-9c6d-5a4f1d3b9e0f",
             "order": 1,
             "domain": "Donors",
             "criteria": {
@@ -82,12 +82,7 @@ Options defining which steps of the analysis should be performed.
 
 
 ## Results Metadata
-Results metadata is a file containing general statistics about the resulting dataset, such as:
-- Number of cells
-- Number of genes
-- Cells type list
-- Diagnoses list
-- etc.
+Results metadata is not available.
 
 
 ## Results Data

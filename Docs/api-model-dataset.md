@@ -3,7 +3,7 @@ Includes the information about the dataset.
 
 ```jsonc
 {
-    "key": "8b4e6a2c-2b4b-4e3e-9c6d-5a4f1d3b9e0f",
+    "id": "8b4e6a2c-2b4b-4e3e-9c6d-5a4f1d3b9e0f",
     "order": 1,
     "domain": "Donors",
     "criteria": {
@@ -13,8 +13,8 @@ Includes the information about the dataset.
 ```
 
 ## Fields
-**`key`*** - Dataset unique key.
-- Note: Key is used to identify the dataset in the analysis task.
+**`id`*** - Dataset unique identifier.
+- Note: Id is used to identify the dataset in the analysis task.
 - Type: _String_
 - Example: `"8b4e6a2c-2b4b-4e3e-9c6d-5a4f1d3b9e0f"`
 
