@@ -106,8 +106,8 @@ public class CxgViewerService
 
         if (mount == null)
             return mountPath;
-
-        return mount.Source["/host_mnt".Length..];
+        
+        return mount.Source.Replace("/host_mnt", "");
     }
 
     private async Task<int> GetNumber(string containerName, int[] containerPorts)
