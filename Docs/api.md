@@ -8,11 +8,13 @@ API is **proxied** to main API and can be accessed at [[host]/api/analysis](http
 
 ## Overview
 - get:[api](#get-api) - health check.
-- post:[api/task/{type}](#post-apitasktype) - create analysis task.
-- get:[api/task/{key}/status](#get-apitaskkeystatus) - get analysis task status.
-- get:[api/task/{key}/meta](#get-apitaskkeymeta) - get analysis task results metadata.
-- get:[api/task/{key}/data](#get-apitaskkeydata) - download analysis task results data.
-- delete:[api/task/{key}](#delete-apitaskkey) - delete analysis task data.
+- post:[api/analysis/{type}](#post-apianalysistype) - create analysis.
+- put:[api/analysis/{id}/status](#put-apianalysisidstatus) - get analysis status.
+- get:[api/analysis/{id}/meta](#get-apianalysisidmeta) - get analysis results metadata.
+- get:[api/analysis/{id}/data](#get-apianalysisiddata) - download analysis results data.
+- delete:[api/analysis/{id}](#delete-apianalysisid) - delete analysis data.
+- post:[api/analyses](#post-apianalyses) - get user analyses list.
+- delete:[api/analyses](#delete-apianalysesuseridid) - delete all user analyses.
 
 
 ## GET: [api](http://localhost:5004/api)
@@ -22,23 +24,25 @@ Health check.
 `"2022-03-17T09:45:10.9359202Z"` - Current UTC date and time in JSON format, if service is up and running
 
 
-## POST: [api/task/{type}](http://localhost:5004/api/task/{type})
-Create analysis task of given type.
+## POST: [api/analysis/{type}](http://localhost:5004/api/analysis/{type})
+Create analysis of given type.
 
 ### Parameters
-- `type` - task type.
+- `type` - analysis type.
 
 #### Task types:
-- `rna-de` - [Bulk RNA differential expression analysis](./api-model-rna_de.md).
-- `rnasc` - [Single cell RNA analysis](./api-model-rnasc.md).
+- `deseq2` - [Bulk RNA differential expression analysis](./api-analysis-deseq2.md).
+- `rnasc` - [Single cell RNA analysis](./api-analysis-rnasc.md).
+- `kmeier` - [Kaplan-Meier survival analysis](./api-analysis-kmeier.md).
 
 ### Body
-Depends on the task type:
-- [rna-de](./api-analysis-rna_de.md#model)
+Depends on the analysis type:
+- [deseq2](./api-analysis-deseq2.md#model)
 - [rnasc](./api-analysis-rnasc.md#model)
+- [kmeier](./api-analysis-kmeier.md#model)
 
 ### Resources
-- `"key"` - unique key of created analysis task.
+- `"id"` - unique id of created analysis.
 
 ### Responses
 - `200` - request was processed successfully
@@ -46,21 +50,21 @@ Depends on the task type:
 - `401` - missing JWT token
 
 
-## GET: [api/task/{key}/status](http://localhost:5004/api/task/{key}/status)
-Get analysis task status.
+## PUT: [api/analysis/{id}/status](http://localhost:5004/api/analysis/{id}/status)
+Get analysis status. Also synchronises status with the actual task status.
 
 ### Parameters
-- `key` - task key.
+- `id` - analysis id.
 
 ### Resources
-- `"status"` - task status type.
+- `"status"` - analysis status type.
 
 #### Task status types:
-- `Preparing` - task is being prepared.
-- `Prepared` - task is prepared.
-- `Processing` - task is being processed.
-- `Processed` - task is processed.
-- `Failed` - task failed at one of the steps.
+- `Preparing` - analysis is being prepared.
+- `Prepared` - analysis is prepared.
+- `Processing` - analysis is being processed.
+- `Processed` - analysis is processed.
+- `Failed` - analysis failed at one of the steps.
 
 ### Responses
 - `200` - request was processed successfully
@@ -69,16 +73,17 @@ Get analysis task status.
 - `404` - task with given key was not found
 
 
-## GET: [api/task/{key}/meta](http://localhost:5004/api/task/{key}/meta)
-Get analysis task results metadata.
+## GET: [api/analysis/{id}/meta](http://localhost:5004/api/analysis/{id}/meta)
+Get analysis results metadata.
 
 ### Parameters
-- `key` - task key.
+- `id` - analysis id.
 
 ### Resources
-Depends on the task type:
-- [rna-de](./api-analysis-rna_de.md#results-metadata)
+Depends on the analysis type:
+- [deseq2](./api-analysis-deseq2.md#results-metadata)
 - [rnasc](./api-analysis-rnasc.md#results-metadata)
+- [kmeier](./api-analysis-kmeier.md#results-metadata)
 
 ### Responses
 - `200` - request was processed successfully
@@ -87,16 +92,17 @@ Depends on the task type:
 - `404` - task with given key was not found
 
 
-## GET: [api/task/{key}/data](http://localhost:5004/api/task/{key}/data)
-Download analysis task results data
+## GET: [api/analysis/{id}/data](http://localhost:5004/api/analysis/{id}/data)
+Download analysis results data.
 
 ### Parameters
-- `key` - task key.
+- `id` - analysis id.
 
 ### Resources
-A file (or archive) to download. Depends on the task type:
-- [rna-de](./api-analysis-rna_de.md#results-data)
+A file (or archive) to download. Depends on the analysis type:
+- [rna-de](./api-analysis-deseq2.md#results-data)
 - [rnasc](./api-analysis-rnasc.md#results-data)
+- [kmeier](./api-analysis-kmeier.md#results-data)
 
 ### Responses
 - `200` - request was processed successfully
@@ -105,14 +111,46 @@ A file (or archive) to download. Depends on the task type:
 - `404` - task with given key was not found
 
 
-## DELETE: [api/task/{key}](http://localhost:5004/api/task/{key})
-Delete analysis task and all it's related data.
+## DELETE: [api/analysis/{id}](http://localhost:5004/api/analysis/{id})
+Delete analysis and all it's related data.
 
 ### Parameters
-- `key` - task key.
+- `id` - analysis id.
 
 ### Responses
 - `200` - request was processed successfully
 - `400` - request data didn't pass validation
 - `401` - missing JWT token
 - `404` - task with given key was not found
+
+
+## POST: [api/analyses](http://localhost:5004/api/analyses)
+Get user analyses list.
+
+### Body
+#### json - applications/json
+```jsonc
+{
+  "userId": "email" // user email
+}
+```
+
+### Resources
+- `"analyses"` - list of user analyses in JSON format.
+
+### Responses
+- `200` - request was processed successfully
+- `400` - request data didn't pass validation
+- `401` - missing JWT token
+
+
+## DELETE: [api/analyses?userId={id}](http://localhost:5004/api/analyses?userId={id})
+Delete all user analyses.
+
+### Parameters
+- `userId` - unique user id (currently email).
+
+### Responses
+- `200` - request was processed successfully
+- `400` - request data didn't pass validation
+- `401` - missing JWT token
