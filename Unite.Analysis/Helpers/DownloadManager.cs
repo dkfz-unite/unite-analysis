@@ -7,7 +7,7 @@ public static class DownloadManager
         // Replace the host if it is not null, e.g.:
         // "http://source.data.unite.net" -> "http://localhost:5400"
         var uri = CreateUri(url, host);
-        Console.WriteLine($"Downloading '{uri}'. Using token: `{token}`");
+        // Console.WriteLine($"Downloading '{uri}'.");
 
         using var client = CreateClient(token);
         using var responseTream = await client.GetStreamAsync(uri);
