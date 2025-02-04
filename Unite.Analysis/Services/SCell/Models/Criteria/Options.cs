@@ -24,6 +24,18 @@ public class Options
     public PreprocessingType PP { get; set; } = PreprocessingType.Default;
 
     /// <summary>
+    /// Minimum number of genes to be expressed in a cell.
+    /// </summary>
+    [JsonPropertyName("genes")]
+    public int Genes { get; set; } = 5;
+
+    /// <summary>
+    /// Minimum number of cells where gene is expressed.
+    /// </summary>
+    [JsonPropertyName("cells")]
+    public int Cells { get; set; } = 25;
+
+    /// <summary>
     /// Perform principal component analysis.
     /// </summary>
     [JsonPropertyName("pca")]
