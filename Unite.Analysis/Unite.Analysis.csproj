@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Unite.Data.Context" Version="9.2.0" />
-    <PackageReference Include="Unite.Indices.Search" Version="9.1.0" />
+    <PackageReference Include="Unite.Data.Context" Version="9.4.0" />
+    <PackageReference Include="Unite.Indices.Search" Version="10.0.0" />
     <PackageReference Include="Unite.Essentials.Tsv" Version="4.2.0" />
   </ItemGroup>
   <ItemGroup>
