@@ -4,16 +4,24 @@ public static class DownloadManager
 {
     public static async Task Download(string path, string url, string token, string host = null)
     {
-        // Replace the host if it is not null, e.g.:
-        // "http://source.data.unite.net" -> "http://localhost:5400"
-        var uri = CreateUri(url, host);
-        // Console.WriteLine($"Downloading '{uri}'.");
+        try
+        {
+            // Replace the host if it is not null, e.g.:
+            // "http://source.data.unite.net" -> "http://localhost:5400"
+            var uri = CreateUri(url, host);
+            // Console.WriteLine($"Downloading '{uri}'.");
 
-        using var client = CreateClient(token);
-        using var responseTream = await client.GetStreamAsync(uri);
-        using var fileStream = File.OpenWrite(path);
+            using var client = CreateClient(token);
+            using var responseTream = await client.GetStreamAsync(uri);
+            using var fileStream = File.OpenWrite(path);
 
-        await responseTream.CopyToAsync(fileStream);
+            await responseTream.CopyToAsync(fileStream);
+        }
+        catch
+        {
+            Console.WriteLine($"Error downloading '{url}'");
+            throw;
+        }
     }
 
 
