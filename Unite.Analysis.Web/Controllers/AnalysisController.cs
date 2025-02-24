@@ -75,7 +75,7 @@ public class AnalysisController : Controller
     [HttpGet("scell/models")]
     public async Task<IActionResult> GetSCellModels()
     {
-        using var handler = new HttpClientHandler { UseProxy = false };
+        using var handler = new HttpClientHandler { UseProxy = true };
         using var client = new HttpClient(handler);
 
         try
