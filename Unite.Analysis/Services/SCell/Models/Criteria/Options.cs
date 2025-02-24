@@ -6,16 +6,16 @@ namespace Unite.Analysis.Services.SCell.Models.Criteria;
 public class Options
 {
     /// <summary>
-    /// Perform cell type annotation
+    /// Custom annotations.
     /// </summary>
-    [JsonPropertyName("annotate")]
-    public bool Annotate { get; set; } = true;
+    [JsonPropertyName("meta")]
+    public bool Meta { get; set; } = false;
 
     /// <summary>
-    /// Annotation model (default: Immune_All_Low.pkl).
+    /// Cell types annotation model.
     /// </summary>
     [JsonPropertyName("model")]
-    public string Model { get; set; } = "Immune_All_Low.pkl";
+    public string Model { get; set; } = null;
 
     /// <summary>
     /// Calculate quality control metrics.

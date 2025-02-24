@@ -4,6 +4,9 @@ using Unite.Analysis.Web.Services;
 using Unite.Analysis.Models;
 using Unite.Data.Entities.Tasks.Enums;
 using Unite.Essentials.Extensions;
+using Elasticsearch.Net;
+using Nest;
+using System.Net;
 
 namespace Unite.Analysis.Web.Controllers;
 
@@ -67,6 +70,24 @@ public class AnalysisController : Controller
         _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SCELL);
 
         return Ok(model.Data.Id);
+    }
+
+    [HttpGet("scell/models")]
+    public async Task<IActionResult> GetSCellModels()
+    {
+        using var handler = new HttpClientHandler { UseProxy = false };
+        using var client = new HttpClient(handler);
+
+        try
+        {
+            var response = await client.GetAsync("https://celltypist.cog.sanger.ac.uk/models/models.json");
+            var content = await response.Content.ReadAsStringAsync();
+            return Ok(content);
+        }
+        catch
+        {
+            return BadRequest("Failed to fetch SCell models");
+        }
     }
 
     [HttpPut("{id}/status")]
