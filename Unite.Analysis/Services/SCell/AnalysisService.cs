@@ -34,6 +34,13 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
 
+        if (!string.IsNullOrWhiteSpace(model.Annotations))
+        {
+            model.Options.Meta = true;
+            
+            WriteAnnotations(model.Annotations, directoryPath);
+        }
+
         WriteOptions(model.Options, directoryPath);
 
         stopwatch.Stop();
@@ -97,5 +104,10 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         var json = JsonSerializer.Serialize(options, serializerOptions);
 
         File.WriteAllText(Path.Combine(path, "options.json"), json);
+    }
+
+    private static void WriteAnnotations(string annotations, string path)
+    {
+        File.WriteAllText(Path.Combine(path, "annotations.tsv"), annotations);
     }
 }
