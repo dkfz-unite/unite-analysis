@@ -1,6 +1,7 @@
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Services.SCell.Extensions;
 using Unite.Analysis.Services.SCell.Models.Context;
+using Unite.Data.Constants;
 using Unite.Data.Entities.Genome.Analysis;
 
 namespace Unite.Analysis.Services.SCell;
@@ -18,34 +19,42 @@ public class DataLoader
 
     private static async Task DownloadResource(Sample sample, string key, string workingDirectoryPath, string token, string host = null)
     {
-        var resource = sample.Resources.FirstOrDefault(resource => resource.Type == "rnasc-exp");
+        var comparison = StringComparison.InvariantCultureIgnoreCase;
 
-        if (resource != null)
-        {
-            var sampleDirectoryName = key;
-            var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, sampleDirectoryName);
+        var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Genome.Rnasc.Exp).ToArray();
 
-            var matrixFilePath = Path.Combine(sampleDirectoryPath, GetFileName("matrix", "mtx", resource.Archive));
-            var featuresFilePath = Path.Combine(sampleDirectoryPath, GetFileName("features", "tsv", resource.Archive));
-            var barcodesFilePath = Path.Combine(sampleDirectoryPath, GetFileName("barcodes", "tsv", resource.Archive));
+        var matrixResource = resources.FirstOrDefault(resource =>
+            resource.Name.Equals("matrix", comparison) &&
+            resource.Format == FileTypes.Sequence.Mtx && 
+            resource.Archive == ArchiveTypes.Gz);
 
-            var matrixDownloadTask = DownloadManager.Download(matrixFilePath, $"{resource.Url}", token, host);
-            var featuresDownloadTask = DownloadManager.Download(featuresFilePath, $"{resource.Url}/features", token, host);
-            var barcodesDownloadTask = DownloadManager.Download(barcodesFilePath, $"{resource.Url}/barcodes", token, host);
-            await Task.WhenAll(matrixDownloadTask, featuresDownloadTask, barcodesDownloadTask);
-        }
-        else
-        {
-            throw new Exception("Resource of type 'rnasc-exp' was not found");
-        }
-    }
+        if (matrixResource == null)
+            throw new Exception($"matrix.tsv.gz file is missing for `{key}`");
 
-    private static string GetFileName(string name, string format, string archive)
-    {
-        var namePart = name;
-        var formatPart = format != null ? $".{format}" : "";
-        var archivePart = archive != null ? $".{archive}" : "";
+        var featuresResource = resources.FirstOrDefault(resource =>
+            resource.Name.Equals("features", comparison) &&
+            resource.Format == FileTypes.General.Tsv && 
+            resource.Archive == ArchiveTypes.Gz);
 
-        return $"{namePart}{formatPart}{archivePart}";
+        if (featuresResource == null)
+            throw new Exception($"features.tsv.gz file is missing for `{key}`");
+
+        var barcodesResource = resources.FirstOrDefault(resource =>
+            resource.Name.Equals("barcodes", comparison) &&
+            resource.Format == FileTypes.General.Tsv && 
+            resource.Archive == ArchiveTypes.Gz);
+        
+        if (barcodesResource == null)
+            throw new Exception($"barcodes.tsv.gz file is missing for `{key}`");
+
+        var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
+        var matrixFilePath = Path.Combine(sampleDirectoryPath, $"{matrixResource.Name}.{matrixResource.Format}.{matrixResource.Archive}");
+        var featuresFilePath = Path.Combine(sampleDirectoryPath, $"{featuresResource.Name}.{featuresResource.Format}.{featuresResource.Archive}");
+        var barcodesFilePath = Path.Combine(sampleDirectoryPath, $"{barcodesResource.Name}.{barcodesResource.Format}.{barcodesResource.Archive}");
+
+        var matrixDownloadTask = DownloadManager.Download(matrixFilePath, matrixResource.Url, token, host);
+        var featuresDownloadTask = DownloadManager.Download(featuresFilePath, featuresResource.Url, token, host);
+        var barcodesDownloadTask = DownloadManager.Download(barcodesFilePath, barcodesResource.Url, token, host);
+        await Task.WhenAll(matrixDownloadTask, featuresDownloadTask, barcodesDownloadTask);
     }
 }
