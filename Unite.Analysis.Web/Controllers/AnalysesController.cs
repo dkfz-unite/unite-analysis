@@ -13,6 +13,7 @@ public class AnalysesController : Controller
     private readonly Analysis.Services.DESeq2.AnalysisService _deseq2DeAnalysisService;
     private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
+    private readonly Analysis.Services.Meth.AnalysisService _methAnalysisService;
 
 
     public AnalysesController(
@@ -20,13 +21,15 @@ public class AnalysesController : Controller
         AnalysisRecordsService analysisRecordsService, 
         Analysis.Services.DESeq2.AnalysisService deseq2DeAnalysisService, 
         Analysis.Services.SCell.AnalysisService scellAnalysisService, 
-        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService)
+        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
+        Analysis.Services.Meth.AnalysisService methAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
         _analysisRecordsService = analysisRecordsService;
         _deseq2DeAnalysisService = deseq2DeAnalysisService;
         _scellAnalysisService = scellAnalysisService;
         _kmeierAnalysisService = kmeierAnalysisService;
+        _methAnalysisService = methAnalysisService;
     }
 
 
@@ -62,6 +65,8 @@ public class AnalysesController : Controller
                 await _scellAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.KMEIER)
                 await _kmeierAnalysisService.Delete(entry.Id);
+            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.METH)
+                await _methAnalysisService.Delete(entry.Id);
         }
 
         await _analysisRecordsService.Delete(model);

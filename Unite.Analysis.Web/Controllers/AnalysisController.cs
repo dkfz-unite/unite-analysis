@@ -19,6 +19,7 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.DESeq2.AnalysisService _deseq2DeAnalysisService;
     private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
+    private readonly Analysis.Services.Meth.AnalysisService _methAnalysisService;
 
 
     public AnalysisController(
@@ -26,13 +27,15 @@ public class AnalysisController : Controller
         AnalysisRecordService analysisRecordService,
         Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
         Analysis.Services.SCell.AnalysisService scellAnalysisService,
-        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService)
+        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
+        Analysis.Services.Meth.AnalysisService methAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
         _analysisRecordService = analysisRecordService;
         _kmeierAnalysisService = kmeierAnalysisService;
         _deseq2DeAnalysisService = deseq2AnalysisService;
         _scellAnalysisService = scellAnalysisService;
+        _methAnalysisService = methAnalysisService;
     }
     
     
@@ -68,6 +71,18 @@ public class AnalysisController : Controller
         model.Data.Id = await _analysisRecordService.Add(entry);
 
         _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SCELL);
+
+        return Ok(model.Data.Id);
+    }
+
+    [HttpPost("meth")]
+    public async Task<IActionResult> CreateMethTask([FromBody]TypedAnalysis<Analysis.Services.Meth.Models.Criteria.Analysis> model)
+    {
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.METH);
 
         return Ok(model.Data.Id);
     }
@@ -117,6 +132,8 @@ public class AnalysisController : Controller
             return Ok(await _scellAnalysisService.Load(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
             return Ok(await _kmeierAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.METH)
+            return Ok(await _methAnalysisService.Load(id));
         
         return BadRequest("Task analysis type is not supported");
     }
@@ -135,6 +152,8 @@ public class AnalysisController : Controller
             return Ok(await _scellAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
             return Ok(await _kmeierAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.METH)
+            return Ok(await _methAnalysisService.Download(id));
 
         return BadRequest("Task analysis type is not supported");
     }
@@ -160,6 +179,8 @@ public class AnalysisController : Controller
             await _scellAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
             await _kmeierAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.METH)
+            await _methAnalysisService.Delete(id);
 
         await _analysisRecordService.Delete(id);
 

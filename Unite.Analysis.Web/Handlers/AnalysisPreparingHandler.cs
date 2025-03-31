@@ -14,6 +14,7 @@ public class AnalysisPreparingHandler
     private readonly Analysis.Services.DESeq2.AnalysisService _deseq2AnalysisService;
     private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
+    private readonly Analysis.Services.Meth.AnalysisService _methAnalysisService;
     private readonly ILogger _logger;
 
 
@@ -23,6 +24,7 @@ public class AnalysisPreparingHandler
         Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
         Analysis.Services.SCell.AnalysisService scellAnalysisService,
         Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
+        Analysis.Services.Meth.AnalysisService methAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
         _apiOptions = apiOptions;
@@ -30,6 +32,7 @@ public class AnalysisPreparingHandler
         _deseq2AnalysisService = deseq2AnalysisService;
         _scellAnalysisService = scellAnalysisService;
         _kmeierAnalysisService = kmeierAnalysisService;
+        _methAnalysisService = methAnalysisService;
         _logger = logger;
     }
 
@@ -51,6 +54,7 @@ public class AnalysisPreparingHandler
             AnalysisTaskType.DESEQ2 => await _deseq2AnalysisService.Prepare(Parse<Analysis.Services.DESeq2.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.SCELL => await _scellAnalysisService.Prepare(Parse<Analysis.Services.SCell.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.KMEIER => await _kmeierAnalysisService.Prepare(Parse<Analysis.Services.KMeier.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.METH => await _methAnalysisService.Prepare(Parse<Analysis.Services.Meth.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 
