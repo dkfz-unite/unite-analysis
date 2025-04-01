@@ -31,7 +31,8 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         foreach (var dataset in model.Datasets)
         {
             var context = await _contextLoader.LoadDatasetData(dataset); 
-            await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), dataset.Id, _options.DataPath,_options.DataHost);
+            await DataLoader.PrepareMetadata(context, directoryPath, dataset.Id);
+            await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
         }
 
         WriteOptions(model.Options, directoryPath);
@@ -84,7 +85,6 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         return Task.CompletedTask;
     }
-
 
     private static void WriteOptions(Options options, string path)
     {

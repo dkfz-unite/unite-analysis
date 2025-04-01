@@ -168,10 +168,6 @@ public class ContextLoader
             .AsNoTracking()
             .IncludeLine()
             .IncludeMaterial()
-            .IncludeOrganoid()
-            .IncludeXenograft()
-            .IncludeMolecularData()
-            .IncludeInterventions()
             .Where(specimen => ids.Contains(specimen.Id))
             .ToDictionaryAsync(specimen => specimen.Id);
     }
