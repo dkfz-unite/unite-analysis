@@ -45,7 +45,7 @@ public class ContextLoader
         {
             DatasetDomain.Donors => await LoadDonorsDatasetData(model),
             DatasetDomain.Mris => await LoadImagesDatasetData(model),
-            DatasetDomain.Materials or DatasetDomain.Lines or DatasetDomain.Organoids or DatasetDomain.Xenografts => await LoadSpecimensDatasetData(model),
+            DatasetDomain.Materials => await LoadSpecimensDatasetData(model),
             _ => throw new NotImplementedException($"Domain {model.Domain} is not supported.")
         };
     }
@@ -166,7 +166,6 @@ public class ContextLoader
 
         return await dbContext.Set<Data.Entities.Specimens.Specimen>()
             .AsNoTracking()
-            .IncludeLine()
             .IncludeMaterial()
             .Where(specimen => ids.Contains(specimen.Id))
             .ToDictionaryAsync(specimen => specimen.Id);

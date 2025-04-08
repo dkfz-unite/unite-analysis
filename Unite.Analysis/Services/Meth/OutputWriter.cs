@@ -5,7 +5,7 @@ namespace Unite.Analysis.Services.Meth;
 public class OutputWriter
 {
     public const string ResultDataFileName = "results.csv";
-    public const string ResultMetaFileName = "results_reduced.csv";
+    public const string ReducedResultDataFileName = "results_reduced.csv";
 
     public const string ArchiveFileName = "output.zip";
 
@@ -29,6 +29,7 @@ public class OutputWriter
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
         archive.CreateEntryFromFile(Path.Combine(path, ResultDataFileName), ResultDataFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, ReducedResultDataFileName), ReducedResultDataFileName);
 
         await Task.CompletedTask;
     }

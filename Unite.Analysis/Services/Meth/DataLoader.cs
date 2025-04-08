@@ -42,7 +42,7 @@ public class DataLoader
 
     public static Metadata[] Load(AnalysisContext context, string workingDirectoryPath, string datasetId)
     {
-        List<Metadata> metaDataList = new List<Metadata>();
+        List<Metadata> metadataList = new List<Metadata>();
         foreach (var sample in context.Samples)
         {
             string key = sample.Value.GetKey(context);
@@ -53,14 +53,14 @@ public class DataLoader
 
             var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
 
-            Metadata metadata = new Metadata();
+            var metadata = new Metadata();
             metadata.SampleId = key;
             metadata.Conditions = datasetId;
             metadata.Path = Path.Combine(sampleDirectoryPath, idatResourceFileName);
 
-            metaDataList.Add(metadata);
+            metadataList.Add(metadata);
         }
-        return metaDataList.ToArrayOrNull();
+        return metadataList.ToArrayOrNull();
     }
 
     public static async Task PrepareMetadata(AnalysisContext context, string workingDirectoryPath, string datasetId)
