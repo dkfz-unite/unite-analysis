@@ -7,4 +7,5 @@ public interface IAnalysisOptions
     string DESeq2Url { get; }
     string SCellUrl { get; }
     string KMeierUrl { get; }
+    string MethUrl { get; }
 }

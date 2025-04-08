@@ -13,6 +13,7 @@ public class AnalysisProcessingHandler
     private readonly Analysis.Services.DESeq2.AnalysisService _deseq2AnalysisService;
     private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
+    private readonly Analysis.Services.Meth.AnalysisService _methAnalysisService;
     private readonly ILogger _logger;
 
 
@@ -22,6 +23,7 @@ public class AnalysisProcessingHandler
         Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
         Analysis.Services.SCell.AnalysisService scellAnalysisService,
         Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
+        Analysis.Services.Meth.AnalysisService methAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
     {
         _apiOptions = apiOptions;
@@ -29,6 +31,7 @@ public class AnalysisProcessingHandler
         _deseq2AnalysisService = deseq2AnalysisService;
         _scellAnalysisService = scellAnalysisService;
         _kmeierAnalysisService = kmeierAnalysisService;
+        _methAnalysisService = methAnalysisService;
         _logger = logger;
     }
 
@@ -51,6 +54,7 @@ public class AnalysisProcessingHandler
             AnalysisTaskType.DESEQ2 => await _deseq2AnalysisService.Process(task.Target, token),
             AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
             AnalysisTaskType.KMEIER => await _kmeierAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.METH => await _methAnalysisService.Process(task.Target, token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 

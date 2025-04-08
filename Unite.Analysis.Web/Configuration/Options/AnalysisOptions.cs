@@ -56,6 +56,14 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
+    public string MethUrl
+    {
+        get
+        {
+            return GetOption("UNITE_ANALYSIS_METH_HOST");
+        }
+    }
+
     public int? Limit { get; }
 
 

@@ -33,6 +33,8 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.SCell.AnalysisService>();
         services.AddTransient<Analysis.Services.KMeier.ContextLoader>();
         services.AddTransient<Analysis.Services.KMeier.AnalysisService>();
+        services.AddTransient<Analysis.Services.Meth.ContextLoader>();
+        services.AddTransient<Analysis.Services.Meth.AnalysisService>();
 
         services.AddTransient<AnalysisTaskService>();
         services.AddTransient<AnalysisRecordService>();
