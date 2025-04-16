@@ -11,10 +11,10 @@ public class AnalysisPreparingHandler
 {
     private readonly ApiOptions _apiOptions;
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly Analysis.Services.DonSce.AnalysisService _donSceAnalysisService;
-    private readonly Analysis.Services.MethDm.AnalysisService _methDmAnalysisService;
-    private readonly Analysis.Services.RnaDe.AnalysisService _rnaDeAnalysisService;
-    private readonly Analysis.Services.RnascDc.AnalysisService _rnascDcAnalysisService;
+    private readonly Analysis.Services.Surv.AnalysisService _survSceAnalysisService;
+    private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Scell.AnalysisService _scellDcAnalysisService;
     
     private readonly ILogger _logger;
 
@@ -22,18 +22,18 @@ public class AnalysisPreparingHandler
     public AnalysisPreparingHandler(
         ApiOptions apiOptions,
         AnalysisTaskService analysisTaskService,
-        Analysis.Services.DonSce.AnalysisService donSceAnalysisService,
-        Analysis.Services.MethDm.AnalysisService methDmAnalysisService,
-        Analysis.Services.RnaDe.AnalysisService rnaDeAnalysisService,
-        Analysis.Services.RnascDc.AnalysisService rnascDcAnalysisService,
+        Analysis.Services.Surv.AnalysisService survAnalysisService,
+        Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Scell.AnalysisService scellDcAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
         _apiOptions = apiOptions;
         _analysisTaskService = analysisTaskService;
-        _donSceAnalysisService = donSceAnalysisService;
-        _methDmAnalysisService = methDmAnalysisService;
-        _rnaDeAnalysisService = rnaDeAnalysisService;
-        _rnascDcAnalysisService = rnascDcAnalysisService;
+        _survSceAnalysisService = survAnalysisService;
+        _dmAnalysisService = dmAnalysisService;
+        _deAnalysisService = deAnalysisService;
+        _scellDcAnalysisService = scellDcAnalysisService;
         
         _logger = logger;
     }
@@ -53,10 +53,10 @@ public class AnalysisPreparingHandler
 
         var result = task.AnalysisTypeId switch
         {
-            AnalysisTaskType.DON_SCE => await _donSceAnalysisService.Prepare(Parse<Analysis.Services.DonSce.Models.Criteria.Analysis>(task.Data), token),
-            AnalysisTaskType.METH_DM => await _methDmAnalysisService.Prepare(Parse<Analysis.Services.MethDm.Models.Criteria.Analysis>(task.Data), token),
-            AnalysisTaskType.RNA_DE => await _rnaDeAnalysisService.Prepare(Parse<Analysis.Services.RnaDe.Models.Criteria.Analysis>(task.Data), token),
-            AnalysisTaskType.RNASC_DC => await _rnascDcAnalysisService.Prepare(Parse<Analysis.Services.RnascDc.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.SURV => await _survSceAnalysisService.Prepare(Parse<Analysis.Services.Surv.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.DM => await _dmAnalysisService.Prepare(Parse<Analysis.Services.Dm.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.DE => await _deAnalysisService.Prepare(Parse<Analysis.Services.De.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.SCELL => await _scellDcAnalysisService.Prepare(Parse<Analysis.Services.Scell.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 

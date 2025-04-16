@@ -10,28 +10,28 @@ public class AnalysisProcessingHandler
 {    
     private readonly ApiOptions _apiOptions;
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly Analysis.Services.DonSce.AnalysisService _donSceAnalysisService;
-    private readonly Analysis.Services.MethDm.AnalysisService _methDmAnalysisService;
-    private readonly Analysis.Services.RnaDe.AnalysisService _rnaDeAnalysisService;
-    private readonly Analysis.Services.RnascDc.AnalysisService _rnascDcAnalysisService;
+    private readonly Analysis.Services.Surv.AnalysisService _survSceAnalysisService;
+    private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     private readonly ILogger _logger;
 
 
     public AnalysisProcessingHandler(
         ApiOptions apiOptions,
         AnalysisTaskService analysisTaskService,
-        Analysis.Services.DonSce.AnalysisService donSceAnalysisService,
-        Analysis.Services.MethDm.AnalysisService methDmAnalysisService,
-        Analysis.Services.RnaDe.AnalysisService rnaDeAnalysisService,
-        Analysis.Services.RnascDc.AnalysisService rnascDcAnalysisService,
+        Analysis.Services.Surv.AnalysisService survAnalysisService,
+        Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Scell.AnalysisService scellAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
     {
         _apiOptions = apiOptions;
-        _donSceAnalysisService = donSceAnalysisService;
-        _methDmAnalysisService = methDmAnalysisService;
+        _survSceAnalysisService = survAnalysisService;
+        _dmAnalysisService = dmAnalysisService;
         _analysisTaskService = analysisTaskService;
-        _rnaDeAnalysisService = rnaDeAnalysisService;
-        _rnascDcAnalysisService = rnascDcAnalysisService;
+        _deAnalysisService = deAnalysisService;
+        _scellAnalysisService = scellAnalysisService;
         _logger = logger;
     }
 
@@ -51,10 +51,10 @@ public class AnalysisProcessingHandler
 
         var result = task.AnalysisTypeId switch
         {
-            AnalysisTaskType.DON_SCE => await _donSceAnalysisService.Process(task.Target, token),
-            AnalysisTaskType.METH_DM => await _methDmAnalysisService.Process(task.Target, token),
-            AnalysisTaskType.RNA_DE => await _rnaDeAnalysisService.Process(task.Target, token),
-            AnalysisTaskType.RNASC_DC => await _rnascDcAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.SURV => await _survSceAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.DM => await _dmAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.DE => await _deAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 

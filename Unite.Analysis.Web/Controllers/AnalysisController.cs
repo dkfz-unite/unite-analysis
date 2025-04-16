@@ -13,78 +13,78 @@ public class AnalysisController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
     private readonly AnalysisRecordService _analysisRecordService;
-    private readonly Analysis.Services.DonSce.AnalysisService _donSceAnalysisService;
-    private readonly Analysis.Services.MethDm.AnalysisService _methDmAnalysisService;
-    private readonly Analysis.Services.RnaDe.AnalysisService _rnaDeAnalysisService;
-    private readonly Analysis.Services.RnascDc.AnalysisService _rnascDcAnalysisService;
-
+    private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
+    private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
+    
 
     public AnalysisController(
         AnalysisTaskService analysisTaskService,
         AnalysisRecordService analysisRecordService,
-        Analysis.Services.DonSce.AnalysisService donSceAnalysisService,
-        Analysis.Services.MethDm.AnalysisService methDmAnalysisService,
-        Analysis.Services.RnaDe.AnalysisService rnaDeAnalysisService,
-        Analysis.Services.RnascDc.AnalysisService rnascDcAnalysisService)
+        Analysis.Services.Surv.AnalysisService survSceAnalysisService,
+        Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
         _analysisRecordService = analysisRecordService;
-        _donSceAnalysisService = donSceAnalysisService;
-        _rnaDeAnalysisService = rnaDeAnalysisService;
-        _rnascDcAnalysisService = rnascDcAnalysisService;
-        _methDmAnalysisService = methDmAnalysisService;
+        _survAnalysisService = survSceAnalysisService;
+        _dmAnalysisService = dmAnalysisService;
+        _deAnalysisService = deAnalysisService;
+        _scellAnalysisService = scellAnalysisService;
     }
     
     
-    [HttpPost("don-sce")]
-    public async Task<IActionResult> CreateDonSceTask([FromBody]TypedAnalysis<Analysis.Services.DonSce.Models.Criteria.Analysis> model)
+    [HttpPost("surv")]
+    public async Task<IActionResult> CreateDonSceTask([FromBody]TypedAnalysis<Analysis.Services.Surv.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
         model.Data.Id = await _analysisRecordService.Add(entry);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DON_SCE);
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SURV);
         
         return Ok(model.Data.Id);
     }
 
-    [HttpPost("meth-dm")]
-    public async Task<IActionResult> CreateMethDmTask([FromBody]TypedAnalysis<Analysis.Services.MethDm.Models.Criteria.Analysis> model)
+    [HttpPost("dm")]
+    public async Task<IActionResult> CreateMethDmTask([FromBody]TypedAnalysis<Analysis.Services.Dm.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
         model.Data.Id = await _analysisRecordService.Add(entry);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.METH_DM);
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DM);
 
         return Ok(model.Data.Id);
     }
 
-    [HttpPost("rna-de")]
-    public async Task<IActionResult> CreateRnaDeTask([FromBody]TypedAnalysis<Analysis.Services.RnaDe.Models.Criteria.Analysis> model)
+    [HttpPost("de")]
+    public async Task<IActionResult> CreateRnaDeTask([FromBody]TypedAnalysis<Analysis.Services.De.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
         model.Data.Id = await _analysisRecordService.Add(entry);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.RNA_DE);
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DE);
         
         return Ok(model.Data.Id);
     }
 
-    [HttpPost("rnasc-dc")]
-    public async Task<IActionResult> CreateRnascDcTask([FromBody]TypedAnalysis<Analysis.Services.RnascDc.Models.Criteria.Analysis> model)
+    [HttpPost("scell")]
+    public async Task<IActionResult> CreateRnascDcTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
         model.Data.Id = await _analysisRecordService.Add(entry);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.RNASC_DC);
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SCELL);
 
         return Ok(model.Data.Id);
     }
 
-    [HttpGet("rnasc-dc/models")]
+    [HttpGet("scell/models")]
     public async Task<IActionResult> GetRnascDcModels()
     {
         using var handler = new HttpClientHandler { UseProxy = true };
@@ -123,14 +123,14 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
 
-        if (task.AnalysisTypeId == AnalysisTaskType.DON_SCE)
-            return Ok(await _donSceAnalysisService.Load(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.METH_DM)
-            return Ok(await _methDmAnalysisService.Load(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            return Ok(await _rnaDeAnalysisService.Load(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNASC_DC)
-            return Ok(await _rnascDcAnalysisService.Load(id));
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            return Ok(await _survAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            return Ok(await _dmAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
+            return Ok(await _deAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            return Ok(await _scellAnalysisService.Load(id));
         
         return BadRequest("Task analysis type is not supported");
     }
@@ -143,14 +143,14 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
 
-        if (task.AnalysisTypeId == AnalysisTaskType.DON_SCE)
-            return Ok(await _donSceAnalysisService.Download(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.METH_DM)
-            return Ok(await _methDmAnalysisService.Download(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            return Ok(await _rnaDeAnalysisService.Download(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNASC_DC)
-            return Ok(await _rnascDcAnalysisService.Download(id));
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            return Ok(await _survAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            return Ok(await _dmAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
+            return Ok(await _deAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            return Ok(await _scellAnalysisService.Download(id));
 
         return BadRequest("Task analysis type is not supported");
     }
@@ -170,15 +170,15 @@ public class AnalysisController : Controller
 
         _analysisTaskService.Delete(task);
 
-        if (task.AnalysisTypeId == AnalysisTaskType.DON_SCE)
-            await _donSceAnalysisService.Delete(id);
-        else if (task.AnalysisTypeId == AnalysisTaskType.METH_DM)
-            await _methDmAnalysisService.Delete(id);
-        if (task.AnalysisTypeId == AnalysisTaskType.RNA_DE)
-            await _rnaDeAnalysisService.Delete(id);
-        else if (task.AnalysisTypeId == AnalysisTaskType.RNASC_DC)
-            await _rnascDcAnalysisService.Delete(id);
-
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            await _survAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            await _dmAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
+            await _deAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            await _scellAnalysisService.Delete(id); 
+        
         await _analysisRecordService.Delete(id);
 
         return Ok();

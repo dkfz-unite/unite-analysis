@@ -10,26 +10,26 @@ public class AnalysesController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
     private readonly AnalysisRecordsService _analysisRecordsService;
-    private readonly Analysis.Services.DonSce.AnalysisService _donSceAnalysisService;
-    private readonly Analysis.Services.MethDm.AnalysisService _methDmAnalysisService;
-    private readonly Analysis.Services.RnaDe.AnalysisService _rnaDeAnalysisService;
-    private readonly Analysis.Services.RnascDc.AnalysisService _rnascDcAnalysisService;
+    private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
+    private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
 
 
     public AnalysesController(
         AnalysisTaskService analysisTaskService, 
         AnalysisRecordsService analysisRecordsService,
-        Analysis.Services.DonSce.AnalysisService donSceAnalysisService,
-        Analysis.Services.MethDm.AnalysisService methDmAnalysisService,
-        Analysis.Services.RnaDe.AnalysisService rnaDeAnalysisService, 
-        Analysis.Services.RnascDc.AnalysisService rnascDcAnalysisService)
+        Analysis.Services.Surv.AnalysisService survAnalysisService,
+        Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.De.AnalysisService deAnalysisService, 
+        Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
         _analysisRecordsService = analysisRecordsService;
-        _donSceAnalysisService = donSceAnalysisService;
-        _methDmAnalysisService = methDmAnalysisService;
-        _rnaDeAnalysisService = rnaDeAnalysisService;
-        _rnascDcAnalysisService = rnascDcAnalysisService;
+        _survAnalysisService = survAnalysisService;
+        _dmAnalysisService = dmAnalysisService;
+        _deAnalysisService = deAnalysisService;
+        _scellAnalysisService = scellAnalysisService;
     }
 
 
@@ -59,14 +59,14 @@ public class AnalysesController : Controller
 
             _analysisTaskService.Delete(task);
 
-            if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.DON_SCE)
-                await _donSceAnalysisService.Delete(entry.Id);
-            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.METH_DM)
-                await _methDmAnalysisService.Delete(entry.Id);
-            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.RNA_DE)
-                await _rnaDeAnalysisService.Delete(entry.Id);
-            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.RNASC_DC)
-                await _rnascDcAnalysisService.Delete(entry.Id);
+            if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.SURV)
+                await _survAnalysisService.Delete(entry.Id);
+            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.DM)
+                await _dmAnalysisService.Delete(entry.Id);
+            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.DE)
+                await _deAnalysisService.Delete(entry.Id);
+            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.SCELL)
+                await _scellAnalysisService.Delete(entry.Id);
         }
 
         await _analysisRecordsService.Delete(model);
