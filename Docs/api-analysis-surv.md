@@ -1,6 +1,6 @@
-# Kaplan Meier Survival Curve Estimation Analysis
+# Survival Curve Estimation Analysis (Kaplan-Meier)
 This analysis uses available data to perform Kaplan-Meier survival curve estimation analysis.  
-Analysis data is processed by the [Kaplan-Meier analysis service](https://github.com/dkfz-unite/unite-analysis-kmeier).
+Analysis data is processed by the [SURV analysis service](https://github.com/dkfz-unite/unite-analysis-surv).
 
 
 ## Model

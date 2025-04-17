@@ -52,7 +52,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.RnascDcUrl}/api/run?key={key}";
+        var url = $"{_options.ScellUrl}/api/run?key={key}";
 
         var analysisResult = await ProcessRemotely(url);
 

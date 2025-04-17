@@ -1,6 +1,6 @@
 # Single Cell RNA Dataset Creation Analysis
 This analysis uses available data to create a single cell RNA dataset for one or many combined samples.  
-Analysis data is processed by the [single cell analysis service](https://github.com/dkfz-unite/unite-analysis-sc).
+Analysis data is processed by the [SCELL analysis service](https://github.com/dkfz-unite/unite-analysis-sc).
 
 
 ## Model

@@ -1,6 +1,6 @@
-# Bulk RNA Differential Expression Analysis
-This analysis uses available data to perform differential expression analysis on bulk RNA data.  
-Analysis data is processed by the [DESeq2 analysis service](https://github.com/dkfz-unite/unite-analysis-deseq2).
+# Bulk RNA Differential Expression Analysis (DESeq2)
+This analysis uses available data to perform DESEq2 differential expression analysis on bulk RNA data.  
+Analysis data is processed by the [DE analysis service](https://github.com/dkfz-unite/unite-analysis-de).
 
 
 ## Model

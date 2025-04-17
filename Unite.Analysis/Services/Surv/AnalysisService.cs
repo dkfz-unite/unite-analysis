@@ -38,7 +38,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.DonSceUrl}/api/run?key={key}";
+        var url = $"{_options.SurvUrl}/api/run?key={key}";
 
         var analysisResult = await ProcessRemotely(url);
 

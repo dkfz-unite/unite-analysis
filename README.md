@@ -13,12 +13,12 @@ All analyses are 2-step process:
 Both steps are asynchronous and may take significant time to complete. Therefore, each step is running in **10** threads in parallel.
 
 General alogrithm looks as foolowing:
-1. User creates analysis task (e.g. DESeq2 analysis).
+1. User creates analysis task (e.g. DE analysis).
 2. Analysis **preparing** backgroud service prepare the data and puts it to the **shared** directory (This step is optional).
     - **10** different analyses can be prepared at the same time.
     - If there are more than **10** analysis preparation tasks, the rest will be queued.
 3. Analysis **processing** background service executes the analysis with prepared data from **shared** directory.
-    - Analysis can be performed either by the service itself or remotely (e.g. DESeq2 analysis is performed remotely).
+    - Analysis can be performed either by the service itself or remotely (e.g. DE analysis is performed remotely).
     - **10** different analyses can be executed at the same time.
     - If there are more than **10** analysis execution tasks, the rest will be queued.
 4. User can get analysis results from the **shared** directory as soon as the analysis is completed.
@@ -26,7 +26,7 @@ General alogrithm looks as foolowing:
 There are different ways of scalability here:
 - Increase number of threads for analysis preparation and execution (will require more resources from the host machine).
 - Scale analysis service to multiple instances (Requires additional configuration, but resources are used more efficiently).
-- Scale remote analysis execution services (e.g. DESeq2 analysis can be performed by multiple instances of DESeq2 analysis service).
+- Scale remote analysis execution services (e.g. DE analysis can be performed by multiple instances of DE analysis service).
 
 ## Dependencies
 - [SQL](https://github.com/dkfz-unite/unite-environment/tree/main/programs/postgresql) - SQL server with domain data and user identity data.
@@ -51,9 +51,9 @@ To configure the application, change environment variables in either docker or [
 - `UNITE_SQL_USER` - SQL server user.
 - `UNITE_SQL_PASSWORD` - SQL server password.
 - `UNITE_ANALYSIS_DATA_PATH` - Path to analysis data directory (`/mnt/data`).
-- `UNITE_ANALYSIS_DESEQ2_URL` - Path to the service for DESeq2 analysis (`http://deseq2.analysis.unite.net`).
-- `UNITE_ANALYSIS_SCELL_URL` - Path to the service for scRNA dataset creation analysis (`http://scell.analysis.unite.net`).
-- `UNITE_ANALYSIS_KMEIER_URL` - Path to the service for Kaplan-Meier survival curve estimation analysis (`http://kmeier.analysis.unite.net`).
+- `UNITE_ANALYSIS_DE_URL` - Path to RNA differential expression analysis service (`http://de.analysis.unite.net`).
+- `UNITE_ANALYSIS_SCELL_URL` - Path to scRNA dataset creation analysis service (`http://scell.analysis.unite.net`).
+- `UNITE_ANALYSIS_SURV_URL` - Path to survival curve estimation analysis service (`http://surv.analysis.unite.net`).
 
 > [!NOTE]
 > For local development purposes we recommend to use **default** values.
@@ -96,9 +96,9 @@ docker run \
 -e UNITE_SQL_USER=[sql_user] \
 -e UNITE_SQL_PASSWORD=[sql_password] \
 -e UNITE_ANALYSIS_DATA_PATH=/mnt/data \
--e UNITE_ANALYSIS_DESEQ2_URL=http://deseq2.analysis.unite.net \
+-e UNITE_ANALYSIS_DE_URL=http://de.analysis.unite.net \
 -e UNITE_ANALYSIS_SCELL_URL=http://scell.analysis.unite.net \
--e UNITE_ANALYSIS_KMEIER_URL=http://kmeier.analysis.unite.net \
+-e UNITE_ANALYSIS_SURV_URL=http://surv.analysis.unite.net \
 -d \
 unite.analysis:latest
 ```
