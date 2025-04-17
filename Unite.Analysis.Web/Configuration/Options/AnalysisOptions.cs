@@ -32,35 +32,35 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
-    public string DonSceUrl
+    public string SurvUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_DON_SCE_HOST");
+            return GetOption("UNITE_ANALYSIS_SURV_HOST");
         }
     }
 
-    public string MethDmUrl
+    public string DmUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_METH_DM_HOST");
+            return GetOption("UNITE_ANALYSIS_DM_HOST");
         }
     }
 
-    public string RnaDeUrl
+    public string DeUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_RNA_DE_HOST");
+            return GetOption("UNITE_ANALYSIS_DE_HOST");
         }
     }
 
-    public string RnascDcUrl
+    public string ScellUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_RNASC_DC_HOST");
+            return GetOption("UNITE_ANALYSIS_SCELL_HOST");
         }
     }
 

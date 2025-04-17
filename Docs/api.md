@@ -31,15 +31,15 @@ Create analysis of given type.
 - `type` - analysis type.
 
 #### Task types:
-- `deseq2` - [Bulk RNA differential expression analysis](./api-analysis-deseq2.md).
-- `rnasc` - [Single cell RNA analysis](./api-analysis-rnasc.md).
-- `kmeier` - [Kaplan-Meier survival analysis](./api-analysis-kmeier.md).
+- `de` - [Bulk RNA differential expression analysis](./api-analysis-de.md).
+- `scell` - [Single cell RNA analysis](./api-analysis-scell.md).
+- `surv` - [Survival curve estimation analysis](./api-analysis-surv.md).
 
 ### Body
 Depends on the analysis type:
-- [deseq2](./api-analysis-deseq2.md#model)
-- [rnasc](./api-analysis-rnasc.md#model)
-- [kmeier](./api-analysis-kmeier.md#model)
+- [de](./api-analysis-de.md#model)
+- [scell](./api-analysis-scell.md#model)
+- [surv](./api-analysis-surv.md#model)
 
 ### Resources
 - `"id"` - unique id of created analysis.
@@ -81,9 +81,9 @@ Get analysis results metadata.
 
 ### Resources
 Depends on the analysis type:
-- [deseq2](./api-analysis-deseq2.md#results-metadata)
-- [rnasc](./api-analysis-rnasc.md#results-metadata)
-- [kmeier](./api-analysis-kmeier.md#results-metadata)
+- [de](./api-analysis-de.md#results-metadata)
+- [scell](./api-analysis-scell.md#results-metadata)
+- [surv](./api-analysis-surv.md#results-metadata)
 
 ### Responses
 - `200` - request was processed successfully
@@ -100,9 +100,9 @@ Download analysis results data.
 
 ### Resources
 A file (or archive) to download. Depends on the analysis type:
-- [rna-de](./api-analysis-deseq2.md#results-data)
-- [rnasc](./api-analysis-rnasc.md#results-data)
-- [kmeier](./api-analysis-kmeier.md#results-data)
+- [de](./api-analysis-de.md#results-data)
+- [scell](./api-analysis-scell.md#results-data)
+- [surv](./api-analysis-surv.md#results-data)
 
 ### Responses
 - `200` - request was processed successfully

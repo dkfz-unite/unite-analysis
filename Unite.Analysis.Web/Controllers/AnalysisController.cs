@@ -37,7 +37,7 @@ public class AnalysisController : Controller
     
     
     [HttpPost("surv")]
-    public async Task<IActionResult> CreateDonSceTask([FromBody]TypedAnalysis<Analysis.Services.Surv.Models.Criteria.Analysis> model)
+    public async Task<IActionResult> CreateSurvTask([FromBody]TypedAnalysis<Analysis.Services.Surv.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
@@ -49,7 +49,7 @@ public class AnalysisController : Controller
     }
 
     [HttpPost("dm")]
-    public async Task<IActionResult> CreateMethDmTask([FromBody]TypedAnalysis<Analysis.Services.Dm.Models.Criteria.Analysis> model)
+    public async Task<IActionResult> CreateDmTask([FromBody]TypedAnalysis<Analysis.Services.Dm.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
@@ -61,7 +61,7 @@ public class AnalysisController : Controller
     }
 
     [HttpPost("de")]
-    public async Task<IActionResult> CreateRnaDeTask([FromBody]TypedAnalysis<Analysis.Services.De.Models.Criteria.Analysis> model)
+    public async Task<IActionResult> CreateDeTask([FromBody]TypedAnalysis<Analysis.Services.De.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
@@ -73,7 +73,7 @@ public class AnalysisController : Controller
     }
 
     [HttpPost("scell")]
-    public async Task<IActionResult> CreateRnascDcTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
+    public async Task<IActionResult> CreateScellTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
@@ -85,7 +85,7 @@ public class AnalysisController : Controller
     }
 
     [HttpGet("scell/models")]
-    public async Task<IActionResult> GetRnascDcModels()
+    public async Task<IActionResult> GetScellModels()
     {
         using var handler = new HttpClientHandler { UseProxy = true };
         using var client = new HttpClient(handler);

@@ -4,8 +4,8 @@ public interface IAnalysisOptions
 {
     string DataPath { get; }
     string DataHost { get; }
-    string DonSceUrl { get; }
-    string MethDmUrl { get; }
-    string RnaDeUrl { get; }
-    string RnascDcUrl { get; }
+    string SurvUrl { get; }
+    string DmUrl { get; }
+    string DeUrl { get; }
+    string ScellUrl { get; }
 }

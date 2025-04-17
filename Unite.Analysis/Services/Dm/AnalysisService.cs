@@ -46,7 +46,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.MethDmUrl}/api/run?key={key}";
+        var url = $"{_options.DmUrl}/api/run?key={key}";
 
         var analysisResult = await ProcessRemotely(url);
 
