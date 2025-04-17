@@ -5,12 +5,12 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Unite.Orchestrator/Unite.Orchestrator.csproj" />
-    <ProjectReference Include="..\Unite.Analysis\Unite.Analysis.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Unite.Cache" Version="1.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Unite.Orchestrator/Unite.Orchestrator.csproj" />
+    <ProjectReference Include="../Unite.Analysis/Unite.Analysis.csproj" />
   </ItemGroup>
 </Project>

@@ -10,25 +10,28 @@ public class AnalysisProcessingHandler
 {    
     private readonly ApiOptions _apiOptions;
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly Analysis.Services.DESeq2.AnalysisService _deseq2AnalysisService;
-    private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
-    private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
+    private readonly Analysis.Services.Surv.AnalysisService _survSceAnalysisService;
+    private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     private readonly ILogger _logger;
 
 
     public AnalysisProcessingHandler(
         ApiOptions apiOptions,
         AnalysisTaskService analysisTaskService,
-        Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
-        Analysis.Services.SCell.AnalysisService scellAnalysisService,
-        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
+        Analysis.Services.Surv.AnalysisService survAnalysisService,
+        Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Scell.AnalysisService scellAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
     {
         _apiOptions = apiOptions;
+        _survSceAnalysisService = survAnalysisService;
+        _dmAnalysisService = dmAnalysisService;
         _analysisTaskService = analysisTaskService;
-        _deseq2AnalysisService = deseq2AnalysisService;
+        _deAnalysisService = deAnalysisService;
         _scellAnalysisService = scellAnalysisService;
-        _kmeierAnalysisService = kmeierAnalysisService;
         _logger = logger;
     }
 
@@ -48,9 +51,10 @@ public class AnalysisProcessingHandler
 
         var result = task.AnalysisTypeId switch
         {
-            AnalysisTaskType.DESEQ2 => await _deseq2AnalysisService.Process(task.Target, token),
+            AnalysisTaskType.SURV => await _survSceAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.DM => await _dmAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.DE => await _deAnalysisService.Process(task.Target, token),
             AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
-            AnalysisTaskType.KMEIER => await _kmeierAnalysisService.Process(task.Target, token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 

@@ -32,27 +32,35 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
-    public string DESeq2Url
+    public string DonSceUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_DESEQ2_HOST");
+            return GetOption("UNITE_ANALYSIS_DON_SCE_HOST");
         }
     }
 
-    public string SCellUrl
+    public string MethDmUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_SCELL_HOST");
+            return GetOption("UNITE_ANALYSIS_METH_DM_HOST");
         }
     }
 
-    public string KMeierUrl
+    public string RnaDeUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_KMEIER_HOST");
+            return GetOption("UNITE_ANALYSIS_RNA_DE_HOST");
+        }
+    }
+
+    public string RnascDcUrl
+    {
+        get
+        {
+            return GetOption("UNITE_ANALYSIS_RNASC_DC_HOST");
         }
     }
 

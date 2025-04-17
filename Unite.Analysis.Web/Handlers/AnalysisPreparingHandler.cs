@@ -11,25 +11,30 @@ public class AnalysisPreparingHandler
 {
     private readonly ApiOptions _apiOptions;
     private readonly AnalysisTaskService _analysisTaskService;
-    private readonly Analysis.Services.DESeq2.AnalysisService _deseq2AnalysisService;
-    private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
-    private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
+    private readonly Analysis.Services.Surv.AnalysisService _survSceAnalysisService;
+    private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Scell.AnalysisService _scellDcAnalysisService;
+    
     private readonly ILogger _logger;
 
 
     public AnalysisPreparingHandler(
         ApiOptions apiOptions,
         AnalysisTaskService analysisTaskService,
-        Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
-        Analysis.Services.SCell.AnalysisService scellAnalysisService,
-        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
+        Analysis.Services.Surv.AnalysisService survAnalysisService,
+        Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Scell.AnalysisService scellDcAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
         _apiOptions = apiOptions;
         _analysisTaskService = analysisTaskService;
-        _deseq2AnalysisService = deseq2AnalysisService;
-        _scellAnalysisService = scellAnalysisService;
-        _kmeierAnalysisService = kmeierAnalysisService;
+        _survSceAnalysisService = survAnalysisService;
+        _dmAnalysisService = dmAnalysisService;
+        _deAnalysisService = deAnalysisService;
+        _scellDcAnalysisService = scellDcAnalysisService;
+        
         _logger = logger;
     }
 
@@ -48,9 +53,10 @@ public class AnalysisPreparingHandler
 
         var result = task.AnalysisTypeId switch
         {
-            AnalysisTaskType.DESEQ2 => await _deseq2AnalysisService.Prepare(Parse<Analysis.Services.DESeq2.Models.Criteria.Analysis>(task.Data), token),
-            AnalysisTaskType.SCELL => await _scellAnalysisService.Prepare(Parse<Analysis.Services.SCell.Models.Criteria.Analysis>(task.Data), token),
-            AnalysisTaskType.KMEIER => await _kmeierAnalysisService.Prepare(Parse<Analysis.Services.KMeier.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.SURV => await _survSceAnalysisService.Prepare(Parse<Analysis.Services.Surv.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.DM => await _dmAnalysisService.Prepare(Parse<Analysis.Services.Dm.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.DE => await _deAnalysisService.Prepare(Parse<Analysis.Services.De.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.SCELL => await _scellDcAnalysisService.Prepare(Parse<Analysis.Services.Scell.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 

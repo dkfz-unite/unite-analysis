@@ -27,12 +27,14 @@ public static class ConfigurationExtensions
         services.AddSearchEngine();
         services.AddSearchServices();
 
-        services.AddTransient<Analysis.Services.DESeq2.DataLoader>();
-        services.AddTransient<Analysis.Services.DESeq2.AnalysisService>();
-        services.AddTransient<Analysis.Services.SCell.ContextLoader>();
-        services.AddTransient<Analysis.Services.SCell.AnalysisService>();
-        services.AddTransient<Analysis.Services.KMeier.ContextLoader>();
-        services.AddTransient<Analysis.Services.KMeier.AnalysisService>();
+        services.AddTransient<Analysis.Services.De.DataLoader>();
+        services.AddTransient<Analysis.Services.De.AnalysisService>();
+        services.AddTransient<Analysis.Services.Scell.ContextLoader>();
+        services.AddTransient<Analysis.Services.Scell.AnalysisService>();
+        services.AddTransient<Analysis.Services.Surv.ContextLoader>();
+        services.AddTransient<Analysis.Services.Surv.AnalysisService>();
+        services.AddTransient<Analysis.Services.Dm.ContextLoader>();
+        services.AddTransient<Analysis.Services.Dm.AnalysisService>();
 
         services.AddTransient<AnalysisTaskService>();
         services.AddTransient<AnalysisRecordService>();
