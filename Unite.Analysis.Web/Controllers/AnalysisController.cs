@@ -4,9 +4,6 @@ using Unite.Analysis.Web.Services;
 using Unite.Analysis.Models;
 using Unite.Data.Entities.Tasks.Enums;
 using Unite.Essentials.Extensions;
-using Elasticsearch.Net;
-using Nest;
-using System.Net;
 
 namespace Unite.Analysis.Web.Controllers;
 
@@ -16,55 +13,67 @@ public class AnalysisController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
     private readonly AnalysisRecordService _analysisRecordService;
-    private readonly Analysis.Services.DESeq2.AnalysisService _deseq2DeAnalysisService;
-    private readonly Analysis.Services.SCell.AnalysisService _scellAnalysisService;
-    private readonly Analysis.Services.KMeier.AnalysisService _kmeierAnalysisService;
-    private readonly Analysis.Services.Meth.AnalysisService _methAnalysisService;
-
+    private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
+    private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
+    
 
     public AnalysisController(
         AnalysisTaskService analysisTaskService,
         AnalysisRecordService analysisRecordService,
-        Analysis.Services.DESeq2.AnalysisService deseq2AnalysisService,
-        Analysis.Services.SCell.AnalysisService scellAnalysisService,
-        Analysis.Services.KMeier.AnalysisService kmeierAnalysisService,
-        Analysis.Services.Meth.AnalysisService methAnalysisService)
+        Analysis.Services.Surv.AnalysisService survSceAnalysisService,
+        Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
         _analysisRecordService = analysisRecordService;
-        _kmeierAnalysisService = kmeierAnalysisService;
-        _deseq2DeAnalysisService = deseq2AnalysisService;
+        _survAnalysisService = survSceAnalysisService;
+        _dmAnalysisService = dmAnalysisService;
+        _deAnalysisService = deAnalysisService;
         _scellAnalysisService = scellAnalysisService;
-        _methAnalysisService = methAnalysisService;
     }
     
     
-    [HttpPost("kmeier")]
-    public async Task<IActionResult> CreateKmeierTask([FromBody]TypedAnalysis<Analysis.Services.KMeier.Models.Criteria.Analysis> model)
+    [HttpPost("surv")]
+    public async Task<IActionResult> CreateDonSceTask([FromBody]TypedAnalysis<Analysis.Services.Surv.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
         model.Data.Id = await _analysisRecordService.Add(entry);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.KMEIER);
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SURV);
         
         return Ok(model.Data.Id);
     }
 
-    [HttpPost("deseq2")]
-    public async Task<IActionResult> CreateDESeq2Task([FromBody]TypedAnalysis<Analysis.Services.DESeq2.Models.Criteria.Analysis> model)
+    [HttpPost("dm")]
+    public async Task<IActionResult> CreateMethDmTask([FromBody]TypedAnalysis<Analysis.Services.Dm.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
         model.Data.Id = await _analysisRecordService.Add(entry);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DESEQ2);
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DM);
+
+        return Ok(model.Data.Id);
+    }
+
+    [HttpPost("de")]
+    public async Task<IActionResult> CreateRnaDeTask([FromBody]TypedAnalysis<Analysis.Services.De.Models.Criteria.Analysis> model)
+    {
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DE);
         
         return Ok(model.Data.Id);
     }
 
     [HttpPost("scell")]
-    public async Task<IActionResult> CreateSCellTask([FromBody]TypedAnalysis<Analysis.Services.SCell.Models.Criteria.Analysis> model)
+    public async Task<IActionResult> CreateRnascDcTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
@@ -75,20 +84,8 @@ public class AnalysisController : Controller
         return Ok(model.Data.Id);
     }
 
-    [HttpPost("meth")]
-    public async Task<IActionResult> CreateMethTask([FromBody]TypedAnalysis<Analysis.Services.Meth.Models.Criteria.Analysis> model)
-    {
-        var entry = GenericAnalysis.From(model);
-
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.METH);
-
-        return Ok(model.Data.Id);
-    }
-
     [HttpGet("scell/models")]
-    public async Task<IActionResult> GetSCellModels()
+    public async Task<IActionResult> GetRnascDcModels()
     {
         using var handler = new HttpClientHandler { UseProxy = true };
         using var client = new HttpClient(handler);
@@ -101,7 +98,7 @@ public class AnalysisController : Controller
         }
         catch
         {
-            return BadRequest("Failed to fetch SCell models");
+            return BadRequest("Failed to fetch models for 'rnasc-dc' task.");
         }
     }
 
@@ -126,14 +123,14 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
 
-        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
-            return Ok(await _deseq2DeAnalysisService.Load(id));
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            return Ok(await _survAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            return Ok(await _dmAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
+            return Ok(await _deAnalysisService.Load(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Load(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
-            return Ok(await _kmeierAnalysisService.Load(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.METH)
-            return Ok(await _methAnalysisService.Load(id));
         
         return BadRequest("Task analysis type is not supported");
     }
@@ -146,14 +143,14 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
 
-        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
-            return Ok(await _deseq2DeAnalysisService.Download(id));
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            return Ok(await _survAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            return Ok(await _dmAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
+            return Ok(await _deAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Download(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
-            return Ok(await _kmeierAnalysisService.Download(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.METH)
-            return Ok(await _methAnalysisService.Download(id));
 
         return BadRequest("Task analysis type is not supported");
     }
@@ -173,15 +170,15 @@ public class AnalysisController : Controller
 
         _analysisTaskService.Delete(task);
 
-        if (task.AnalysisTypeId == AnalysisTaskType.DESEQ2)
-            await _deseq2DeAnalysisService.Delete(id);
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            await _survAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            await _dmAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
+            await _deAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
-            await _scellAnalysisService.Delete(id);
-        else if (task.AnalysisTypeId == AnalysisTaskType.KMEIER)
-            await _kmeierAnalysisService.Delete(id);
-        else if (task.AnalysisTypeId == AnalysisTaskType.METH)
-            await _methAnalysisService.Delete(id);
-
+            await _scellAnalysisService.Delete(id); 
+        
         await _analysisRecordService.Delete(id);
 
         return Ok();

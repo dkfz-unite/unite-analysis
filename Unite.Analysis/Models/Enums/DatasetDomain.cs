@@ -9,8 +9,8 @@ public enum DatasetDomain
     [EnumMember(Value = "donors")]
     Donors,
 
-    [EnumMember(Value = "mris")]
-    Mris,
+    [EnumMember(Value = "mrs")]
+    Mrs,
 
     [EnumMember(Value = "cts")]
     Cts,
@@ -30,8 +30,8 @@ public enum DatasetDomain
     [EnumMember(Value = "genes")]
     Genes,
 
-    [EnumMember(Value = "ssms")]
-    Ssms,
+    [EnumMember(Value = "sms")]
+    Sms,
 
     [EnumMember(Value = "cnvs")]
     Cnvs,
