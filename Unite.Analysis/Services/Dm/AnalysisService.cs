@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Models;
+using Unite.Analysis.Models.Enums;
 using Unite.Analysis.Services.Dm.Models.Criteria;
 
 namespace Unite.Analysis.Services.Dm;
@@ -50,8 +51,11 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var analysisResult = await ProcessRemotely(url);
 
-        await OutputWriter.ProcessOutput(path);
-        await OutputWriter.ArchiveOutput(path);
+         if (analysisResult.Status == AnalysisTaskStatus.Success)
+        {
+            await OutputWriter.ProcessOutput(path);
+            await OutputWriter.ArchiveOutput(path);
+        }
 
         return analysisResult;
     }
