@@ -23,9 +23,6 @@ public class DataLoader
     {
         var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Genome.Meth.Sample).ToArray();
  
-        var idatResourceFileName = resources.FirstOrDefault(resource =>
-            resource.Format == FileTypes.Sequence.Idat).Name.Replace("_grn", "").Replace("_red", "");
-
         var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
 
         foreach (var resource in resources)
@@ -49,7 +46,7 @@ public class DataLoader
             var resources = sample.Value.Resources.Where(resource => resource.Type == DataTypes.Genome.Meth.Sample).ToArray();
     
             var idatResourceFileName = resources.FirstOrDefault(resource =>
-                resource.Format == FileTypes.Sequence.Idat).Name.Replace("_grn", "").Replace("_red", "");
+            resource.Format == FileTypes.Sequence.Idat).Name.Replace("_grn", "", StringComparison.InvariantCultureIgnoreCase).Replace("_red", "", StringComparison.InvariantCultureIgnoreCase);
 
             var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
 
