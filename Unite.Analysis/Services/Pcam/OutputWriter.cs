@@ -1,12 +1,11 @@
 using System.IO.Compression;
 
-namespace Unite.Analysis.Services.Dm;
+namespace Unite.Analysis.Services.Pcam;
 
 public class OutputWriter
 {
     public const string ResultDataFileName = "results.csv.gz";
-    public const string ReducedResultDataFileName = "results_reduced.csv.gz";
-    public const string AnnotationDataFileName = "results_annotated.csv.gz";
+
     public const string ArchiveFileName = "output.zip";
 
 
@@ -29,8 +28,6 @@ public class OutputWriter
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
         archive.CreateEntryFromFile(Path.Combine(path, ResultDataFileName), ResultDataFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, ReducedResultDataFileName), ReducedResultDataFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, AnnotationDataFileName), AnnotationDataFileName);
         await Task.CompletedTask;
     }
 }

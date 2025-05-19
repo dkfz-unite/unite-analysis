@@ -15,6 +15,7 @@ public class AnalysisController : Controller
     private readonly AnalysisRecordService _analysisRecordService;
     private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
     private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     
@@ -24,6 +25,7 @@ public class AnalysisController : Controller
         AnalysisRecordService analysisRecordService,
         Analysis.Services.Surv.AnalysisService survSceAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
         Analysis.Services.De.AnalysisService deAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
@@ -31,6 +33,7 @@ public class AnalysisController : Controller
         _analysisRecordService = analysisRecordService;
         _survAnalysisService = survSceAnalysisService;
         _dmAnalysisService = dmAnalysisService;
+        _pcamAnalysisService = pcamAnalysisService;
         _deAnalysisService = deAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
@@ -56,6 +59,18 @@ public class AnalysisController : Controller
         model.Data.Id = await _analysisRecordService.Add(entry);
 
         _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DM);
+
+        return Ok(model.Data.Id);
+    }
+
+    [HttpPost("pcam")]
+    public async Task<IActionResult> CreatePcamTask([FromBody]TypedAnalysis<Analysis.Services.Pcam.Models.Criteria.Analysis> model)
+    {
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.PCAM);
 
         return Ok(model.Data.Id);
     }
@@ -127,6 +142,8 @@ public class AnalysisController : Controller
             return Ok(await _survAnalysisService.Load(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.DM)
             return Ok(await _dmAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
+            return Ok(await _pcamAnalysisService.Load(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.DE)
             return Ok(await _deAnalysisService.Load(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
@@ -147,6 +164,8 @@ public class AnalysisController : Controller
             return Ok(await _survAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.DM)
             return Ok(await _dmAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
+            return Ok(await _pcamAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.DE)
             return Ok(await _deAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)

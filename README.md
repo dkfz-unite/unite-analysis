@@ -52,6 +52,7 @@ To configure the application, change environment variables in either docker or [
 - `UNITE_SQL_PASSWORD` - SQL server password.
 - `UNITE_ANALYSIS_DATA_PATH` - Path to analysis data directory (`/mnt/data`).
 - `UNITE_ANALYSIS_DE_URL` - Path to RNA differential expression analysis service (`http://de.analysis.unite.net`).
+- `UNITE_ANALYSIS_PCAM_URL` - Path to Pcam differential expression analysis service (`http://pcam.analysis.unite.net`).
 - `UNITE_ANALYSIS_SCELL_URL` - Path to scRNA dataset creation analysis service (`http://scell.analysis.unite.net`).
 - `UNITE_ANALYSIS_SURV_URL` - Path to survival curve estimation analysis service (`http://surv.analysis.unite.net`).
 
@@ -97,6 +98,7 @@ docker run \
 -e UNITE_SQL_PASSWORD=[sql_password] \
 -e UNITE_ANALYSIS_DATA_PATH=/mnt/data \
 -e UNITE_ANALYSIS_DE_URL=http://de.analysis.unite.net \
+-e UNITE_ANALYSIS_PCAM_URL=http://pcam.analysis.unite.net \
 -e UNITE_ANALYSIS_SCELL_URL=http://scell.analysis.unite.net \
 -e UNITE_ANALYSIS_SURV_URL=http://surv.analysis.unite.net \
 -d \

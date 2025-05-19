@@ -12,6 +12,7 @@ public class AnalysisProcessingHandler
     private readonly AnalysisTaskService _analysisTaskService;
     private readonly Analysis.Services.Surv.AnalysisService _survSceAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
     private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     private readonly ILogger _logger;
@@ -22,6 +23,7 @@ public class AnalysisProcessingHandler
         AnalysisTaskService analysisTaskService,
         Analysis.Services.Surv.AnalysisService survAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
         Analysis.Services.De.AnalysisService deAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
@@ -29,6 +31,7 @@ public class AnalysisProcessingHandler
         _apiOptions = apiOptions;
         _survSceAnalysisService = survAnalysisService;
         _dmAnalysisService = dmAnalysisService;
+        _pcamAnalysisService = pcamAnalysisService;
         _analysisTaskService = analysisTaskService;
         _deAnalysisService = deAnalysisService;
         _scellAnalysisService = scellAnalysisService;
@@ -53,6 +56,7 @@ public class AnalysisProcessingHandler
         {
             AnalysisTaskType.SURV => await _survSceAnalysisService.Process(task.Target, token),
             AnalysisTaskType.DM => await _dmAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.PCAM => await _pcamAnalysisService.Process(task.Target, token),
             AnalysisTaskType.DE => await _deAnalysisService.Process(task.Target, token),
             AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")

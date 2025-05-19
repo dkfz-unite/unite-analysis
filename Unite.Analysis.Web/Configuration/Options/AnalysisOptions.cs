@@ -48,6 +48,14 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
+    public string PcamUrl
+    {
+        get
+        {
+            return GetOption("UNITE_ANALYSIS_PCAM_HOST");
+        }
+    }
+
     public string DeUrl
     {
         get

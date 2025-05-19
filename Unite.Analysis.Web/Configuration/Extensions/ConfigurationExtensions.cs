@@ -35,6 +35,8 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.Surv.AnalysisService>();
         services.AddTransient<Analysis.Services.Dm.ContextLoader>();
         services.AddTransient<Analysis.Services.Dm.AnalysisService>();
+        services.AddTransient<Analysis.Services.Pcam.ContextLoader>();
+        services.AddTransient<Analysis.Services.Pcam.AnalysisService>();
 
         services.AddTransient<AnalysisTaskService>();
         services.AddTransient<AnalysisRecordService>();
