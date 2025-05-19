@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Unite.Data.Entities.Genome.Analysis;
+using Unite.Data.Entities.Omics.Analysis;
 using Unite.Data.Entities.Specimens.Enums;
 using Unite.Data.Entities.Specimens.Materials.Enums;
 

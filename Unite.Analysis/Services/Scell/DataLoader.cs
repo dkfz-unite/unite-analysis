@@ -2,7 +2,7 @@ using Unite.Analysis.Helpers;
 using Unite.Analysis.Services.Scell.Extensions;
 using Unite.Analysis.Services.Scell.Models.Context;
 using Unite.Data.Constants;
-using Unite.Data.Entities.Genome.Analysis;
+using Unite.Data.Entities.Omics.Analysis;
 
 namespace Unite.Analysis.Services.Scell;
 
@@ -21,7 +21,7 @@ public class DataLoader
     {
         var comparison = StringComparison.InvariantCultureIgnoreCase;
 
-        var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Genome.Rnasc.Exp).ToArray();
+        var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Omics.Rnasc.Exp).ToArray();
 
         var matrixResource = resources.FirstOrDefault(resource =>
             resource.Name.Equals("matrix", comparison) &&

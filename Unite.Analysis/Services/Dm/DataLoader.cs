@@ -2,7 +2,7 @@ using Unite.Analysis.Helpers;
 using Unite.Analysis.Services.Dm.Extensions;
 using Unite.Analysis.Services.Dm.Models.Context;
 using Unite.Data.Constants;
-using Unite.Data.Entities.Genome.Analysis;
+using Unite.Data.Entities.Omics.Analysis;
 using Unite.Analysis.Services.Dm.Models.Data;
 using Unite.Essentials.Extensions;
 using Unite.Essentials.Tsv;
@@ -21,7 +21,7 @@ public class DataLoader
 
     private static async Task DownloadResource(Sample sample, string key, string workingDirectoryPath, string token,string host = null)
     {
-        var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Genome.Meth.Sample).ToArray();
+        var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Omics.Meth.Sample).ToArray();
  
         var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
 
@@ -43,7 +43,7 @@ public class DataLoader
         foreach (var sample in context.Samples)
         {
             string key = sample.Value.GetKey(context);
-            var resources = sample.Value.Resources.Where(resource => resource.Type == DataTypes.Genome.Meth.Sample).ToArray();
+            var resources = sample.Value.Resources.Where(resource => resource.Type == DataTypes.Omics.Meth.Sample).ToArray();
     
             var idatResourceFileName = resources.FirstOrDefault(resource =>
             resource.Format == FileTypes.Sequence.Idat).Name.Replace("_grn", "", StringComparison.InvariantCultureIgnoreCase).Replace("_red", "", StringComparison.InvariantCultureIgnoreCase);

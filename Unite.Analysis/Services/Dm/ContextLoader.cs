@@ -68,7 +68,7 @@ public class ContextLoader
         context.Samples = context.Donors.Values
             .Select(donor => context.Samples.Values
                 .Where(sample => sample.GetDonor(context)?.Id == donor.Id)
-                .Where(sample => sample.Analysis.TypeId == Data.Entities.Genome.Analysis.Enums.AnalysisType.MethArray)
+                .Where(sample => sample.Analysis.TypeId == Data.Entities.Omics.Analysis.Enums.AnalysisType.MethArray)
                 .OrderBy(sample => sample.GetSpecimen(context)?.GetRelevance())
                 .FirstOrDefault())
             .DistinctBy(sample => sample.Id)
@@ -99,7 +99,7 @@ public class ContextLoader
         context.Samples = context.Images.Values
             .Select(image => context.Samples.Values
                 .Where(sample => sample.GetImage(context)?.Id == image.Id)
-                .Where(sample => sample.Analysis.TypeId == Data.Entities.Genome.Analysis.Enums.AnalysisType.RNASeqSc)
+                .Where(sample => sample.Analysis.TypeId == Data.Entities.Omics.Analysis.Enums.AnalysisType.RNASeqSc)
                 .OrderBy(sample => sample.GetSpecimen(context)?.GetRelevance())
                 .FirstOrDefault())
             .DistinctBy(sample => sample.Id)
@@ -129,7 +129,7 @@ public class ContextLoader
         context.Samples = context.Specimens.Values
             .Select(specimen => context.Samples.Values
                 .Where(sample => sample.GetSpecimen(context)?.Id == specimen.Id)
-                .Where(sample => sample.Analysis.TypeId == Data.Entities.Genome.Analysis.Enums.AnalysisType.MethArray)
+                .Where(sample => sample.Analysis.TypeId == Data.Entities.Omics.Analysis.Enums.AnalysisType.MethArray)
                 .OrderBy(sample => sample.GetSpecimen(context)?.GetRelevance())
                 .FirstOrDefault())
             .DistinctBy(sample => sample.Id)
@@ -171,11 +171,11 @@ public class ContextLoader
             .ToDictionaryAsync(specimen => specimen.Id);
     }
 
-    private async Task<Dictionary<int, Data.Entities.Genome.Analysis.Sample>> LoadSamples(int[] ids)
+    private async Task<Dictionary<int, Data.Entities.Omics.Analysis.Sample>> LoadSamples(int[] ids)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        return await dbContext.Set<Data.Entities.Genome.Analysis.Sample>()
+        return await dbContext.Set<Data.Entities.Omics.Analysis.Sample>()
             .AsNoTracking()
             .Include(sample => sample.Specimen)
             .Include(sample => sample.Analysis)

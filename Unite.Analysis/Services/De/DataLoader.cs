@@ -4,12 +4,12 @@ using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
 using Unite.Data.Context;
 using Unite.Data.Context.Repositories;
-using Unite.Data.Entities.Genome.Analysis;
-using Unite.Data.Entities.Genome.Analysis.Rna;
+using Unite.Data.Entities.Omics.Analysis;
+using Unite.Data.Entities.Omics.Analysis.Rna;
 using Unite.Indices.Search.Services;
 
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
-using SampleExpressions = (int, Unite.Data.Entities.Genome.Analysis.Rna.GeneExpression[]); // SampleId, BulkExpression[]
+using SampleExpressions = (int, Unite.Data.Entities.Omics.Analysis.Rna.GeneExpression[]); // SampleId, BulkExpression[]
 
 namespace Unite.Analysis.Services.De;
 
