@@ -53,6 +53,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
          if (analysisResult.Status == AnalysisTaskStatus.Success)
         {
+            await OutputWriter.ReducePoints(path, OutputWriter.AnnotationDataFileName);
             await OutputWriter.ProcessOutput(path);
             await OutputWriter.ArchiveOutput(path);
         }
@@ -62,7 +63,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.AnnotationDataFileName);
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ReducedPoints);
 
         var stream = File.OpenRead(path);
 
