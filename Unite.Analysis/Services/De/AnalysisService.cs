@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Models;
 using Unite.Data.Context;
-using Unite.Data.Entities.Genome;
+using Unite.Data.Entities.Omics;
 using Unite.Essentials.Tsv;
 
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads

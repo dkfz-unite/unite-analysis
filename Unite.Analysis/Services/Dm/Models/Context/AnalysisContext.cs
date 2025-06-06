@@ -25,7 +25,7 @@ public class AnalysisContext
     /// <summary>
     /// Samples cached per sample identifier.
     /// </summary>
-    public Dictionary<int, Unite.Data.Entities.Genome.Analysis.Sample> Samples { get; set; }
+    public Dictionary<int, Unite.Data.Entities.Omics.Analysis.Sample> Samples { get; set; }
 
 
     public AnalysisContext(byte sampleType)

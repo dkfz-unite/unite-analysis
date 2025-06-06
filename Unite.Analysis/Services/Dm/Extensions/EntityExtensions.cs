@@ -4,7 +4,7 @@ namespace Unite.Analysis.Services.Dm.Extensions;
 
 public static class EntityExtensions
 {
-    public static string GetKey(this Data.Entities.Genome.Analysis.Sample sample, AnalysisContext context)
+    public static string GetKey(this Data.Entities.Omics.Analysis.Sample sample, AnalysisContext context)
     {
         if (context.SampleType == 1)
         {
@@ -29,21 +29,21 @@ public static class EntityExtensions
         }
     }
 
-    public static Data.Entities.Donors.Donor GetDonor(this Data.Entities.Genome.Analysis.Sample sample, AnalysisContext context)
+    public static Data.Entities.Donors.Donor GetDonor(this Data.Entities.Omics.Analysis.Sample sample, AnalysisContext context)
     {
         var specimen = context.Specimens[sample.SpecimenId];
 
         return context.Donors.TryGetValue(specimen.DonorId, out var donor) ? donor : null;  
     }
 
-    public static Data.Entities.Images.Image GetImage(this Data.Entities.Genome.Analysis.Sample sample, AnalysisContext context)
+    public static Data.Entities.Images.Image GetImage(this Data.Entities.Omics.Analysis.Sample sample, AnalysisContext context)
     {
         var specimen = context.Specimens[sample.SpecimenId];
 
         return context.Images.Values.FirstOrDefault(image => image.DonorId == specimen.DonorId);
     }
 
-    public static Data.Entities.Specimens.Specimen GetSpecimen(this Data.Entities.Genome.Analysis.Sample sample, AnalysisContext context)
+    public static Data.Entities.Specimens.Specimen GetSpecimen(this Data.Entities.Omics.Analysis.Sample sample, AnalysisContext context)
     {
         return context.Specimens[sample.SpecimenId];
     }

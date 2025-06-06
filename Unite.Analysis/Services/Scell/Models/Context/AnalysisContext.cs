@@ -25,7 +25,7 @@ public class AnalysisContext
     /// <summary>
     /// Samples cached per sample identifier.
     /// </summary>
-    public Dictionary<int, Unite.Data.Entities.Genome.Analysis.Sample> Samples { get; set; }
+    public Dictionary<int, Unite.Data.Entities.Omics.Analysis.Sample> Samples { get; set; }
 
 
     public AnalysisContext(byte sampleType)
@@ -90,7 +90,7 @@ public class AnalysisContext
         return specimen;
     }
 
-    public Unite.Data.Entities.Donors.Donor GetDonor(Unite.Data.Entities.Genome.Analysis.Sample sample)
+    public Unite.Data.Entities.Donors.Donor GetDonor(Unite.Data.Entities.Omics.Analysis.Sample sample)
     {
         var specimen = Specimens[sample.SpecimenId];
         var donor = Donors[specimen.DonorId];

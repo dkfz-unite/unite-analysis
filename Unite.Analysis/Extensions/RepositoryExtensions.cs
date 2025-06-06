@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Unite.Data.Context;
 using Unite.Data.Context.Repositories;
-using Unite.Data.Entities.Genome.Analysis;
+using Unite.Data.Entities.Omics.Analysis;
 
 namespace Unite.Analysis.Extensions;
 
