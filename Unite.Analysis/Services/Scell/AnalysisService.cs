@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
+using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 using Unite.Analysis.Services.Scell.Models.Criteria;
+using Unite.Data.Entities.Omics.Analysis.Enums;
 
 namespace Unite.Analysis.Services.Scell;
 
@@ -12,9 +12,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private readonly ContextLoader _contextLoader;
 
 
-    public AnalysisService(
-        IAnalysisOptions options,
-        ContextLoader contextLoader) : base(options)
+    public AnalysisService(IAnalysisOptions options, ContextLoader contextLoader) : base(options)
     {
         _contextLoader = contextLoader;
     }
@@ -22,13 +20,11 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public override async Task<AnalysisTaskResult> Prepare(Models.Criteria.Analysis model, params object[] args)
     {
-        var stopwatch = new Stopwatch();
-
-        stopwatch.Restart();
+        var stopwatch = Stopwatch.StartNew();
 
         var directoryPath = GetWorkingDirectoryPath(model.Id);
 
-        var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault());
+        var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault(), [AnalysisType.RNASeqSc, AnalysisType.RNASeqSn]);
 
         await MetaLoader.PrepareMetadata(context, directoryPath);
 
@@ -95,13 +91,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     private static void WriteOptions(Options options, string path)
     {
-        var serializerOptions = new JsonSerializerOptions
-        {
-            Converters = { new JsonStringEnumMemberConverter() },
-            WriteIndented = true
-        };
-
-        var json = JsonSerializer.Serialize(options, serializerOptions);
+        var json = MemberJsonSerializer.Serialize(options);
 
         File.WriteAllText(Path.Combine(path, "options.json"), json);
     }

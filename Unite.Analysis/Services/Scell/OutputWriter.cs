@@ -6,7 +6,6 @@ public class OutputWriter
 {
     public const string ResultDataFileName = "result.data.h5ad";
     public const string ResultMetaFileName = "result.meta.json";
-
     public const string ArchiveFileName = "output.zip";
 
 
