@@ -96,6 +96,14 @@ public class SamplesContext
         return specimen;
     }
 
+    public void RemoveSample(params int[] ids)
+    {
+        foreach (var id in ids)
+        {
+            OmicsSamples.Remove(id);
+        }
+    }
+
     public int GetSampleRelevance(int id)
     {
         var sample = OmicsSamples[id];

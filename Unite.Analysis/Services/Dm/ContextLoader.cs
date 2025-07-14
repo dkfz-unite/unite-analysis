@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Unite.Data.Context;
 using Unite.Data.Context.Repositories.Extensions.Queryable;
-using Unite.Data.Entities.Donors;
-using Unite.Data.Entities.Images;
 using Unite.Data.Entities.Specimens;
 using Unite.Indices.Search.Services;
 
@@ -22,16 +20,6 @@ public class ContextLoader : SamplesContextLoader
     {
     }
 
-    protected override IQueryable<Donor> Include(IQueryable<Donor> query)
-    {
-        return query
-            .IncludeTreatments();
-    }
-
-    protected override IQueryable<Image> Include(IQueryable<Image> query)
-    {
-        return query.IncludeMrImage();
-    }
 
     protected override IQueryable<Specimen> Include(IQueryable<Specimen> query)
     {

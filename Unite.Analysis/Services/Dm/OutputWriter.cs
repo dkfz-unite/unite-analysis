@@ -1,17 +1,16 @@
 using System.IO.Compression;
+using Unite.Analysis.Helpers;
 using Unite.Analysis.Services.Dm.Models.Data;
-using Unite.Essentials.Extensions;
 using Unite.Essentials.Tsv;
 
 namespace Unite.Analysis.Services.Dm;
 
 public class OutputWriter
 {
-    public const string ResultDataFileName = "results.tsv.gz";
-    public const string ReducedResultDataFileName = "results_reduced.tsv.gz";
-    public const string CompressedAnnotationDataFileName = "results_annotated.tsv.gz";
-    public const string AnnotationDataFileName = "results_annotated.tsv";
-    public const string CompressedReducedPoints = "reduced_points.tsv.gz";
+    public const string ResultsFileArchiveName = "results.tsv.gz";
+    public const string ResultsFileName = "results.tsv";
+    public const string ResultsHeatmapFileArchiveName = "results_heatmap.tsv.gz";
+    public const string ResultsHeatmapFileName = "results_heatmap.tsv"; // Not used but leave for consistency
     public const string ArchiveFileName = "output.zip";
 
 
@@ -25,7 +24,7 @@ public class OutputWriter
             }
         }
 
-        await Task.CompletedTask;
+        await BinResults(path);
     }
 
     public static async Task ArchiveOutput(string path)
@@ -33,122 +32,91 @@ public class OutputWriter
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
-        archive.CreateEntryFromFile(Path.Combine(path, ResultDataFileName), ResultDataFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, ReducedResultDataFileName), ReducedResultDataFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, AnnotationDataFileName), AnnotationDataFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, ResultsFileArchiveName), ResultsFileArchiveName);
+        archive.CreateEntryFromFile(Path.Combine(path, ResultsHeatmapFileArchiveName), ResultsHeatmapFileArchiveName);
+
         await Task.CompletedTask;
     }
 
-    public static async Task ReducePoints(string path, string resultFileName)
+
+    private static async Task BinResults(string path)
     {
-        var tsvRaw = await File.ReadAllTextAsync(resultFileName);
-        var mapRaw = new ClassMap<Resultdata>()
-                .Map(x => x.Log2FoldChange, "logFC")
-                .Map(x => x.PValueAdjusted, "adj.P.Val")
-                .Map(x => x.CpgId, "CpgId")
-                .Map(x => x.RegulatoryFeatureName, "Regulatory_Feature_Name")
-                .Map(x => x.Phantom4Enhancers, "Phantom4_Enhancers")
-                .Map(x => x.Phantom5Enhancers, "Phantom5_Enhancers")
-                .Map(x => x.UcscRefGeneName, "UCSC_RefGene_Name");
+        var records = await ReadResults(path, ResultsFileArchiveName);
 
-        var dataRaw = TsvReader.Read(tsvRaw, mapRaw);
-        var timer = System.Diagnostics.Stopwatch.StartNew();
+        var bins = BinResultRecords(records);
 
-        int logFcGrid = 256, adjPValGrid = 256;
-        var maxLogFc = dataRaw.Max(x => x.Log2FoldChange);
-        var minLogFc = dataRaw.Min(x => x.Log2FoldChange);
-        var maxAdjPVal = dataRaw.Max(x => -Math.Log10(x.PValueAdjusted));
-        var minAdjPVal = dataRaw.Min(x => -Math.Log10(x.PValueAdjusted));
+        await WriteResults(path, ResultsHeatmapFileArchiveName, bins);
 
-        double xStep = (maxLogFc - minLogFc) / logFcGrid;
-        double yStep = (maxAdjPVal - minAdjPVal) / adjPValGrid;
+        File.Delete(Path.Combine(path, ResultsFileName));
+    }
 
-        var grid = new Dictionary<(int, int), GridCell>();
+    private static async Task<ResultRecord[]> ReadResults(string path, string fileName)
+    {
+        var archivePath = Path.Combine(path, fileName);
+        await ArchiveManager.Extract(archivePath, "gz", false);
 
-        foreach (var data in dataRaw)
+        var filePath = archivePath.Replace(".gz", "");
+        var tsv = await File.ReadAllTextAsync(filePath);
+        var map = new ClassMap<ResultRecord>().AutoMap();
+
+        return TsvReader.Read(tsv, map).ToArray();
+    }
+
+    private static Dictionary<(int, int), ResultRecordBin> BinResultRecords(ResultRecord[] records, int logFcBinsCount = 256, int adjPValBinsCount = 256)
+    {
+        var maxLogFc = records.Max(x => x.Log2FoldChange);
+        var minLogFc = records.Min(x => x.Log2FoldChange);
+        var maxAdjPVal = records.Max(x => -Math.Log10(x.PValueAdjusted));
+        var minAdjPVal = records.Min(x => -Math.Log10(x.PValueAdjusted));
+
+        var xStep = (maxLogFc - minLogFc) / logFcBinsCount;
+        var yStep = (maxAdjPVal - minAdjPVal) / adjPValBinsCount;
+
+        var grid = new Dictionary<(int, int), ResultRecordBin>();
+
+        foreach (var data in records)
         {
-            double x = data.Log2FoldChange;
-            double y = -Math.Log10(data.PValueAdjusted);
+            var x = data.Log2FoldChange;
+            var y = -Math.Log10(data.PValueAdjusted);
+            var xi = (int)((x - minLogFc) / xStep);
+            var yi = (int)((y - minAdjPVal) / yStep);
 
-            int xi = (int)((x - minLogFc) / xStep);
-            int yi = (int)((y - minAdjPVal) / yStep);
+            var xIndex = Math.Min(xi, logFcBinsCount - 1);
+            var yIndex = Math.Min(yi, adjPValBinsCount - 1);
 
-            xi = Math.Min(xi, logFcGrid - 1);
-            yi = Math.Min(yi, adjPValGrid - 1);
+            var key = (xIndex, yIndex);
 
-            var key = (xi, yi);
             if (!grid.TryGetValue(key, out var cell))
             {
-                cell = new GridCell();
+                cell = new ResultRecordBin();
+                cell.CpgId ??= data.CpgId;
+                cell.RegulatoryFeatureName ??= data.RegulatoryFeatureName;
+                cell.Phantom4Enhancers ??= data.Phantom4Enhancers;
+                cell.Phantom5Enhancers ??= data.Phantom5Enhancers;
+                cell.UcscRefGeneName ??= data.UcscRefGeneName;
                 grid[key] = cell;
             }
+
+            cell.Log2FoldChange += (data.Log2FoldChange - cell.Log2FoldChange) / cell.Count + 1;
+            cell.PValueAdjusted += (data.PValueAdjusted - cell.PValueAdjusted) / cell.Count + 1;
             cell.Count++;
-            cell.Log2FoldChange += data.Log2FoldChange;
-            cell.PValueAdjusted += data.PValueAdjusted;
-            cell.CpgId = cell.CpgId ?? data.CpgId;
-            cell.Regulatory_Feature_Name = cell.Regulatory_Feature_Name ?? data.RegulatoryFeatureName;
-            cell.Phantom4_Enhancer = cell.Phantom4_Enhancer ?? data.Phantom4Enhancers;
-            cell.Phantom5_Enhancer = cell.Phantom5_Enhancer ?? data.Phantom5Enhancers;
-            cell.UCSC_RefGene_Name = cell.UCSC_RefGene_Name ?? data.UcscRefGeneName;
         }
-        timer.Stop();
-        Console.WriteLine(timer.Elapsed);
-        await WriteReducedPointsGz(grid, path);
+
+        return grid;
     }
 
-    public static async Task WriteReducedPointsGz(Dictionary<(int, int), GridCell> grid, string path)
+    public static async Task WriteResults(string path, string fileName, Dictionary<(int, int), ResultRecordBin> grid)
     {
-        string filePath = Path.Combine(path, CompressedReducedPoints);
+        string filePath = Path.Combine(path, fileName);
 
-        var entries = Load(grid);
-        var map = ResultMapper.Map(entries);
+        var entries = grid.Values.ToArray();
+        var map = new ClassMap<ResultRecordBin>().AutoMap();
         var tsv = TsvWriter.Write(entries, map);
 
-        using (var compressedFileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-        using (var compressionStream = new GZipStream(compressedFileStream, CompressionMode.Compress))
-        {
-            using (var writer = new StreamWriter(compressionStream))
-            {
-                await writer.WriteAsync(tsv);
-            }
-        }
-    }
-    
-    public static Resultdata[] Load(Dictionary<(int, int), GridCell> grid)
-    {
-        List<Resultdata> resultdataList = new List<Resultdata>();
+        using var compressedFileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        using var compressionStream = new GZipStream(compressedFileStream, CompressionMode.Compress);
+        using var writer = new StreamWriter(compressionStream);
 
-        foreach (var gridData in grid)
-        {
-            var resultData = new Resultdata();
-            var cell = gridData.Value;
-            if (cell.Count > 0)
-            {
-                resultData.Log2FoldChange = cell.Log2FoldChange / cell.Count;
-                resultData.PValueAdjusted = cell.PValueAdjusted / cell.Count;
-                resultData.Count = cell.Count;
-                resultData.CpgId = cell.CpgId;
-                resultData.RegulatoryFeatureName = cell.Regulatory_Feature_Name;
-                resultData.Phantom4Enhancers = cell.Phantom4_Enhancer;
-                resultData.Phantom5Enhancers = cell.Phantom5_Enhancer;
-                resultData.UcscRefGeneName = cell.UCSC_RefGene_Name;
-                resultdataList.Add(resultData);
-            }
-        }
-        return resultdataList.ToArrayOrNull();
-    }
-
-    public static string ExtractTsvFile(string path)
-    {
-        string compressedAnnotationFile = Path.Combine(path, CompressedAnnotationDataFileName);
-        string tsvAnnotationFile = Path.Combine(path, AnnotationDataFileName);
-
-        using (FileStream compressedFileStream = new FileStream(compressedAnnotationFile, FileMode.Open, FileAccess.Read))
-        using (GZipStream decompressionStream = new GZipStream(compressedFileStream, CompressionMode.Decompress))
-        using (FileStream outputFileStream = new FileStream(tsvAnnotationFile, FileMode.Create, FileAccess.Write))
-        {
-            decompressionStream.CopyTo(outputFileStream);
-        }
-        return tsvAnnotationFile;
+        await writer.WriteAsync(tsv);
     }
 }

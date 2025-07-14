@@ -14,12 +14,12 @@ public static class ArchiveManager
             throw new NotSupportedException($"Archive type '{archive}' is not supported");
     }
 
-    public static async Task Extract(string path, string archive)
+    public static async Task Extract(string path, string archive, bool deleteArchive = true)
     {
         if (archive == "zip")
-            await ExtractZip(path);
+            await ExtractZip(path, deleteArchive);
         else if (archive == "gz")
-            await ExtractGz(path);
+            await ExtractGz(path, deleteArchive);
         else
             throw new NotSupportedException($"Archive type '{archive}' is not supported");
     }
@@ -54,16 +54,17 @@ public static class ArchiveManager
         return await Task.FromResult(stream.ToArray());
     }
 
-    private static async Task ExtractZip(string path)
+    private static async Task ExtractZip(string path, bool deleteArchive = true)
     {
         ZipFile.ExtractToDirectory(path, Path.GetDirectoryName(path));
 
-        File.Delete(path);
+        if (deleteArchive)
+            File.Delete(path);
 
         await Task.CompletedTask;
     }
 
-    private static async Task ExtractGz(string path)
+    private static async Task ExtractGz(string path, bool deleteArchive = true)
     {
         using var sourceStream = File.OpenRead(path);
         using var archiveStream = new GZipStream(sourceStream, CompressionMode.Decompress);
@@ -71,6 +72,7 @@ public static class ArchiveManager
 
         await archiveStream.CopyToAsync(targetStream);
 
-        File.Delete(path);
+        if (deleteArchive)
+            File.Delete(path);
     }
 }

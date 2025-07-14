@@ -8,33 +8,44 @@ namespace Unite.Analysis.Services.Dm;
 
 public class MetaLoader
 {
-    public static Metadata[] Load(SamplesContext context, string workingDirectoryPath, string datasetId)
+    public static MetadataSample[] Load(SamplesContext context, string workingDirectoryPath, string datasetId)
     {
-        List<Metadata> metadataList = new List<Metadata>();
-        foreach (var sample in context.OmicsSamples)
+        var metadataSamples = new List<MetadataSample>();
+        
+        foreach (var omicsSample in context.OmicsSamples)
         {
-            string key = context.GetSampleKey(sample.Key);
-            var resources = sample.Value.Resources.Where(resource => resource.Type == DataTypes.Omics.Meth.Sample).ToArray();
-    
-            var idatResourceFileName = resources.FirstOrDefault(resource =>
-            resource.Format == FileTypes.Sequence.Idat).Name.Replace("_grn", "", StringComparison.InvariantCultureIgnoreCase).Replace("_red", "", StringComparison.InvariantCultureIgnoreCase);
+            var key = context.GetSampleKey(omicsSample.Key);
+
+            var resources = omicsSample.Value.Resources
+                .Where(resource => resource.Type == DataTypes.Omics.Meth.Sample && resource.Format == FileTypes.Sequence.Idat)
+                .ToArray();
+
+            if (resources.Length == 0)
+                continue;
+
+            var fileName = resources.FirstOrDefault().Name
+                .Replace("_grn", "", StringComparison.InvariantCultureIgnoreCase)
+                .Replace("_red", "", StringComparison.InvariantCultureIgnoreCase);
 
             var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
 
-            var metadata = new Metadata();
-            metadata.SampleId = key;
-            metadata.Conditions = datasetId;
-            metadata.Path = Path.Combine(sampleDirectoryPath, idatResourceFileName);
+            var metadataSample = new MetadataSample
+            {
+                SampleId = key,
+                Condition = datasetId,
+                Path = Path.Combine(sampleDirectoryPath, fileName)
+            };
 
-            metadataList.Add(metadata);
+            metadataSamples.Add(metadataSample);
         }
-        return metadataList.ToArrayOrNull();
+
+        return metadataSamples.ToArrayOrNull();
     }
 
     public static async Task PrepareMetadata(SamplesContext context, string workingDirectoryPath, string datasetId)
     {
         var entries = Load(context, workingDirectoryPath, datasetId);
-        string metaFilePath = Path.Combine(workingDirectoryPath, "metadata.tsv");
+        var metaFilePath = Path.Combine(workingDirectoryPath, "metadata.tsv");
 
         var map = MetaMapper.Map(entries);
 
