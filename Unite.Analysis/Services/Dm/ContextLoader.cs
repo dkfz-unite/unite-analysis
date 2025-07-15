@@ -20,7 +20,6 @@ public class ContextLoader : SamplesContextLoader
     {
     }
 
-
     protected override IQueryable<Specimen> Include(IQueryable<Specimen> query)
     {
         return query

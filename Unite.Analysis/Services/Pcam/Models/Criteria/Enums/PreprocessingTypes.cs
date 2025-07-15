@@ -5,23 +5,23 @@ namespace Unite.Analysis.Services.Pcam.Models.Criteria.Enums;
 
 public enum PreprocessingType
 {
-    [JsonPropertyName("preprocessIllumina")]
-    [EnumMember(Value = "preprocessIllumina")]
+    [JsonPropertyName("Illumina")]
+    [EnumMember(Value = "Illumina")]
     Illumina = 1,
 
-    [JsonPropertyName("preprocessSWAN")]
-    [EnumMember(Value = "preprocessSWAN")]
+    [JsonPropertyName("SWAN")]
+    [EnumMember(Value = "SWAN")]
     SWAN = 2,
 
-    [JsonPropertyName("preprocessQuantile")]
-    [EnumMember(Value = "preprocessQuantile")]
+    [JsonPropertyName("Quantile")]
+    [EnumMember(Value = "Quantile")]
     Quantile = 3,
 
-    [JsonPropertyName("preprocessNoob")]
-    [EnumMember(Value = "preprocessNoob")]
+    [JsonPropertyName("Noob")]
+    [EnumMember(Value = "Noob")]
     Noob = 4,
 
-    [JsonPropertyName("preprocessRaw")]
-    [EnumMember(Value = "preprocessRaw")]
+    [JsonPropertyName("Raw")]
+    [EnumMember(Value = "Raw")]
     Raw = 5
 }

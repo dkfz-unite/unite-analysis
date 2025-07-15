@@ -4,7 +4,7 @@ namespace Unite.Analysis.Services.Pcam;
 
 public class OutputWriter
 {
-    public const string ResultDataFileName = "results.csv.gz";
+    public const string ResultsArchiveFileName = "results.csv.gz";
 
     public const string ArchiveFileName = "output.zip";
 
@@ -27,7 +27,7 @@ public class OutputWriter
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
-        archive.CreateEntryFromFile(Path.Combine(path, ResultDataFileName), ResultDataFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, ResultsArchiveFileName), ResultsArchiveFileName);
         await Task.CompletedTask;
     }
 }

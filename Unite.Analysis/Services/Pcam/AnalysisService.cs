@@ -1,10 +1,10 @@
 using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Unite.Analysis.Configuration.Options;
+using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
 using Unite.Analysis.Services.Pcam.Models.Criteria;
+using Unite.Data.Entities.Omics.Analysis.Enums;
 
 namespace Unite.Analysis.Services.Pcam;
 
@@ -13,9 +13,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private readonly ContextLoader _contextLoader;
 
 
-    public AnalysisService(
-        IAnalysisOptions options,
-        ContextLoader contextLoader) : base(options)
+    public AnalysisService(IAnalysisOptions options, ContextLoader contextLoader) : base(options)
     {
         _contextLoader = contextLoader;
     }
@@ -31,9 +29,9 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         foreach (var dataset in model.Datasets)
         {
-            var context = await _contextLoader.LoadDatasetData(dataset); 
-            await DataLoader.PrepareMetadata(context, directoryPath, dataset.Name);
+            var context = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MethArray);
             await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
+            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Id);
         }
 
         WriteOptions(model.Options, directoryPath);
@@ -62,7 +60,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultDataFileName);
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsArchiveFileName);
 
         var stream = File.OpenRead(path);
 
@@ -92,13 +90,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     private static void WriteOptions(Options options, string path)
     {
-        var serializerOptions = new JsonSerializerOptions
-        {
-            Converters = { new JsonStringEnumMemberConverter() },
-            WriteIndented = true
-        };
-
-        var json = JsonSerializer.Serialize(options, serializerOptions);
+        var json = MemberJsonSerializer.Serialize(options);
 
         File.WriteAllText(Path.Combine(path, "options.json"), json);
     }

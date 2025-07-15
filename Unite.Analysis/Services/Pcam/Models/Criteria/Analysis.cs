@@ -2,10 +2,10 @@ using Unite.Analysis.Models;
 
 namespace Unite.Analysis.Services.Pcam.Models.Criteria;
 
-public record Analysis: AnalysisData
+public record Analysis : AnalysisData
 {
-     /// <summary>
+    /// <summary>
     /// Analysis options.
     /// </summary>
-    public Options Options { get; set; } = new();
+    public Options Options { get; set; } = new Options();
 }

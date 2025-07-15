@@ -14,7 +14,7 @@ public class DataLoader
         {
             try
             {
-                await DownloadResource(sample.Value, context.GetSampleKey(sample.Key), workingDirectoryPath, token, host);
+                await DownloadResources(sample.Value, context.GetSampleKey(sample.Key), workingDirectoryPath, token, host);
             }
             catch
             {
@@ -25,7 +25,7 @@ public class DataLoader
         context.RemoveSample(wrongSampleIds.ToArray());
     }
 
-    private static async Task DownloadResource(Sample sample, string key, string workingDirectoryPath, string token,string host = null)
+    private static async Task DownloadResources(Sample sample, string key, string workingDirectoryPath, string token,string host = null)
     {
         var resources = sample.Resources
             .Where(resource => resource.Type == DataTypes.Omics.Meth.Sample && resource.Format == FileTypes.Sequence.Idat)
@@ -40,6 +40,7 @@ public class DataLoader
             throw new Exception($"Green channel IDAT file is missing for `{key}`");
 
         var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
+        
         var redFilePath = Path.Combine(sampleDirectoryPath, redResource.Name);
         var grnFilePath = Path.Combine(sampleDirectoryPath, grnResource.Name);
 

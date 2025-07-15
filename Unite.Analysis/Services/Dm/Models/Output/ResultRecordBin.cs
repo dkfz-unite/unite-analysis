@@ -1,6 +1,6 @@
 using Unite.Essentials.Tsv.Attributes;
 
-namespace Unite.Analysis.Services.Dm.Models.Data;
+namespace Unite.Analysis.Services.Dm.Models.Output;
 
 public class ResultRecordBin : ResultRecord
 {
