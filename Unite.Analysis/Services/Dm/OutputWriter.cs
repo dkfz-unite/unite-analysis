@@ -88,18 +88,21 @@ public class OutputWriter
 
             if (!grid.TryGetValue(key, out var cell))
             {
-                cell = new ResultRecordBin();
-                cell.CpgId ??= data.CpgId;
-                cell.RegulatoryFeatureName ??= data.RegulatoryFeatureName;
-                cell.Phantom4Enhancers ??= data.Phantom4Enhancers;
-                cell.Phantom5Enhancers ??= data.Phantom5Enhancers;
-                cell.UcscRefGeneName ??= data.UcscRefGeneName;
+                cell = new ResultRecordBin
+                {
+                    CpgId = data.CpgId,
+                    RegulatoryFeatureName = data.RegulatoryFeatureName,
+                    Phantom4Enhancers = data.Phantom4Enhancers,
+                    Phantom5Enhancers = data.Phantom5Enhancers,
+                    UcscRefGeneName = data.UcscRefGeneName
+                };
+                
                 grid[key] = cell;
             }
 
-            cell.Log2FoldChange += (data.Log2FoldChange - cell.Log2FoldChange) / cell.Count + 1;
-            cell.PValueAdjusted += (data.PValueAdjusted - cell.PValueAdjusted) / cell.Count + 1;
             cell.Count++;
+            cell.Log2FoldChange += (data.Log2FoldChange - cell.Log2FoldChange) / cell.Count;
+            cell.PValueAdjusted += (data.PValueAdjusted - cell.PValueAdjusted) / cell.Count;
         }
 
         return grid;
