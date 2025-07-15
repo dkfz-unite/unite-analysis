@@ -10,7 +10,7 @@ public class OutputWriter
     public const string ResultsFileArchiveName = "results.tsv.gz";
     public const string ResultsFileName = "results.tsv";
     public const string ResultsHeatmapFileArchiveName = "results_heatmap.tsv.gz";
-    public const string ResultsHeatmapFileName = "results_heatmap.tsv"; // Not used but leave for consistency
+    public const string ResultsHeatmapFileName = "results_heatmap.tsv"; // Not used, left for reference.
     public const string ArchiveFileName = "output.zip";
 
 
@@ -45,7 +45,7 @@ public class OutputWriter
 
         var bins = BinResultRecords(records);
 
-        await WriteResults(path, ResultsHeatmapFileArchiveName, bins);
+        await WriteResultsHeatmap(path, ResultsHeatmapFileArchiveName, bins);
 
         File.Delete(Path.Combine(path, ResultsFileName));
     }
@@ -96,7 +96,7 @@ public class OutputWriter
                     Phantom5Enhancers = data.Phantom5Enhancers,
                     UcscRefGeneName = data.UcscRefGeneName
                 };
-                
+
                 grid[key] = cell;
             }
 
@@ -108,7 +108,7 @@ public class OutputWriter
         return grid;
     }
 
-    public static async Task WriteResults(string path, string fileName, Dictionary<(int, int), ResultRecordBin> grid)
+    public static async Task WriteResultsHeatmap(string path, string fileName, Dictionary<(int, int), ResultRecordBin> grid)
     {
         string filePath = Path.Combine(path, fileName);
 
