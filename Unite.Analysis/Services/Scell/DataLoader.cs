@@ -13,10 +13,21 @@ public class DataLoader
 
     public static async Task DownloadResources(SamplesContext context, string workingDirectoryPath, string token, string host = null)
     {
+        var wrongSampleIds = new List<int>();
+
         foreach (var sample in context.OmicsSamples)
         {
-            await DownloadResource(sample.Value, context.GetSampleKey(sample.Key), workingDirectoryPath, token, host);
+            try
+            {
+                await DownloadResource(sample.Value, context.GetSampleKey(sample.Key), workingDirectoryPath, token, host);
+            }
+            catch
+            {
+                wrongSampleIds.Add(sample.Key);
+            }
         }
+
+        context.RemoveSample(wrongSampleIds.ToArray());
     }
 
     private static async Task DownloadResource(Sample sample, string key, string workingDirectoryPath, string token, string host = null)
