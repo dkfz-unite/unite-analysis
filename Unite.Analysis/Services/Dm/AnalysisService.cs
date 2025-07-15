@@ -31,9 +31,9 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         foreach (var dataset in model.Datasets)
         {
-            var context = await _contextLoader.LoadDatasetData(dataset); 
-            await DataLoader.PrepareMetadata(context, directoryPath, dataset.Id);
+            var context = await _contextLoader.LoadDatasetData(dataset, Data.Entities.Omics.Analysis.Enums.AnalysisType.MethArray);
             await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
+            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Id);
         }
 
         WriteOptions(model.Options, directoryPath);
@@ -51,7 +51,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var analysisResult = await ProcessRemotely(url);
 
-         if (analysisResult.Status == AnalysisTaskStatus.Success)
+        if (analysisResult.Status == AnalysisTaskStatus.Success)
         {
             await OutputWriter.ProcessOutput(path);
             await OutputWriter.ArchiveOutput(path);
@@ -62,7 +62,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.AnnotationDataFileName);
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsHeatmapFileArchiveName);
 
         var stream = File.OpenRead(path);
 

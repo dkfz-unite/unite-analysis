@@ -29,10 +29,10 @@ public class AnalysisProcessingHandler
         ILogger<AnalysisProcessingHandler> logger)
     {
         _apiOptions = apiOptions;
+        _analysisTaskService = analysisTaskService;
         _survSceAnalysisService = survAnalysisService;
         _dmAnalysisService = dmAnalysisService;
         _pcamAnalysisService = pcamAnalysisService;
-        _analysisTaskService = analysisTaskService;
         _deAnalysisService = deAnalysisService;
         _scellAnalysisService = scellAnalysisService;
         _logger = logger;

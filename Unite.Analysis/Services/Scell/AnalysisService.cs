@@ -26,9 +26,9 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault(), [AnalysisType.RNASeqSc, AnalysisType.RNASeqSn]);
 
-        await MetaLoader.PrepareMetadata(context, directoryPath);
-
         await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
+
+        await MetaLoader.PrepareMetadata(context, directoryPath);
 
         if (!string.IsNullOrWhiteSpace(model.Annotations))
         {

@@ -1,8 +1,8 @@
 namespace Unite.Analysis.Services.Dm.Models.Data;
 
-public class Metadata
+public class MetadataSample
 {
     public string SampleId { get; set; }
     public string Path { get; set; }
-    public string Conditions { get; set; }
+    public string Condition { get; set; }
 }
