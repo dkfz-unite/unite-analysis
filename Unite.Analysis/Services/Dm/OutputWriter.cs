@@ -7,7 +7,7 @@ namespace Unite.Analysis.Services.Dm;
 
 public class OutputWriter
 {
-    public const string ResultsFileArchiveName = "results.tsv.gz";
+    public const string ResultsFileArchiveName = "results.tsv.gz"; // Not used, left for reference.
     public const string ResultsFileName = "results.tsv";
     public const string ResultsHeatmapFileArchiveName = "results_heatmap.tsv.gz";
     public const string ResultsHeatmapFileName = "results_heatmap.tsv"; // Not used, left for reference.
@@ -32,8 +32,7 @@ public class OutputWriter
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
-        archive.CreateEntryFromFile(Path.Combine(path, ResultsFileArchiveName), ResultsFileArchiveName);
-        archive.CreateEntryFromFile(Path.Combine(path, ResultsHeatmapFileArchiveName), ResultsHeatmapFileArchiveName);
+        archive.CreateEntryFromFile(Path.Combine(path, ResultsFileName), ResultsFileName);
 
         await Task.CompletedTask;
     }
@@ -41,24 +40,19 @@ public class OutputWriter
 
     private static async Task BinResults(string path)
     {
-        var records = await ReadResults(path, ResultsFileArchiveName);
+        var records = await ReadResults(path, ResultsFileName);
 
         var bins = BinResultRecords(records);
 
         await WriteResultsHeatmap(path, ResultsHeatmapFileArchiveName, bins);
 
-        File.Delete(Path.Combine(path, ResultsFileName));
     }
 
     private static async Task<ResultRecord[]> ReadResults(string path, string fileName)
     {
-        var archivePath = Path.Combine(path, fileName);
-        await ArchiveManager.Extract(archivePath, "gz", false);
-
-        var filePath = archivePath.Replace(".gz", "");
-        var tsv = await File.ReadAllTextAsync(filePath);
+        var filePath = Path.Combine(path, ResultsFileName);
+        var tsv = await File.ReadAllTextAsync(Path.Combine(filePath));
         var map = new ClassMap<ResultRecord>().AutoMap();
-
         return TsvReader.Read(tsv, map).ToArray();
     }
 
