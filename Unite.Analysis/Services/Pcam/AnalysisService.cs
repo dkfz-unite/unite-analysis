@@ -31,7 +31,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         {
             var context = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MethArray);
             await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
-            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Id);
+            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Name);
         }
 
         WriteOptions(model.Options, directoryPath);
