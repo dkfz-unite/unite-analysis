@@ -47,27 +47,9 @@ public class SamplesContext
 
     public string GetSampleKey(int id)
     {
-        if (SampleType == 1)
-        {
-            var donor = GetSampleDonor(id);
-            var specimen = GetSampleSpecimen(id);
-            return $"{donor.ReferenceId}-{specimen.ReferenceId}";
-        }
-        else if (SampleType == 2)
-        {
-            var image = GetSampleImage(id);
-            var specimen = GetSampleSpecimen(id);
-            return $"{image.ReferenceId}-{specimen.ReferenceId}";
-        }
-        else if (SampleType == 3)
-        {
-            var specimen = GetSampleSpecimen(id);
-            return $"{specimen.ReferenceId}";
-        }
-        else
-        {
-            throw new InvalidOperationException("Invalid sample type.");
-        }
+        var donor = GetSampleDonor(id);
+        var specimen = GetSampleSpecimen(id);
+        return $"{donor.ReferenceId}-{specimen.ReferenceId}";
     }
 
     public Donor GetSampleDonor(int id)
