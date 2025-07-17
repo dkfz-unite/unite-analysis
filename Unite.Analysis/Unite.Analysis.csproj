@@ -10,9 +10,4 @@
     <PackageReference Include="Unite.Indices.Search" Version="12.0.0" />
     <PackageReference Include="Unite.Essentials.Tsv" Version="4.2.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <!-- <ProjectReference Include="../../unite-data/Unite.Data.Context/Unite.Data.Context.csproj" /> -->
-    <!-- <ProjectReference Include="../../unite-indices/Unite.Indices.Search/Unite.Indices.Search.csproj" /> -->
-  </ItemGroup>
 </Project>

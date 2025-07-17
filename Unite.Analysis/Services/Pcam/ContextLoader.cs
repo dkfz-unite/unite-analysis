@@ -8,7 +8,7 @@ using DonorIndex = Unite.Indices.Entities.Donors.DonorIndex;
 using ImageIndex = Unite.Indices.Entities.Images.ImageIndex;
 using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
 
-namespace Unite.Analysis.Services.Dm;
+namespace Unite.Analysis.Services.Pcam;
 
 public class ContextLoader : SamplesContextLoader
 {

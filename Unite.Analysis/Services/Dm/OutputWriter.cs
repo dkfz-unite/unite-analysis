@@ -1,6 +1,5 @@
 using System.IO.Compression;
-using Unite.Analysis.Helpers;
-using Unite.Analysis.Services.Dm.Models.Data;
+using Unite.Analysis.Services.Dm.Models.Output;
 using Unite.Essentials.Tsv;
 
 namespace Unite.Analysis.Services.Dm;
@@ -9,7 +8,7 @@ public class OutputWriter
 {
     public const string ResultsFileArchiveName = "results.tsv.gz"; // Not used, left for reference.
     public const string ResultsFileName = "results.tsv";
-    public const string ResultsHeatmapFileArchiveName = "results_heatmap.tsv.gz";
+    public const string ResultsHeatmapArchiveFileName = "results_heatmap.tsv.gz";
     public const string ResultsHeatmapFileName = "results_heatmap.tsv"; // Not used, left for reference.
     public const string ArchiveFileName = "output.zip";
 
@@ -44,7 +43,7 @@ public class OutputWriter
 
         var bins = BinResultRecords(records);
 
-        await WriteResultsHeatmap(path, ResultsHeatmapFileArchiveName, bins);
+        await WriteResultsHeatmap(path, ResultsHeatmapArchiveFileName, bins);
 
     }
 

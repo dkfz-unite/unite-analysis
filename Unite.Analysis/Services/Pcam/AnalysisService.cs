@@ -3,10 +3,10 @@ using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
-using Unite.Analysis.Services.Dm.Models.Criteria;
+using Unite.Analysis.Services.Pcam.Models.Criteria;
 using Unite.Data.Entities.Omics.Analysis.Enums;
 
-namespace Unite.Analysis.Services.Dm;
+namespace Unite.Analysis.Services.Pcam;
 
 public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
@@ -31,7 +31,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         {
             var context = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MethArray);
             await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
-            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Id);
+            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Name);
         }
 
         WriteOptions(model.Options, directoryPath);
@@ -45,7 +45,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.DmUrl}/api/run?key={key}";
+        var url = $"{_options.PcamUrl}/api/run?key={key}";
 
         var analysisResult = await ProcessRemotely(url);
 
@@ -60,7 +60,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsHeatmapArchiveFileName);
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsArchiveFileName);
 
         var stream = File.OpenRead(path);
 
