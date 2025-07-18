@@ -12,6 +12,7 @@ public class AnalysesController : Controller
     private readonly AnalysisRecordsService _analysisRecordsService;
     private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
+    private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
     private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
 
@@ -21,6 +22,7 @@ public class AnalysesController : Controller
         AnalysisRecordsService analysisRecordsService,
         Analysis.Services.Surv.AnalysisService survAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
+        Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
         Analysis.Services.De.AnalysisService deAnalysisService, 
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
@@ -28,6 +30,7 @@ public class AnalysesController : Controller
         _analysisRecordsService = analysisRecordsService;
         _survAnalysisService = survAnalysisService;
         _dmAnalysisService = dmAnalysisService;
+        _pcamAnalysisService = pcamAnalysisService;
         _deAnalysisService = deAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
@@ -63,6 +66,8 @@ public class AnalysesController : Controller
                 await _survAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.DM)
                 await _dmAnalysisService.Delete(entry.Id);
+            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.PCAM)
+                await _pcamAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.DE)
                 await _deAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.SCELL)

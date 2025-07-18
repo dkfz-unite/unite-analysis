@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Unite.Analysis.Services.Scell.Models.Criteria.Enums;
 
+[JsonConverter(typeof(JsonStringEnumMemberConverter))]
 public enum PreprocessingType
 {
     [JsonPropertyName("default")]

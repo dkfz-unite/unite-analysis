@@ -1,6 +1,6 @@
-namespace Unite.Analysis.Services.Scell.Models.Data;
+namespace Unite.Analysis.Services;
 
-public class Metadata
+public class SampleMetadata
 {
     public string Id { get; set; }
 
@@ -8,7 +8,6 @@ public class Metadata
     public ImageMetadata Image { get; set; }
     public SpecimenMetadata Specimen { get; set; }
 }
-
 
 public class DonorMetadata
 {
@@ -61,6 +60,8 @@ public class MaterialMetadata
 {
     public string Type { get; set; }
     public string TumorType { get; set; }
+    public string TumorGrade { get; set; }
+    public string FixationType { get; set; }
     public string Source { get; set; }
 }
 

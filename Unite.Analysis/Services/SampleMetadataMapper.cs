@@ -1,25 +1,24 @@
 using System.Linq.Expressions;
-using Unite.Analysis.Services.Scell.Models.Data;
 using Unite.Essentials.Tsv;
 using Unite.Essentials.Tsv.Converters;
 
-namespace Unite.Analysis.Services.Scell;
+namespace Unite.Analysis.Services;
 
-public class MetaMapper
+public class SampleMetadataMapper
 {
     private static readonly NullableValueConverter _nullableValueConverter = new();
 
 
-    public static ClassMap<Metadata> Map(Metadata[] entries)
+    public static ClassMap<SampleMetadata> Map(SampleMetadata[] entries)
     {
-        var map = new ClassMap<Metadata>();
+        var map = new ClassMap<SampleMetadata>();
 
         MapProperty(map, entries, entry => entry.Id, "sample_id");
 
         if (entries.Any(entry => entry.Donor != null))
         {
             MapProperty(map, entries, entry => entry.Donor.Id, "donor_id");
-            
+
             MapProperty(map, entries, entry => entry.Donor.Age, "donor_age");
             MapProperty(map, entries, entry => entry.Donor.Sex, "donor_sex");
             MapProperty(map, entries, entry => entry.Donor.Diagnosis, "donor_diagnosis");
@@ -34,7 +33,7 @@ public class MetaMapper
         if (entries.Any(entry => entry.Image != null))
         {
             MapProperty(map, entries, entry => entry.Image.Id, "image_id");
-            
+
             MapProperty(map, entries, entry => entry.Image.Type, "image_type");
 
             if (entries.Any(entry => entry.Image.Mr != null))
@@ -52,11 +51,13 @@ public class MetaMapper
             MapProperty(map, entries, entry => entry.Specimen.Type, "specimen_type");
             MapProperty(map, entries, entry => entry.Specimen.IdhStatus, "specimen_idh_status");
             MapProperty(map, entries, entry => entry.Specimen.MgmtStatus, "specimen_mgmt_status");
-            
+
             if (entries.Any(entry => entry.Specimen.Material != null))
             {
                 MapProperty(map, entries, entry => entry.Specimen.Material.Type, "material_type");
                 MapProperty(map, entries, entry => entry.Specimen.Material.TumorType, "material_tumor_type");
+                MapProperty(map, entries, entry => entry.Specimen.Material.TumorGrade, "material_tumor_grade");
+                MapProperty(map, entries, entry => entry.Specimen.Material.FixationType, "material_fixation_type");
                 MapProperty(map, entries, entry => entry.Specimen.Material.Source, "material_source");
             }
 
@@ -91,7 +92,7 @@ public class MetaMapper
     }
 
 
-    private static void MapProperty(ClassMap<Metadata> map, Metadata[] entries, Expression<Func<Metadata, string>> property, string header)
+    private static void MapProperty(ClassMap<SampleMetadata> map, SampleMetadata[] entries, Expression<Func<SampleMetadata, string>> property, string header)
     {
         var getter = property.Compile();
 

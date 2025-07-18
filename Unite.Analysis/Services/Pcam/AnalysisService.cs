@@ -2,10 +2,11 @@ using System.Diagnostics;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
-using Unite.Analysis.Services.Scell.Models.Criteria;
+using Unite.Analysis.Models.Enums;
+using Unite.Analysis.Services.Pcam.Models.Criteria;
 using Unite.Data.Entities.Omics.Analysis.Enums;
 
-namespace Unite.Analysis.Services.Scell;
+namespace Unite.Analysis.Services.Pcam;
 
 public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
@@ -20,21 +21,17 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public override async Task<AnalysisTaskResult> Prepare(Models.Criteria.Analysis model, params object[] args)
     {
-        var stopwatch = Stopwatch.StartNew();
+        var stopwatch = new Stopwatch();
+
+        stopwatch.Restart();
 
         var directoryPath = GetWorkingDirectoryPath(model.Id);
 
-        var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault(), [AnalysisType.RNASeqSc, AnalysisType.RNASeqSn]);
-
-        await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
-
-        await MetaLoader.PrepareMetadata(context, directoryPath);
-
-        if (!string.IsNullOrWhiteSpace(model.Annotations))
+        foreach (var dataset in model.Datasets)
         {
-            model.Options.Meta = true;
-            
-            WriteAnnotations(model.Annotations, directoryPath);
+            var context = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MethArray);
+            await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
+            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Name);
         }
 
         WriteOptions(model.Options, directoryPath);
@@ -48,19 +45,22 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.ScellUrl}/api/run?key={key}";
+        var url = $"{_options.PcamUrl}/api/run?key={key}";
 
         var analysisResult = await ProcessRemotely(url);
 
-        await OutputWriter.ProcessOutput(path);
-        await OutputWriter.ArchiveOutput(path);
+        if (analysisResult.Status == AnalysisTaskStatus.Success)
+        {
+            await OutputWriter.ProcessOutput(path);
+            await OutputWriter.ArchiveOutput(path);
+        }
 
         return analysisResult;
     }
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultMetaFileName);
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsArchiveFileName);
 
         var stream = File.OpenRead(path);
 
@@ -88,16 +88,10 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         return Task.CompletedTask;
     }
 
-
     private static void WriteOptions(Options options, string path)
     {
         var json = MemberJsonSerializer.Serialize(options);
 
         File.WriteAllText(Path.Combine(path, "options.json"), json);
-    }
-
-    private static void WriteAnnotations(string annotations, string path)
-    {
-        File.WriteAllText(Path.Combine(path, "annotations.tsv"), annotations);
     }
 }

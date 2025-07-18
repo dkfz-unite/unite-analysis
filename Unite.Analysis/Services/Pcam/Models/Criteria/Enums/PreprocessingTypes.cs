@@ -1,7 +1,7 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Unite.Analysis.Services.Dm.Models.Criteria.Enums;
+namespace Unite.Analysis.Services.Pcam.Models.Criteria.Enums;
 
 public enum PreprocessingType
 {
