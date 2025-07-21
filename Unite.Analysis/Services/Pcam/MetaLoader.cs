@@ -27,7 +27,8 @@ public class MetaLoader
                 .Replace("_grn", "", StringComparison.InvariantCultureIgnoreCase)
                 .Replace("grn", "", StringComparison.InvariantCultureIgnoreCase)
                 .Replace("_red", "", StringComparison.InvariantCultureIgnoreCase)
-                .Replace("red", "", StringComparison.InvariantCultureIgnoreCase);
+                .Replace("red", "", StringComparison.InvariantCultureIgnoreCase)
+                .Replace(".idat", "", StringComparison.InvariantCultureIgnoreCase);
 
             var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
 
