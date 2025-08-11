@@ -65,7 +65,7 @@ public class SamplesContext
     {
         var sample = OmicsSamples[id];
         var specimen = Specimens[sample.SpecimenId];
-        var image = Images[specimen.DonorId];
+        var image = Images.Values.FirstOrDefault(image => image.DonorId == specimen.DonorId);
 
         return image;
     }

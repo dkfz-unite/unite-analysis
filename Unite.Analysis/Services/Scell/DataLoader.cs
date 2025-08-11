@@ -8,7 +8,7 @@ public class DataLoader
 {   
     private const string BarcodesFileName = "barcodes.tsv.gz";
     private const string FeaturesFileName = "features.tsv.gz";
-    private const string MatrixFileName = "matrix.tsv.gz";
+    private const string MatrixFileName = "matrix.mtx.gz";
 
 
     public static async Task DownloadResources(SamplesContext context, string workingDirectoryPath, string token, string host = null)

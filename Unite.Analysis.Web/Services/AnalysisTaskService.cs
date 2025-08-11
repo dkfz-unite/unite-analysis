@@ -129,7 +129,7 @@ public class AnalysisTaskService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex.GetShortMessage());
+                        _logger.LogError(ex, ex.Message);
 
                         Update(task, TaskStatusType.Failed);
                     }
