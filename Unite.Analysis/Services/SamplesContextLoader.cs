@@ -95,7 +95,7 @@ public class SamplesContextLoader
         var donorIds = await _imageRepository.GetRelatedDonors(imageIds);
         context.Donors = await LoadDonors(donorIds);
 
-        var specimenIds = await _imageRepository.GetRelatedSpecimens(imageIds);
+        var specimenIds = await _donorRepository.GetRelatedSpecimens(donorIds);
         context.Specimens = await LoadSpecimens(specimenIds);
 
         var sampleIds = await _specimenRepository.GetRelatedSamples(specimenIds, analysisTypes);
