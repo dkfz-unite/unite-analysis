@@ -41,8 +41,8 @@ public class DataLoader
 
         var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
 
-        var redFilePath = Path.Combine(sampleDirectoryPath, redResource.Name);
-        var grnFilePath = Path.Combine(sampleDirectoryPath, grnResource.Name);
+        var redFilePath = Path.Combine(sampleDirectoryPath, redResource.Name.Replace("_red", "_Red"));  
+        var grnFilePath = Path.Combine(sampleDirectoryPath, grnResource.Name.Replace("_grn", "_Grn"));
 
         var redDownloadTask = DownloadManager.Download(redFilePath, redResource.Url, token, host);
         var grnDownloadTask = DownloadManager.Download(grnFilePath, grnResource.Url, token, host);
