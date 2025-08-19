@@ -90,6 +90,18 @@ public class AnalysisController : Controller
         return Ok(model.Data.Id);
     }
 
+    [HttpPost("gaf")]
+    public async Task<IActionResult> CreateGafTask([FromBody]TypedAnalysis<Analysis.Services.Gaf.Models.Criteria.Analysis> model)
+    {
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.GAF);
+
+        return Ok(model.Data.Id);
+    }
+
     [HttpPost("scell")]
     public async Task<IActionResult> CreateScellTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
     {
