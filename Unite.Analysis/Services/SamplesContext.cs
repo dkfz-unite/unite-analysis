@@ -49,7 +49,11 @@ public class SamplesContext
     {
         var donor = GetSampleDonor(id);
         var specimen = GetSampleSpecimen(id);
-        return $"{donor.ReferenceId}-{specimen.ReferenceId}";
+
+        if (SampleType == 1)
+            return $"{donor.ReferenceId}";
+        else
+            return $"{donor.ReferenceId}-{specimen.ReferenceId}";
     }
 
     public Donor GetSampleDonor(int id)

@@ -14,6 +14,7 @@ public class AnalysesController : Controller
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
     private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
     private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
 
 
@@ -23,7 +24,8 @@ public class AnalysesController : Controller
         Analysis.Services.Surv.AnalysisService survAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
         Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
-        Analysis.Services.De.AnalysisService deAnalysisService, 
+        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
@@ -32,6 +34,7 @@ public class AnalysesController : Controller
         _dmAnalysisService = dmAnalysisService;
         _pcamAnalysisService = pcamAnalysisService;
         _deAnalysisService = deAnalysisService;
+        _gafAnalysisService = gafAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
 
@@ -70,6 +73,8 @@ public class AnalysesController : Controller
                 await _pcamAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.DE)
                 await _deAnalysisService.Delete(entry.Id);
+            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.GAF)
+                await _gafAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.SCELL)
                 await _scellAnalysisService.Delete(entry.Id);
         }

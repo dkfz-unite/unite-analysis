@@ -17,6 +17,7 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
     private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
     private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     
 
@@ -27,6 +28,7 @@ public class AnalysisController : Controller
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
         Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
         Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
@@ -35,6 +37,7 @@ public class AnalysisController : Controller
         _dmAnalysisService = dmAnalysisService;
         _pcamAnalysisService = pcamAnalysisService;
         _deAnalysisService = deAnalysisService;
+        _gafAnalysisService = gafAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
     
@@ -146,6 +149,8 @@ public class AnalysisController : Controller
             return Ok(await _pcamAnalysisService.Load(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.DE)
             return Ok(await _deAnalysisService.Load(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
+            return Ok(await _gafAnalysisService.Load(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Load(id));
         
@@ -168,6 +173,8 @@ public class AnalysisController : Controller
             return Ok(await _pcamAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.DE)
             return Ok(await _deAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
+            return Ok(await _gafAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Download(id));
 
@@ -193,8 +200,12 @@ public class AnalysisController : Controller
             await _survAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.DM)
             await _dmAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
+            await _pcamAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.DE)
             await _deAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
+            await _gafAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             await _scellAnalysisService.Delete(id); 
         
