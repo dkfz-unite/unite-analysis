@@ -3,19 +3,28 @@ using Unite.Essentials.Extensions;
 using SM = Unite.Data.Entities.Omics.Analysis.Dna.Sm;
 using CNV = Unite.Data.Entities.Omics.Analysis.Dna.Cnv;
 using SV = Unite.Data.Entities.Omics.Analysis.Dna.Sv;
+using System.Text.Json.Serialization;
 
 namespace Unite.Analysis.Services.Gaf.Models.Output;
 
 public class VariantRecord
 {
+    [JsonPropertyName("id")]
     public int Id { get; set; }
+    [JsonPropertyName("donorId")]
     public int DonorId { get; set; }
+    [JsonPropertyName("geneId")]
     public int GeneId { get; set; }
 
+    [JsonPropertyName("position")]
     public string Position { get; set; }
+    [JsonPropertyName("type")]
     public string Type { get; set; }
+    [JsonPropertyName("change")]
     public string Change { get; set; }
+    [JsonPropertyName("impact")]
     public string Impact { get; set; }
+    [JsonPropertyName("effect")]
     public string Effect { get; set; }
 
 
