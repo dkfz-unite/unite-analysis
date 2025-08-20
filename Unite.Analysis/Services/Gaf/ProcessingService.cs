@@ -18,12 +18,10 @@ public class ProcessingService
 
 
     public ProcessingService(
-        SpecimensRepository specimensRepository,
-        VariantsRepository variantsRepository,
         IDbContextFactory<DomainDbContext> dbContextFactory)
     {
-        _specimensRepository = specimensRepository;
-        _variantsRepository = variantsRepository;
+        _specimensRepository = new SpecimensRepository(dbContextFactory);
+        _variantsRepository = new VariantsRepository(dbContextFactory);
         _dbContextFactory = dbContextFactory;
     }
 
