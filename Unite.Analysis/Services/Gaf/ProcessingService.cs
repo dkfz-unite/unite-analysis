@@ -3,10 +3,12 @@ using Unite.Analysis.Services.Gaf.Models.Criteria;
 using Unite.Analysis.Services.Gaf.Models.Output;
 using Unite.Data.Context;
 using Unite.Data.Context.Repositories;
+using Unite.Data.Entities.Omics.Analysis.Dna;
 
 using SM = Unite.Data.Entities.Omics.Analysis.Dna.Sm;
 using CNV = Unite.Data.Entities.Omics.Analysis.Dna.Cnv;
 using SV = Unite.Data.Entities.Omics.Analysis.Dna.Sv;
+using Unite.Data.Context.Repositories.Extensions.Queryable;
 
 namespace Unite.Analysis.Services.Gaf;
 
@@ -30,15 +32,13 @@ public class ProcessingService
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var impacts = new string[] { "High", "Moderate", "Low" };
+        var impacts = new string[] { Effect.Impacts.High, Effect.Impacts.Moderate, Effect.Impacts.Low };
 
         var sampleIds = context.OmicsSamples.Keys.ToArray();
 
         var entries = dbContext.Set<SM.VariantEntry>()
             .AsNoTracking()
-            .Include(entry => entry.Entity)
-            .Include(entry => entry.Entity.AffectedTranscripts)
-                .ThenInclude(transcript => transcript.Feature.Gene)
+            .IncludeAffectedTranscripts()
             .Where(entry => sampleIds.Contains(entry.SampleId))
             .Where(entry => entry.Entity.AffectedTranscripts.Any(transcript => transcript.Distance == null))
             .ToArray();
