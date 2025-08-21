@@ -1,9 +1,9 @@
+using System.Text.Json.Serialization;
 using Unite.Essentials.Extensions;
 
 using SM = Unite.Data.Entities.Omics.Analysis.Dna.Sm;
 using CNV = Unite.Data.Entities.Omics.Analysis.Dna.Cnv;
 using SV = Unite.Data.Entities.Omics.Analysis.Dna.Sv;
-using System.Text.Json.Serialization;
 
 namespace Unite.Analysis.Services.Gaf.Models.Output;
 
