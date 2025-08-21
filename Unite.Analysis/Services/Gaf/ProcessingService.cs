@@ -3,12 +3,12 @@ using Unite.Analysis.Services.Gaf.Models.Criteria;
 using Unite.Analysis.Services.Gaf.Models.Output;
 using Unite.Data.Context;
 using Unite.Data.Context.Repositories;
+using Unite.Data.Context.Repositories.Extensions.Queryable;
 using Unite.Data.Entities.Omics.Analysis.Dna;
 
 using SM = Unite.Data.Entities.Omics.Analysis.Dna.Sm;
 using CNV = Unite.Data.Entities.Omics.Analysis.Dna.Cnv;
 using SV = Unite.Data.Entities.Omics.Analysis.Dna.Sv;
-using Unite.Data.Context.Repositories.Extensions.Queryable;
 
 namespace Unite.Analysis.Services.Gaf;
 
