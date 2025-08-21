@@ -77,6 +77,7 @@ public class SamplesContextLoader
                 .Where(sample => context.GetSampleDonor(sample.Id)?.Id == donor.Id)
                 .OrderBy(sample => context.GetSampleRelevance(sample.Id))
                 .FirstOrDefault())
+            .Where(sample => sample != null)
             .DistinctBy(sample => sample.Id)
             .ToDictionary(sample => sample.Id);
 
@@ -106,6 +107,7 @@ public class SamplesContextLoader
                 .Where(sample => context.GetSampleImage(sample.Id)?.Id == image.Id)
                 .OrderBy(sample => context.GetSampleRelevance(sample.Id))
                 .FirstOrDefault())
+            .Where(sample => sample != null)
             .DistinctBy(sample => sample.Id)
             .ToDictionary(sample => sample.Id);
 
@@ -135,6 +137,7 @@ public class SamplesContextLoader
                 .Where(sample => context.GetSampleSpecimen(sample.Id)?.Id == specimen.Id)
                 .OrderBy(sample => context.GetSampleRelevance(sample.Id))
                 .FirstOrDefault())
+            .Where(sample => sample != null)
             .DistinctBy(sample => sample.Id)
             .ToDictionary(sample => sample.Id);
 
