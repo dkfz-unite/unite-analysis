@@ -1,27 +1,40 @@
-using Unite.Analysis.Helpers;
-using Unite.Analysis.Services.Pcam.Models.Input;
 using Unite.Data.Constants;
-using Unite.Essentials.Extensions;
 using Unite.Essentials.Tsv;
 
 namespace Unite.Analysis.Services.Pcam;
 
 public class MetaLoader
 {
-    public static MetadataSample[] Load(SamplesContext context, string workingDirectoryPath, string datasetId)
+    public static async Task PrepareMetadata(SamplesContext context, string workingDirectoryPath)
     {
-        var metadataSamples = new List<MetadataSample>();
-        
-        foreach (var omicsSample in context.OmicsSamples)
-        {
-            var key = context.GetSampleKey(omicsSample.Key);
+        var entries = Load(context, workingDirectoryPath);
+        var path = Path.Combine(workingDirectoryPath, "metadata.tsv");
+        var map = SampleMetadataMapper.Map(entries).Map(entry => entry.Path, "path");
 
-            var resources = omicsSample.Value.Resources
+        if (!File.Exists(path))
+        {
+            var tsv = TsvWriter.Write(entries, map);
+            File.WriteAllText(path, tsv);
+        }
+        else
+        {
+            var tsv = TsvWriter.Write(entries, map, false);
+            File.AppendAllText(path, tsv);
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private static Models.Input.SampleMetadata[] Load(SamplesContext context, string workingDirectoryPath)
+    {
+        return SampleMetadataLoader.Load<Models.Input.SampleMetadata>(context, (sample, entry, context) =>
+        {
+            var resources = sample.Resources
                 .Where(resource => resource.Type == DataTypes.Omics.Meth.Sample && resource.Format == FileTypes.Sequence.Idat)
                 .ToArray();
 
             if (resources.Length == 0)
-                continue;
+                return false;
 
             var fileName = resources.First().Name
                 .Replace("_grn", "", StringComparison.InvariantCultureIgnoreCase)
@@ -30,38 +43,11 @@ public class MetaLoader
                 .Replace("red", "", StringComparison.InvariantCultureIgnoreCase)
                 .Replace(".idat", "", StringComparison.InvariantCultureIgnoreCase);
 
-            var sampleDirectoryPath = DirectoryManager.EnsureCreated(workingDirectoryPath, key);
+            var filePath = Path.Combine(workingDirectoryPath, entry.Id, fileName);
 
-            var metadataSample = new MetadataSample
-            {
-                SampleId = key,
-                Condition = datasetId,
-                Path = Path.Combine(sampleDirectoryPath, fileName)
-            };
+            entry.Path = filePath;
 
-            metadataSamples.Add(metadataSample);
-        }
-
-        return metadataSamples.ToArrayOrNull();
-    }
-
-    public static async Task PrepareMetadata(SamplesContext context, string workingDirectoryPath, string datasetId)
-    {
-        var entries = Load(context, workingDirectoryPath, datasetId);
-        var filePath = Path.Combine(workingDirectoryPath, "metadata.tsv");
-        var map = new ClassMap<MetadataSample>().AutoMap();
-
-        if (!File.Exists(filePath))
-        {
-            var tsv = TsvWriter.Write(entries, map);
-            File.WriteAllText(filePath, tsv);
-        }
-        else
-        {
-            var tsv = TsvWriter.Write(entries, map, false);
-            File.AppendAllText(filePath, tsv);
-        }
-
-        await Task.CompletedTask;
+            return true;
+        });
     }
 }
