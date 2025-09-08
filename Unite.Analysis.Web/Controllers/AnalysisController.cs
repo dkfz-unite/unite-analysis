@@ -146,7 +146,7 @@ public class AnalysisController : Controller
     }
 
     [HttpGet("{id}/meta")]
-    public async Task<IActionResult> GetTaskMetadata(string id)
+    public async Task<IActionResult> GetTaskMetadata(string id, [FromQuery] string fileName = null)
     {
         var task = _analysisTaskService.Get(id);
 
@@ -154,17 +154,17 @@ public class AnalysisController : Controller
             return NotFound();
 
         if (task.AnalysisTypeId == AnalysisTaskType.SURV)
-            return Ok(await _survAnalysisService.Load(id));
+            return Ok(await _survAnalysisService.Load(id, fileName));
         else if (task.AnalysisTypeId == AnalysisTaskType.DM)
-            return Ok(await _dmAnalysisService.Load(id));
+            return Ok(await _dmAnalysisService.Load(id, fileName));
         else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
-            return Ok(await _pcamAnalysisService.Load(id));
+            return Ok(await _pcamAnalysisService.Load(id, fileName));
         else if (task.AnalysisTypeId == AnalysisTaskType.DE)
-            return Ok(await _deAnalysisService.Load(id));
+            return Ok(await _deAnalysisService.Load(id, fileName));
         else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
-            return Ok(await _gafAnalysisService.Load(id));
+            return Ok(await _gafAnalysisService.Load(id, fileName));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
-            return Ok(await _scellAnalysisService.Load(id));
+            return Ok(await _scellAnalysisService.Load(id, fileName));
         
         return BadRequest("Task analysis type is not supported");
     }

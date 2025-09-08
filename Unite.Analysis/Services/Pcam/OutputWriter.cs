@@ -4,10 +4,10 @@ namespace Unite.Analysis.Services.Pcam;
 
 public class OutputWriter
 {
-    public const string ResultsArchiveFileName = "results.csv.gz";
-
+    public const string ResultsFileName = "results.tsv";
+    public const string MetadataFileName = "metadata.tsv";
+    public const string OptionsFileName = "options.json";
     public const string ArchiveFileName = "output.zip";
-
 
     public static async Task ProcessOutput(string path)
     {
@@ -27,7 +27,10 @@ public class OutputWriter
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
-        archive.CreateEntryFromFile(Path.Combine(path, ResultsArchiveFileName), ResultsArchiveFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, MetadataFileName), MetadataFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, ResultsFileName), ResultsFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, OptionsFileName), OptionsFileName);
+
         await Task.CompletedTask;
     }
 }

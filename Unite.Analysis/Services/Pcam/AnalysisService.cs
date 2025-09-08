@@ -59,7 +59,11 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsArchiveFileName);
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsFileName);;
+        if (args[0] != null)
+        {
+            path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.MetadataFileName);
+        }
 
         var stream = File.OpenRead(path);
 
