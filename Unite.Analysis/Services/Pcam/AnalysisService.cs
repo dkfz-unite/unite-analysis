@@ -27,12 +27,11 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var directoryPath = GetWorkingDirectoryPath(model.Id);
 
-        foreach (var dataset in model.Datasets)
-        {
-            var context = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MethArray);
-            await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
-            await MetaLoader.PrepareMetadata(context, directoryPath, dataset.Name);
-        }
+        var dataset = model.Datasets.Single();
+
+        var context = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MethArray);
+        await DataLoader.DownloadResources(context, directoryPath, args[0].ToString(), _options.DataHost);
+        await MetaLoader.PrepareMetadata(context, directoryPath);
 
         WriteOptions(model.Options, directoryPath);
 
@@ -60,7 +59,12 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public async override Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsArchiveFileName);
+        var path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.ResultsFileName);
+
+        if (string.Equals(args[0]?.ToString(), "metadata", StringComparison.OrdinalIgnoreCase))
+        {
+            path = Path.Combine(GetWorkingDirectoryPath(key), OutputWriter.MetadataFileName);
+        }
 
         var stream = File.OpenRead(path);
 
