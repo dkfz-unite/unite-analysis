@@ -9,10 +9,28 @@ public class SampleMetadataMapper
     private static readonly NullableValueConverter _nullableValueConverter = new();
 
 
+    public static ClassMap<T> Map<T>(T[] entries)
+        where T : SampleMetadata
+    {
+        var map = new ClassMap<T>();
+
+        MapEntries(map, entries);
+
+        return map;
+    }
+
     public static ClassMap<SampleMetadata> Map(SampleMetadata[] entries)
     {
         var map = new ClassMap<SampleMetadata>();
 
+        MapEntries(map, entries);
+
+        return map;
+    }
+
+    private static void MapEntries<T>(ClassMap<T> map, T[] entries)
+        where T : SampleMetadata
+    {
         MapProperty(map, entries, entry => entry.Id, "sample_id");
 
         if (entries.Any(entry => entry.Donor != null))
@@ -87,12 +105,11 @@ public class SampleMetadataMapper
                 MapProperty(map, entries, entry => entry.Specimen.Xenograft.SurvivalDays, "xenograft_survival_days");
             }
         }
-
-        return map;
     }
 
 
-    private static void MapProperty(ClassMap<SampleMetadata> map, SampleMetadata[] entries, Expression<Func<SampleMetadata, string>> property, string header)
+    private static void MapProperty<T>(ClassMap<T> map, T[] entries, Expression<Func<T, string>> property, string header)
+        where T : SampleMetadata
     {
         var getter = property.Compile();
 

@@ -1,133 +1,171 @@
+using Unite.Data.Entities.Omics.Analysis;
 using Unite.Essentials.Extensions;
 
 namespace Unite.Analysis.Services;
 
 public class SampleMetadataLoader
 {
-    public static SampleMetadata[] Load(SamplesContext context)
+    public static T[] Load<T>(SamplesContext context) where T : SampleMetadata, new()
     {
-        var metadataEntries = new List<SampleMetadata>();
+        var entries = new List<T>();
 
-        foreach(var sample in context.OmicsSamples)
+        foreach (var sample in context.OmicsSamples)
         {
-            var metadataEntry = new SampleMetadata() { Id = context.GetSampleKey(sample.Key) };
+            var entry = new T() { Id = context.GetSampleKey(sample.Key) };
 
-            var donor = context.GetSampleDonor(sample.Key);
-            if (donor != null)
-            {
-                var ageGroups = DefineGroups(context.Donors.Values.Select(donor => donor.ClinicalData?.EnrollmentAge), desiredMin: 0);
-                var kpsGroups = DefineGroups(context.Donors.Values.Select(donor => donor.ClinicalData?.Kps), desiredMin: 0);
+            MapEntry(sample.Value, entry, context);
 
-                metadataEntry.Donor = new DonorMetadata()
-                {
-                    Id = donor.ReferenceId.ToString(),
-
-                    Sex = donor.ClinicalData?.SexId?.ToDefinitionString(),
-                    Age = ConvertValue(donor.ClinicalData?.EnrollmentAge, ageGroups),
-                    Diagnosis = donor.ClinicalData?.Diagnosis,
-                    PrimarySite = donor.ClinicalData?.PrimarySite?.Value,
-                    Localization = donor.ClinicalData?.Localization?.Value,
-                    VitalStatus = ConvertValue(donor.ClinicalData?.VitalStatus),
-                    ProgressionStatus = ConvertValue(donor.ClinicalData?.ProgressionStatus),
-                    SteroidsReactive = ConvertValue(donor.ClinicalData?.SteroidsReactive),
-                    Kps = ConvertValue(donor.ClinicalData?.Kps, kpsGroups),
-                };
-            }
-
-            var image = context.GetSampleImage(sample.Key);
-            if (image != null)
-            {
-                var wholeTumorGroups = DefineGroups(context.Images.Values.Select(image => image.MrImage?.WholeTumor));
-                var contrastEnhancingGroups = DefineGroups(context.Images.Values.Select(image => image.MrImage?.ContrastEnhancing));
-                var nonContrastEnhancingGroups = DefineGroups(context.Images.Values.Select(image => image.MrImage?.NonContrastEnhancing));
-
-                metadataEntry.Image = new ImageMetadata()
-                {
-                    Id = image.ReferenceId,
-                    
-                    Type = image.TypeId.ToDefinitionString()
-                };
-
-                if (image.MrImage != null)
-                {
-                    metadataEntry.Image.Mr = new MrMetadata()
-                    {
-                        WholeTumor = ConvertValue(image.MrImage.WholeTumor, wholeTumorGroups),
-                        ContrastEnhancing = ConvertValue(image.MrImage.ContrastEnhancing, contrastEnhancingGroups),
-                        NonContrastEnhancing = ConvertValue(image.MrImage.NonContrastEnhancing, nonContrastEnhancingGroups),
-                    };
-                }
-            }
-
-            var specimen = context.GetSampleSpecimen(sample.Key);
-            if (specimen != null)
-            {
-                metadataEntry.Specimen = new SpecimenMetadata()
-                { 
-                    Id = specimen.ReferenceId,
-
-                    Type = specimen.TypeId.ToDefinitionString(),
-                    IdhStatus = specimen.MolecularData?.IdhStatusId?.ToDefinitionString(),
-                    MgmtStatus = specimen.MolecularData?.MgmtStatusId?.ToDefinitionString()
-                };
-
-                if (specimen.Material != null)
-                {
-                    metadataEntry.Specimen.Material = new MaterialMetadata()
-                    {
-                        Type = specimen.Material.TypeId?.ToDefinitionString(),
-                        TumorType = specimen.Material.TumorTypeId?.ToDefinitionString(),
-                        TumorGrade = specimen.Material.TumorGrade?.ToString(),
-                        FixationType = specimen.Material.FixationTypeId?.ToDefinitionString(),
-                        Source = specimen.Material.Source?.Value
-                    };
-                }
-
-                if (specimen.Line != null)
-                {
-                    metadataEntry.Specimen.Line = new LineMetadata()
-                    {
-                        CellsSpecies = specimen.Line.CellsSpeciesId?.ToDefinitionString(),
-                        CellsType = specimen.Line.CellsTypeId?.ToDefinitionString(),
-                        CellsCultureType = specimen.Line.CellsCultureTypeId?.ToDefinitionString(),
-                    };
-                }
-
-                if (specimen.Organoid != null)
-                {
-                    var cellsNumberGroups = DefineGroups(context.Specimens.Values.Select(specimen => specimen.Organoid?.ImplantedCellsNumber), desiredMin: 0);
-
-                    metadataEntry.Specimen.Organoid = new OrganoidMetadata()
-                    {
-                        Medium = specimen.Organoid.Medium,
-                        ImplantedCellsNumber = ConvertValue(specimen.Organoid.ImplantedCellsNumber, cellsNumberGroups),
-                        Tumorigenicity = ConvertValue(specimen.Organoid.Tumorigenicity)
-                    };
-                }
-
-                if (specimen.Xenograft != null)
-                {
-                    var groupSizeGroups = DefineGroups(context.Specimens.Values.Select(specimen => specimen.Xenograft?.GroupSize), desiredMin: 0);
-                    var cellsNumberGroups = DefineGroups(context.Specimens.Values.Select(specimen => specimen.Xenograft?.ImplantedCellsNumber), desiredMin: 0);
-
-                    metadataEntry.Specimen.Xenograft = new XenograftMetadata()
-                    {
-                        MouseStrain = specimen.Xenograft.MouseStrain,
-                        GroupSize = ConvertValue(specimen.Xenograft.GroupSize, groupSizeGroups),
-                        ImplantType = specimen.Xenograft.ImplantTypeId?.ToDefinitionString(),
-                        ImplantLocation = specimen.Xenograft.ImplantLocationId?.ToDefinitionString(),
-                        ImplantedCellsNumber = ConvertValue(specimen.Xenograft.ImplantedCellsNumber, cellsNumberGroups),
-                        Tumorigenicity = ConvertValue(specimen.Xenograft.Tumorigenicity),
-                        TumorGrowthForm = specimen.Xenograft.TumorGrowthFormId?.ToDefinitionString(),
-                        SurvivalDays = ConvertValue(specimen.Xenograft.SurvivalDaysFrom, specimen.Xenograft.SurvivalDaysTo)
-                    };
-                }
-            }
-
-            metadataEntries.Add(metadataEntry);
+            entries.Add(entry);
         }
 
-        return metadataEntries.ToArrayOrNull();
+        return entries.ToArrayOrNull();
+    }
+
+    public static T[] Load<T>(SamplesContext context, Func<Sample, T, SamplesContext, bool> mapper) where T : SampleMetadata, new()
+    {
+        var entries = new List<T>();
+
+        foreach (var sample in context.OmicsSamples)
+        {
+            var entry = new T() { Id = context.GetSampleKey(sample.Key) };
+
+            var mapped = mapper(sample.Value, entry, context);
+
+            if (mapped)
+            {
+                MapEntry(sample.Value, entry, context);
+
+                entries.Add(entry);
+            }
+        }
+
+        return entries.ToArrayOrNull();
+    }
+
+    public static SampleMetadata[] Load(SamplesContext context)
+    {
+        return Load<SampleMetadata>(context);
+    }
+
+    public static SampleMetadata[] Load(SamplesContext context, Func<Sample, SampleMetadata, SamplesContext, bool> mapper)
+    {
+        return Load<SampleMetadata>(context, mapper);
+    }
+
+
+    private static void MapEntry(in Sample sample, in SampleMetadata entry, in SamplesContext context)
+    {
+        var donor = context.GetSampleDonor(sample.Id);
+        if (donor != null)
+        {
+            var ageGroups = DefineGroups(context.Donors.Values.Select(donor => donor.ClinicalData?.EnrollmentAge), desiredMin: 0);
+            var kpsGroups = DefineGroups(context.Donors.Values.Select(donor => donor.ClinicalData?.Kps), desiredMin: 0);
+
+            entry.Donor = new DonorMetadata()
+            {
+                Id = donor.ReferenceId.ToString(),
+
+                Sex = donor.ClinicalData?.SexId?.ToDefinitionString(),
+                Age = ConvertValue(donor.ClinicalData?.EnrollmentAge, ageGroups),
+                Diagnosis = donor.ClinicalData?.Diagnosis,
+                PrimarySite = donor.ClinicalData?.PrimarySite?.Value,
+                Localization = donor.ClinicalData?.Localization?.Value,
+                VitalStatus = ConvertValue(donor.ClinicalData?.VitalStatus),
+                ProgressionStatus = ConvertValue(donor.ClinicalData?.ProgressionStatus),
+                SteroidsReactive = ConvertValue(donor.ClinicalData?.SteroidsReactive),
+                Kps = ConvertValue(donor.ClinicalData?.Kps, kpsGroups),
+            };
+        }
+
+        var image = context.GetSampleImage(sample.Id);
+        if (image != null)
+        {
+            var wholeTumorGroups = DefineGroups(context.Images.Values.Select(image => image.MrImage?.WholeTumor));
+            var contrastEnhancingGroups = DefineGroups(context.Images.Values.Select(image => image.MrImage?.ContrastEnhancing));
+            var nonContrastEnhancingGroups = DefineGroups(context.Images.Values.Select(image => image.MrImage?.NonContrastEnhancing));
+
+            entry.Image = new ImageMetadata()
+            {
+                Id = image.ReferenceId,
+
+                Type = image.TypeId.ToDefinitionString()
+            };
+
+            if (image.MrImage != null)
+            {
+                entry.Image.Mr = new MrMetadata()
+                {
+                    WholeTumor = ConvertValue(image.MrImage.WholeTumor, wholeTumorGroups),
+                    ContrastEnhancing = ConvertValue(image.MrImage.ContrastEnhancing, contrastEnhancingGroups),
+                    NonContrastEnhancing = ConvertValue(image.MrImage.NonContrastEnhancing, nonContrastEnhancingGroups),
+                };
+            }
+        }
+
+        var specimen = context.GetSampleSpecimen(sample.Id);
+        if (specimen != null)
+        {
+            entry.Specimen = new SpecimenMetadata()
+            {
+                Id = specimen.ReferenceId,
+
+                Type = specimen.TypeId.ToDefinitionString(),
+                IdhStatus = specimen.MolecularData?.IdhStatusId?.ToDefinitionString(),
+                MgmtStatus = specimen.MolecularData?.MgmtStatusId?.ToDefinitionString()
+            };
+
+            if (specimen.Material != null)
+            {
+                entry.Specimen.Material = new MaterialMetadata()
+                {
+                    Type = specimen.Material.TypeId?.ToDefinitionString(),
+                    TumorType = specimen.Material.TumorTypeId?.ToDefinitionString(),
+                    TumorGrade = specimen.Material.TumorGrade?.ToString(),
+                    FixationType = specimen.Material.FixationTypeId?.ToDefinitionString(),
+                    Source = specimen.Material.Source?.Value
+                };
+            }
+
+            if (specimen.Line != null)
+            {
+                entry.Specimen.Line = new LineMetadata()
+                {
+                    CellsSpecies = specimen.Line.CellsSpeciesId?.ToDefinitionString(),
+                    CellsType = specimen.Line.CellsTypeId?.ToDefinitionString(),
+                    CellsCultureType = specimen.Line.CellsCultureTypeId?.ToDefinitionString(),
+                };
+            }
+
+            if (specimen.Organoid != null)
+            {
+                var cellsNumberGroups = DefineGroups(context.Specimens.Values.Select(specimen => specimen.Organoid?.ImplantedCellsNumber), desiredMin: 0);
+
+                entry.Specimen.Organoid = new OrganoidMetadata()
+                {
+                    Medium = specimen.Organoid.Medium,
+                    ImplantedCellsNumber = ConvertValue(specimen.Organoid.ImplantedCellsNumber, cellsNumberGroups),
+                    Tumorigenicity = ConvertValue(specimen.Organoid.Tumorigenicity)
+                };
+            }
+
+            if (specimen.Xenograft != null)
+            {
+                var groupSizeGroups = DefineGroups(context.Specimens.Values.Select(specimen => specimen.Xenograft?.GroupSize), desiredMin: 0);
+                var cellsNumberGroups = DefineGroups(context.Specimens.Values.Select(specimen => specimen.Xenograft?.ImplantedCellsNumber), desiredMin: 0);
+
+                entry.Specimen.Xenograft = new XenograftMetadata()
+                {
+                    MouseStrain = specimen.Xenograft.MouseStrain,
+                    GroupSize = ConvertValue(specimen.Xenograft.GroupSize, groupSizeGroups),
+                    ImplantType = specimen.Xenograft.ImplantTypeId?.ToDefinitionString(),
+                    ImplantLocation = specimen.Xenograft.ImplantLocationId?.ToDefinitionString(),
+                    ImplantedCellsNumber = ConvertValue(specimen.Xenograft.ImplantedCellsNumber, cellsNumberGroups),
+                    Tumorigenicity = ConvertValue(specimen.Xenograft.Tumorigenicity),
+                    TumorGrowthForm = specimen.Xenograft.TumorGrowthFormId?.ToDefinitionString(),
+                    SurvivalDays = ConvertValue(specimen.Xenograft.SurvivalDaysFrom, specimen.Xenograft.SurvivalDaysTo)
+                };
+            }
+        }
     }
 
 
