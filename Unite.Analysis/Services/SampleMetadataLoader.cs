@@ -97,7 +97,7 @@ public class SampleMetadataLoader
                 {
                     WholeTumor = ConvertValue(image.MrImage.WholeTumor, wholeTumorGroups),
                     ContrastEnhancing = ConvertValue(image.MrImage.ContrastEnhancing, contrastEnhancingGroups),
-                    NonContrastEnhancing = ConvertValue(image.MrImage.NonContrastEnhancing, nonContrastEnhancingGroups),
+                    NonContrastEnhancing = ConvertValue(image.MrImage.NonContrastEnhancing, nonContrastEnhancingGroups)
                 };
             }
         }
@@ -111,7 +111,8 @@ public class SampleMetadataLoader
 
                 Type = specimen.TypeId.ToDefinitionString(),
                 IdhStatus = specimen.MolecularData?.IdhStatusId?.ToDefinitionString(),
-                MgmtStatus = specimen.MolecularData?.MgmtStatusId?.ToDefinitionString()
+                MgmtStatus = specimen.MolecularData?.MgmtStatusId?.ToDefinitionString(),
+                GeneKnockouts = string.Join(", ", specimen.MolecularData?.GeneKnockouts ?? [])
             };
 
             if (specimen.Material != null)

@@ -49,6 +49,7 @@ public class SpecimenMetadata
     public string Type { get; set; }
     public string IdhStatus { get; set; }
     public string MgmtStatus { get; set; }
+    public string GeneKnockouts { get; set; }
 
     public MaterialMetadata Material { get; set; }
     public LineMetadata Line { get; set; }
