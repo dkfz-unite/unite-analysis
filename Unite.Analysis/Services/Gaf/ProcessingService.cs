@@ -32,7 +32,8 @@ public class ProcessingService
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var impacts = new string[] { Effect.Impacts.High, Effect.Impacts.Moderate, Effect.Impacts.Low };
+        // var impacts = new string[] { Effect.Impacts.High, Effect.Impacts.Moderate, Effect.Impacts.Low };
+        var impacts = options.Sm;
 
         var sampleIds = context.OmicsSamples.Keys.ToArray();
 
