@@ -67,14 +67,19 @@ public class SampleMetadataMapper
             MapProperty(map, entries, entry => entry.Specimen.Id, "specimen_id");
 
             MapProperty(map, entries, entry => entry.Specimen.Type, "specimen_type");
+            MapProperty(map, entries, entry => entry.Specimen.Condition, "specimen_condition");
+            MapProperty(map, entries, entry => entry.Specimen.TumorType, "specimen_tumor_type");
+            MapProperty(map, entries, entry => entry.Specimen.TumorGrade, "specimen_tumor_grade");
+            MapProperty(map, entries, entry => entry.Specimen.TumorSuperfamily, "specimen_tumor_superfamily");
+            MapProperty(map, entries, entry => entry.Specimen.TumorFamily, "specimen_tumor_family");
+            MapProperty(map, entries, entry => entry.Specimen.TumorClass, "specimen_tumor_class");
+            MapProperty(map, entries, entry => entry.Specimen.TumorSubclass, "specimen_tumor_subclass");
             MapProperty(map, entries, entry => entry.Specimen.IdhStatus, "specimen_idh_status");
+            MapProperty(map, entries, entry => entry.Specimen.TertStatus, "specimen_tert_status");
             MapProperty(map, entries, entry => entry.Specimen.MgmtStatus, "specimen_mgmt_status");
 
             if (entries.Any(entry => entry.Specimen.Material != null))
             {
-                MapProperty(map, entries, entry => entry.Specimen.Material.Type, "material_type");
-                MapProperty(map, entries, entry => entry.Specimen.Material.TumorType, "material_tumor_type");
-                MapProperty(map, entries, entry => entry.Specimen.Material.TumorGrade, "material_tumor_grade");
                 MapProperty(map, entries, entry => entry.Specimen.Material.FixationType, "material_fixation_type");
                 MapProperty(map, entries, entry => entry.Specimen.Material.Source, "material_source");
             }

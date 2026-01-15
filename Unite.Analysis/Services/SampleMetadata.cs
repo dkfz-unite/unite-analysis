@@ -48,8 +48,16 @@ public class SpecimenMetadata
 
     public string Type { get; set; }
     public string IdhStatus { get; set; }
+    public string TertStatus { get; set; }
     public string MgmtStatus { get; set; }
     public string GeneKnockouts { get; set; }
+    public string Condition { get; set; }
+    public string TumorType { get; set; }
+    public string TumorGrade { get; set; }
+    public string TumorSuperfamily { get; set; }
+    public string TumorFamily { get; set; }
+    public string TumorClass { get; set; }
+    public string TumorSubclass { get; set; }
 
     public MaterialMetadata Material { get; set; }
     public LineMetadata Line { get; set; }
@@ -59,9 +67,6 @@ public class SpecimenMetadata
 
 public class MaterialMetadata
 {
-    public string Type { get; set; }
-    public string TumorType { get; set; }
-    public string TumorGrade { get; set; }
     public string FixationType { get; set; }
     public string Source { get; set; }
 }
