@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Unite.Data.Context;
-using Unite.Data.Context.Repositories.Extensions.Queryable;
-using Unite.Data.Entities.Specimens;
 using Unite.Indices.Search.Services;
 
 using DonorIndex = Unite.Indices.Entities.Donors.DonorIndex;
@@ -18,11 +16,5 @@ public class ContextLoader : SamplesContextLoader
         ISearchService<SpecimenIndex> specimensSearchService,
         IDbContextFactory<DomainDbContext> dbContextFactory) : base(donorsSearchService, imagesSearchService, specimensSearchService, dbContextFactory)
     {
-    }
-
-    protected override IQueryable<Specimen> Include(IQueryable<Specimen> query)
-    {
-        return query
-            .IncludeMaterial();
     }
 }

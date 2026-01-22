@@ -2,7 +2,6 @@ using Unite.Data.Entities.Donors;
 using Unite.Data.Entities.Images;
 using Unite.Data.Entities.Specimens;
 using Unite.Data.Entities.Specimens.Enums;
-using Unite.Data.Entities.Specimens.Materials.Enums;
 
 namespace Unite.Analysis.Services;
 
@@ -95,11 +94,11 @@ public class SamplesContext
         var sample = OmicsSamples[id];
         var specimen = Specimens[sample.SpecimenId];
 
-        var score = (specimen.TypeId == SpecimenType.Material && specimen.Material.TumorTypeId == TumorType.Primary) ? 1 :
-                    (specimen.TypeId == SpecimenType.Material && specimen.Material.TumorTypeId == TumorType.Recurrent) ? 2 :
-                    (specimen.TypeId == SpecimenType.Material && specimen.Material.TumorTypeId == TumorType.Metastasis) ? 3 :
-                    (specimen.TypeId == SpecimenType.Material && specimen.Material.TypeId == MaterialType.Tumor) ? 4 :
-                    (specimen.TypeId == SpecimenType.Material && specimen.Material.TypeId == MaterialType.Normal) ? 5 :
+        var score = (specimen.TypeId == SpecimenType.Material && specimen.TumorTypeId == TumorType.Primary) ? 1 :
+                    (specimen.TypeId == SpecimenType.Material && specimen.TumorTypeId == TumorType.Recurrent) ? 2 :
+                    (specimen.TypeId == SpecimenType.Material && specimen.TumorTypeId == TumorType.Metastasis) ? 3 :
+                    (specimen.TypeId == SpecimenType.Material && specimen.ConditionId == Condition.Tumor) ? 4 :
+                    (specimen.TypeId == SpecimenType.Material && specimen.ConditionId == Condition.Normal) ? 5 :
                     specimen.TypeId == SpecimenType.Material ? 6 :
                     specimen.TypeId == SpecimenType.Line ? 10 :
                     specimen.TypeId == SpecimenType.Organoid ? 20 :
