@@ -110,8 +110,16 @@ public class SampleMetadataLoader
                 Id = specimen.ReferenceId,
 
                 Type = specimen.TypeId.ToDefinitionString(),
-                IdhStatus = specimen.MolecularData?.IdhStatusId?.ToDefinitionString(),
-                MgmtStatus = specimen.MolecularData?.MgmtStatusId?.ToDefinitionString(),
+                Condition = specimen.ConditionId?.ToDefinitionString(),
+                TumorType = specimen.TumorTypeId?.ToDefinitionString(),
+                TumorGrade = specimen.TumorGrade?.ToString(),
+                TumorSuperfamily = specimen.TumorClassification?.Superfamily?.Name,
+                TumorFamily = specimen.TumorClassification?.Family?.Name,
+                TumorClass = specimen.TumorClassification?.Class?.Name,
+                TumorSubclass = specimen.TumorClassification?.Subclass?.Name,
+                IdhStatus = ConvertValue(specimen.MolecularData?.IdhStatus, "Mutant", "Wild Type"),
+                TertStatus = ConvertValue(specimen.MolecularData?.TertStatus, "Mutant", "Wild Type"),
+                MgmtStatus = ConvertValue(specimen.MolecularData?.MgmtStatus, "Methylated", "Unmethylated"),
                 GeneKnockouts = string.Join(", ", specimen.MolecularData?.GeneKnockouts ?? [])
             };
 
@@ -119,9 +127,6 @@ public class SampleMetadataLoader
             {
                 entry.Specimen.Material = new MaterialMetadata()
                 {
-                    Type = specimen.Material.TypeId?.ToDefinitionString(),
-                    TumorType = specimen.Material.TumorTypeId?.ToDefinitionString(),
-                    TumorGrade = specimen.Material.TumorGrade?.ToString(),
                     FixationType = specimen.Material.FixationTypeId?.ToDefinitionString(),
                     Source = specimen.Material.Source?.Value
                 };
