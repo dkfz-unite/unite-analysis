@@ -17,8 +17,8 @@ internal static class SampleExtensions
             (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.TumorTypeId == TumorType.Primary) ? 1 :
             (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.TumorTypeId == TumorType.Recurrent) ? 2 :
             (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.TumorTypeId == TumorType.Metastasis) ? 3 :
-            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.ConditionId == Condition.Tumor) ? 4 :
-            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.ConditionId == Condition.Normal) ? 5 :
+            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.CategoryId == Category.Tumor) ? 4 :
+            (sample.Specimen.TypeId == SpecimenType.Material && sample.Specimen.CategoryId == Category.Normal) ? 5 :
             sample.Specimen.TypeId == SpecimenType.Material ? 6 :
             sample.Specimen.TypeId == SpecimenType.Line ? 10 :
             sample.Specimen.TypeId == SpecimenType.Organoid ? 20 :
