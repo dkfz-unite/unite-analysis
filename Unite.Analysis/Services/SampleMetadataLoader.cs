@@ -110,7 +110,7 @@ public class SampleMetadataLoader
                 Id = specimen.ReferenceId,
 
                 Type = specimen.TypeId.ToDefinitionString(),
-                Condition = specimen.ConditionId?.ToDefinitionString(),
+                Condition = specimen.CategoryId?.ToDefinitionString(),
                 TumorType = specimen.TumorTypeId?.ToDefinitionString(),
                 TumorGrade = specimen.TumorGrade?.ToString(),
                 TumorSuperfamily = specimen.TumorClassification?.Superfamily?.Name,

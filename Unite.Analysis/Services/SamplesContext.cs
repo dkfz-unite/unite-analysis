@@ -97,8 +97,8 @@ public class SamplesContext
         var score = (specimen.TypeId == SpecimenType.Material && specimen.TumorTypeId == TumorType.Primary) ? 1 :
                     (specimen.TypeId == SpecimenType.Material && specimen.TumorTypeId == TumorType.Recurrent) ? 2 :
                     (specimen.TypeId == SpecimenType.Material && specimen.TumorTypeId == TumorType.Metastasis) ? 3 :
-                    (specimen.TypeId == SpecimenType.Material && specimen.ConditionId == Condition.Tumor) ? 4 :
-                    (specimen.TypeId == SpecimenType.Material && specimen.ConditionId == Condition.Normal) ? 5 :
+                    (specimen.TypeId == SpecimenType.Material && specimen.CategoryId == Category.Tumor) ? 4 :
+                    (specimen.TypeId == SpecimenType.Material && specimen.CategoryId == Category.Normal) ? 5 :
                     specimen.TypeId == SpecimenType.Material ? 6 :
                     specimen.TypeId == SpecimenType.Line ? 10 :
                     specimen.TypeId == SpecimenType.Organoid ? 20 :
