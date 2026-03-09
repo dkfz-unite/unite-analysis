@@ -28,7 +28,7 @@ public class DataLoader
     private static async Task DownloadResources(Sample sample, string key, string workingDirectoryPath, string token, string host = null)
     {
         var resources = sample.Resources
-            .Where(resource => resource.Type == DataTypes.Omics.Meth.Sample && resource.Format == FileTypes.Sequence.Idat)
+            .Where(resource => resource.Type == DataTypes.Omics.Methylation.Sample && resource.Format == FileTypes.Sequence.Idat)
             .ToArray();
 
         var redResource = resources.FirstOrDefault(resource => resource.Name.Contains("red", StringComparison.InvariantCultureIgnoreCase));

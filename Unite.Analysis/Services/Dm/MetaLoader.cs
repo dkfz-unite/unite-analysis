@@ -17,7 +17,7 @@ public class MetaLoader
             var key = context.GetSampleKey(omicsSample.Key);
 
             var resources = omicsSample.Value.Resources
-                .Where(resource => resource.Type == DataTypes.Omics.Meth.Sample && resource.Format == FileTypes.Sequence.Idat)
+                .Where(resource => resource.Type == DataTypes.Omics.Methylation.Sample && resource.Format == FileTypes.Sequence.Idat)
                 .ToArray();
 
             if (resources.Length == 0)

@@ -172,7 +172,7 @@ public class DataLoader
                     if (!geneExpressions.ContainsKey(geneId))
                         geneExpressions.Add(geneId, []);
 
-                    geneExpressions[geneId].Add($"{domain}_{id}", expression.Reads);
+                    geneExpressions[geneId].Add($"{domain}_{id}", expression.Raw);
                 }
             }
         }
