@@ -1,8 +1,8 @@
 using Unite.Analysis.Models;
 
-namespace Unite.Analysis.Services.Dm.Models.Criteria;
+namespace Unite.Analysis.Services.Dep.Models.Criteria;
 
-public record Analysis: AnalysisData
+public record Analysis : AnalysisData
 {
     /// <summary>
     /// Analysis options.

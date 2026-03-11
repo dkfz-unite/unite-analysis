@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
@@ -89,5 +90,5 @@ public abstract class AnalysisService<TModel> where TModel : class
     protected string GetWorkingDirectoryPath(string key)
     {
         return DirectoryManager.EnsureCreated(_options.DataPath, key);
-    }   
+    }
 }

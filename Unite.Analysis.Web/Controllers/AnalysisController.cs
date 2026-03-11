@@ -16,8 +16,9 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
     private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
-    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Deg.AnalysisService _degAnalysisService;
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
+    private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     
 
@@ -27,8 +28,9 @@ public class AnalysisController : Controller
         Analysis.Services.Surv.AnalysisService survSceAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
         Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
-        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Deg.AnalysisService degAnalysisService,
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
+        Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
@@ -36,8 +38,9 @@ public class AnalysisController : Controller
         _survAnalysisService = survSceAnalysisService;
         _dmAnalysisService = dmAnalysisService;
         _pcamAnalysisService = pcamAnalysisService;
-        _deAnalysisService = deAnalysisService;
+        _degAnalysisService = degAnalysisService;
         _gafAnalysisService = gafAnalysisService;
+        _depAnalysisService = depAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
     
@@ -78,14 +81,14 @@ public class AnalysisController : Controller
         return Ok(model.Data.Id);
     }
 
-    [HttpPost("de")]
-    public async Task<IActionResult> CreateDeTask([FromBody]TypedAnalysis<Analysis.Services.De.Models.Criteria.Analysis> model)
+    [HttpPost("deg")]
+    public async Task<IActionResult> CreateDegTask([FromBody]TypedAnalysis<Analysis.Services.Deg.Models.Criteria.Analysis> model)
     {
         var entry = GenericAnalysis.From(model);
 
         model.Data.Id = await _analysisRecordService.Add(entry);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DE);
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DEG);
         
         return Ok(model.Data.Id);
     }
@@ -98,6 +101,18 @@ public class AnalysisController : Controller
         model.Data.Id = await _analysisRecordService.Add(entry);
 
         _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.GAF);
+
+        return Ok(model.Data.Id);
+    }
+
+    [HttpPost("dep")]
+    public async Task<IActionResult> CreateDepTask([FromBody]TypedAnalysis<Analysis.Services.Dep.Models.Criteria.Analysis> model)
+    {
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DEP);
 
         return Ok(model.Data.Id);
     }
@@ -159,10 +174,12 @@ public class AnalysisController : Controller
             return Ok(await _dmAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
             return Ok(await _pcamAnalysisService.Load(id, file));
-        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
-            return Ok(await _deAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEG)
+            return Ok(await _degAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
             return Ok(await _gafAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
+            return Ok(await _depAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Load(id, file));
         
@@ -183,10 +200,12 @@ public class AnalysisController : Controller
             return Ok(await _dmAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
             return Ok(await _pcamAnalysisService.Download(id));
-        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
-            return Ok(await _deAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEG)
+            return Ok(await _degAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
             return Ok(await _gafAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
+            return Ok(await _depAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Download(id));
 
@@ -214,10 +233,12 @@ public class AnalysisController : Controller
             await _dmAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
             await _pcamAnalysisService.Delete(id);
-        else if (task.AnalysisTypeId == AnalysisTaskType.DE)
-            await _deAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEG)
+            await _degAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
             await _gafAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
+            await _depAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             await _scellAnalysisService.Delete(id); 
         

@@ -13,7 +13,7 @@ public class AnalysisProcessingHandler
     private readonly Analysis.Services.Surv.AnalysisService _survSceAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
     private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
-    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Deg.AnalysisService _degAnalysisService;
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     private readonly ILogger _logger;
@@ -25,7 +25,7 @@ public class AnalysisProcessingHandler
         Analysis.Services.Surv.AnalysisService survAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
         Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
-        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Deg.AnalysisService degAnalysisService,
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
@@ -35,7 +35,7 @@ public class AnalysisProcessingHandler
         _survSceAnalysisService = survAnalysisService;
         _dmAnalysisService = dmAnalysisService;
         _pcamAnalysisService = pcamAnalysisService;
-        _deAnalysisService = deAnalysisService;
+        _degAnalysisService = degAnalysisService;
         _gafAnalysisService = gafAnalysisService;
         _scellAnalysisService = scellAnalysisService;
         _logger = logger;
@@ -60,7 +60,7 @@ public class AnalysisProcessingHandler
             AnalysisTaskType.SURV => await _survSceAnalysisService.Process(task.Target, token),
             AnalysisTaskType.DM => await _dmAnalysisService.Process(task.Target, token),
             AnalysisTaskType.PCAM => await _pcamAnalysisService.Process(task.Target, token),
-            AnalysisTaskType.DE => await _deAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.DEG => await _degAnalysisService.Process(task.Target, token),
             AnalysisTaskType.GAF => await _gafAnalysisService.Process(task.Target, token),
             AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")

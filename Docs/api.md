@@ -31,13 +31,13 @@ Create analysis of given type.
 - `type` - analysis type.
 
 #### Task types:
-- `de` - [Bulk RNA differential expression analysis](./api-analysis-de.md).
+- `deg` - [Bulk RNA differential expression analysis](./api-analysis-deg.md).
 - `scell` - [Single cell RNA analysis](./api-analysis-scell.md).
 - `surv` - [Survival curve estimation analysis](./api-analysis-surv.md).
 
 ### Body
 Depends on the analysis type:
-- [de](./api-analysis-de.md#model)
+- [deg](./api-analysis-deg.md#model)
 - [scell](./api-analysis-scell.md#model)
 - [surv](./api-analysis-surv.md#model)
 
@@ -81,7 +81,7 @@ Get analysis results metadata.
 
 ### Resources
 Depends on the analysis type:
-- [de](./api-analysis-de.md#results-metadata)
+- [deg](./api-analysis-deg.md#results-metadata)
 - [scell](./api-analysis-scell.md#results-metadata)
 - [surv](./api-analysis-surv.md#results-metadata)
 
@@ -100,7 +100,7 @@ Download analysis results data.
 
 ### Resources
 A file (or archive) to download. Depends on the analysis type:
-- [de](./api-analysis-de.md#results-data)
+- [deg](./api-analysis-deg.md#results-data)
 - [scell](./api-analysis-scell.md#results-data)
 - [surv](./api-analysis-surv.md#results-data)
 

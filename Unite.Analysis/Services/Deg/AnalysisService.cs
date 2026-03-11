@@ -9,7 +9,7 @@ using Unite.Essentials.Tsv;
 
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
 
-namespace Unite.Analysis.Services.De;
+namespace Unite.Analysis.Services.Deg;
 
 public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
@@ -79,7 +79,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     public override async Task<AnalysisTaskResult> Process(string key, params object[] args)
     {
         var path = GetWorkingDirectoryPath(key);
-        var url = $"{_options.DeUrl}/api/run?key={key}";
+        var url = $"{_options.DegUrl}/api/run?key={key}";
 
         var result = await ProcessRemotely(url);
 
