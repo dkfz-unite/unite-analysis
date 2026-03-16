@@ -74,17 +74,21 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
                 var donor = samplesContext.GetSampleDonor(sampleId);
                 var specimen = samplesContext.GetSampleSpecimen(sampleId);
+                var sample = samplesContext.OmicsSamples[sampleId];
 
                 metadata.Add(new MetadataEntry
                 {
                     Sample = sampleId,
                     Condition = dataset.Name,
+                    Batch = sample.Batch,
                     Donor = donor.ReferenceId,
                     Specimen = specimen.ReferenceId,
                     SpecimenType = specimen.TypeId.ToDefinitionString()
                 });
             }
         }
+
+        var batchValidationError = ValidateBatches(metadata);
 
         data.WriteTo(dataFilePath);
         File.WriteAllText(metadatapath, TsvWriter.Write(metadata));
@@ -93,14 +97,14 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         stopwatch.Stop();
 
-        return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds);
+        return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds, batchValidationError);
     }
 
     public override async Task<AnalysisTaskResult> Process(string key, params object[] args)
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.DmUrl}/api/run?key={key}";
+        var url = $"{_options.DepUrl}/api/run?key={key}";
 
         var analysisResult = await ProcessRemotely(url);
 
@@ -114,7 +118,9 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public override async Task<Stream> Load(string key, params object[] args)
     {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), args[0].ToString());
+        var file = args.IsNotEmpty() && args[0] != null ? args[0].ToString() : ResultsFileName; 
+            
+        var path = Path.Combine(GetWorkingDirectoryPath(key), file);
 
         var stream = File.OpenRead(path);
 
@@ -143,6 +149,17 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     }
 
 
+    private static string ValidateBatches(IEnumerable<MetadataEntry> metadata)
+    {
+        var somehaveBatches = metadata.Any(entry => !string.IsNullOrEmpty(entry.Batch));
+        var allhaveBatches = metadata.All(entry => !string.IsNullOrEmpty(entry.Batch));
+
+        if (somehaveBatches && !allhaveBatches)
+            return "Some samples do not have batch information. Batch correction could not be provied.";
+        
+        return null;
+    }
+    
     private static void ArchiveResults(string path)
     {
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);

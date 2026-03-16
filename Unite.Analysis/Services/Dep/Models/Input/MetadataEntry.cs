@@ -12,6 +12,9 @@ public class MetadataEntry
     [Column("condition")]
     public string Condition { get; set; }
 
+    [Column("batch")]
+    public string Batch { get; set; }
+
     [Column("donor")]
     public string Donor { get; set; }
 

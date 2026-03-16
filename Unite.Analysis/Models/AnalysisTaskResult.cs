@@ -20,9 +20,9 @@ public class AnalysisTaskResult
         Status = status;
     }
 
-    public static AnalysisTaskResult Success(double? elapsed = null)
+    public static AnalysisTaskResult Success(double? elapsed = null, string message = null)
     {
-        return new(elapsed, AnalysisTaskStatus.Success);
+        return new(elapsed, AnalysisTaskStatus.Success) { Message = message };
     }
 
     public static AnalysisTaskResult Rejected(double? elapsed = null, string message = null)
@@ -32,6 +32,6 @@ public class AnalysisTaskResult
 
     public static AnalysisTaskResult Failed(double? elapsed = null, string message = null)
     {
-        return new (elapsed, AnalysisTaskStatus.Failed) { Message = message };
+        return new(elapsed, AnalysisTaskStatus.Failed) { Message = message };
     }
 }
