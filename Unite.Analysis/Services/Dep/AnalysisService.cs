@@ -55,7 +55,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
             var expressions = await dbContext.Set<ProteinExpression>()
                 .AsNoTracking()
-                .Include(expression => expression.Entity)
+                .Include(expression => expression.Entity.Transcript.Gene)
                 .Where(expression => sampleIds.Contains(expression.SampleId))
                 .ToArrayAsync();
 

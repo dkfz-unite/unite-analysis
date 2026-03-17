@@ -14,6 +14,9 @@ public class AnnotationEntry
     [Column("symbol")]
     public string Symbol { get; set; }
 
+    [Column("gene")]
+    public string Gene { get; set; }
+
     [Column("description")]
     public string Description { get; set; }
 
@@ -26,6 +29,7 @@ public class AnnotationEntry
         Id = protein.StableId;
         Accession = protein.AccessionId;
         Symbol = protein.Symbol;
+        Gene = protein.Transcript?.Gene?.Symbol;
         Description = protein.Description;
         Source = protein.Database;
     }
