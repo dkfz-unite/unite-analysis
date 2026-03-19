@@ -14,8 +14,9 @@ public class AnalysisPreparingHandler
     private readonly Analysis.Services.Surv.AnalysisService _survSceAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
     private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
-    private readonly Analysis.Services.De.AnalysisService _deAnalysisService;
+    private readonly Analysis.Services.Deg.AnalysisService _deAnalysisService;
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
+    private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellDcAnalysisService;
     
     private readonly ILogger _logger;
@@ -27,8 +28,9 @@ public class AnalysisPreparingHandler
         Analysis.Services.Surv.AnalysisService survAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
         Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
-        Analysis.Services.De.AnalysisService deAnalysisService,
+        Analysis.Services.Deg.AnalysisService deAnalysisService,
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
+        Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Scell.AnalysisService scellDcAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
@@ -39,6 +41,7 @@ public class AnalysisPreparingHandler
         _pcamAnalysisService = pcamAnalysisService;
         _deAnalysisService = deAnalysisService;
         _gafAnalysisService = gafAnalysisService;
+        _depAnalysisService = depAnalysisService;
         _scellDcAnalysisService = scellDcAnalysisService;
         
         _logger = logger;
@@ -62,8 +65,9 @@ public class AnalysisPreparingHandler
             AnalysisTaskType.SURV => await _survSceAnalysisService.Prepare(Parse<Analysis.Services.Surv.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.DM => await _dmAnalysisService.Prepare(Parse<Analysis.Services.Dm.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.PCAM => await _pcamAnalysisService.Prepare(Parse<Analysis.Services.Pcam.Models.Criteria.Analysis>(task.Data), token),
-            AnalysisTaskType.DE => await _deAnalysisService.Prepare(Parse<Analysis.Services.De.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.DEG => await _deAnalysisService.Prepare(Parse<Analysis.Services.Deg.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.GAF => await _gafAnalysisService.Prepare(Parse<Analysis.Services.Gaf.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.DEP => await _depAnalysisService.Prepare(Parse<Analysis.Services.Dep.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.SCELL => await _scellDcAnalysisService.Prepare(Parse<Analysis.Services.Scell.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };

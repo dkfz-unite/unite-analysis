@@ -7,6 +7,7 @@ public interface IAnalysisOptions
     string SurvUrl { get; }
     string DmUrl { get; }
     string PcamUrl { get; }
-    string DeUrl { get; }
+    string DegUrl { get; }
+    string DepUrl { get; }
     string ScellUrl { get; }
 }

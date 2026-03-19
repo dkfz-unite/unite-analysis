@@ -56,11 +56,11 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
-    public string DeUrl
+    public string DegUrl
     {
         get
         {
-            return GetOption("UNITE_ANALYSIS_DE_HOST");
+            return GetOption("UNITE_ANALYSIS_DEG_HOST");
         }
     }
 
@@ -69,6 +69,14 @@ public class AnalysisOptions : IAnalysisOptions
         get
         {
             return GetOption("UNITE_ANALYSIS_SCELL_HOST");
+        }
+    }
+
+    public string DepUrl
+    {
+        get
+        {
+            return GetOption("UNITE_ANALYSIS_DEP_HOST");
         }
     }
 
