@@ -27,8 +27,8 @@ public static class ConfigurationExtensions
         services.AddSearchEngine();
         services.AddSearchServices();
 
-        services.AddTransient<Analysis.Services.De.DataLoader>();
-        services.AddTransient<Analysis.Services.De.AnalysisService>();
+        services.AddTransient<Analysis.Services.Deg.DataLoader>();
+        services.AddTransient<Analysis.Services.Deg.AnalysisService>();
         services.AddTransient<Analysis.Services.Scell.ContextLoader>();
         services.AddTransient<Analysis.Services.Scell.AnalysisService>();
         services.AddTransient<Analysis.Services.Surv.ContextLoader>();
@@ -40,6 +40,8 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.Gaf.ContextLoader>();
         services.AddTransient<Analysis.Services.Gaf.ProcessingService>();
         services.AddTransient<Analysis.Services.Gaf.AnalysisService>();
+        services.AddTransient<Analysis.Services.Dep.ContextLoader>();
+        services.AddTransient<Analysis.Services.Dep.AnalysisService>();
 
         services.AddTransient<AnalysisTaskService>();
         services.AddTransient<AnalysisRecordService>();

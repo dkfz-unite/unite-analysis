@@ -34,7 +34,7 @@ public class DataLoader
     {
         var comparison = StringComparison.InvariantCultureIgnoreCase;
 
-        var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Omics.Rnasc.Exp).ToArray();
+        var resources = sample.Resources.Where(resource => resource.Type == DataTypes.Omics.Rnasc.Expression).ToArray();
 
         var barcodesResource = resources.FirstOrDefault(resource =>
             resource.Name.Equals(BarcodesFileName, comparison) &&

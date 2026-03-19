@@ -11,7 +11,7 @@ using Unite.Indices.Search.Services;
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
 using SampleExpressions = (int, Unite.Data.Entities.Omics.Analysis.Rna.GeneExpression[]); // SampleId, BulkExpression[]
 
-namespace Unite.Analysis.Services.De;
+namespace Unite.Analysis.Services.Deg;
 
 public class DataLoader
 {
@@ -172,7 +172,7 @@ public class DataLoader
                     if (!geneExpressions.ContainsKey(geneId))
                         geneExpressions.Add(geneId, []);
 
-                    geneExpressions[geneId].Add($"{domain}_{id}", expression.Reads);
+                    geneExpressions[geneId].Add($"{domain}_{id}", expression.Raw);
                 }
             }
         }

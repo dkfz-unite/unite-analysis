@@ -30,7 +30,7 @@ public class MetaLoader
         return SampleMetadataLoader.Load<Models.Input.SampleMetadata>(context, (sample, entry, context) =>
         {
             var resources = sample.Resources
-                .Where(resource => resource.Type == DataTypes.Omics.Meth.Sample && resource.Format == FileTypes.Sequence.Idat)
+                .Where(resource => resource.Type == DataTypes.Omics.Methylation.Sample && resource.Format == FileTypes.Sequence.Idat)
                 .ToArray();
 
             if (resources.Length == 0)

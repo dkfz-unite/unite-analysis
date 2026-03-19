@@ -15,4 +15,11 @@ public static class MemberJsonSerializer
     {
        return JsonSerializer.Serialize(value, _options);
     }
+
+    public static void Serialize<T>(string path, T value)
+    {
+        var json = Serialize(value);
+        
+        File.WriteAllText(path, json);
+    }
 }

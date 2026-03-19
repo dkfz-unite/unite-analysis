@@ -1,4 +1,4 @@
-namespace Unite.Analysis.Services.De.Models.Data;
+namespace Unite.Analysis.Services.Deg.Models.Data;
 
 public class Results
 {
