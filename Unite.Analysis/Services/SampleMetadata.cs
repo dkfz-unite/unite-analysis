@@ -44,6 +44,7 @@ public class MrMetadata
 
 public class SpecimenMetadata
 {
+    // TODO: Add tumor classification scores.
     public string Id { get; set; }
 
     public string Type { get; set; }
