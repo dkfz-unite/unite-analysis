@@ -64,6 +64,7 @@ public class SampleMetadataMapper
 
         if (entries.Any(entry => entry.Specimen != null))
         {
+            // TODO: Map tumor classification scores.
             MapProperty(map, entries, entry => entry.Specimen.Id, "specimen_id");
 
             MapProperty(map, entries, entry => entry.Specimen.Type, "specimen_type");
