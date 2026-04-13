@@ -80,6 +80,15 @@ public class AnalysisOptions : IAnalysisOptions
         }
     }
 
+    public string UmappUrl
+    {
+        get
+        {
+            return GetOption("UNITE_ANALYSIS_UMAPP_HOST");
+        }
+    }
+    
+
     public int? Limit { get; }
 
 

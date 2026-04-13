@@ -16,6 +16,7 @@ public class AnalysisProcessingHandler
     private readonly Analysis.Services.Deg.AnalysisService _degAnalysisService;
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
+    private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     private readonly ILogger _logger;
 
@@ -29,6 +30,7 @@ public class AnalysisProcessingHandler
         Analysis.Services.Deg.AnalysisService degAnalysisService,
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Dep.AnalysisService depAnalysisService,
+        Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
     {
@@ -40,6 +42,7 @@ public class AnalysisProcessingHandler
         _degAnalysisService = degAnalysisService;
         _gafAnalysisService = gafAnalysisService;
         _depAnalysisService = depAnalysisService;
+        _umappAnalysisService = umappAnalysisService;
         _scellAnalysisService = scellAnalysisService;
         _logger = logger;
     }
@@ -66,6 +69,7 @@ public class AnalysisProcessingHandler
             AnalysisTaskType.DEG => await _degAnalysisService.Process(task.Target, token),
             AnalysisTaskType.GAF => await _gafAnalysisService.Process(task.Target, token),
             AnalysisTaskType.DEP => await _depAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.UMAPP => await _umappAnalysisService.Process(task.Target, token),
             AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };

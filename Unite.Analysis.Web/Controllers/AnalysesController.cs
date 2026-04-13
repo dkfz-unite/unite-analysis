@@ -16,6 +16,7 @@ public class AnalysesController : Controller
     private readonly Analysis.Services.Deg.AnalysisService _deAnalysisService;
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
+    private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
 
 
@@ -28,6 +29,7 @@ public class AnalysesController : Controller
         Analysis.Services.Deg.AnalysisService deAnalysisService,
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Dep.AnalysisService depAnalysisService,
+        Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
@@ -38,6 +40,7 @@ public class AnalysesController : Controller
         _deAnalysisService = deAnalysisService;
         _gafAnalysisService = gafAnalysisService;
         _depAnalysisService = depAnalysisService;
+        _umappAnalysisService = umappAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
 
@@ -80,6 +83,8 @@ public class AnalysesController : Controller
                 await _gafAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.DEP)
                 await _depAnalysisService.Delete(entry.Id);
+            else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.UMAPP)
+                await _umappAnalysisService.Delete(entry.Id);
             else if (task.AnalysisTypeId == Data.Entities.Tasks.Enums.AnalysisTaskType.SCELL)
                 await _scellAnalysisService.Delete(entry.Id);
         }

@@ -9,33 +9,35 @@ public class SampleMetadataMapper
     private static readonly NullableValueConverter _nullableValueConverter = new();
 
 
-    public static ClassMap<T> Map<T>(T[] entries)
-        where T : SampleMetadata
+    public static ClassMap<T> Map<T>(T[] entries, bool mapId = false) where T : SampleMetadata
     {
         var map = new ClassMap<T>();
 
-        MapEntries(map, entries);
+        MapEntries(map, entries, mapId);
 
         return map;
     }
 
-    public static ClassMap<SampleMetadata> Map(SampleMetadata[] entries)
+    public static ClassMap<SampleMetadata> Map(SampleMetadata[] entries, bool mapId = false)
     {
         var map = new ClassMap<SampleMetadata>();
 
-        MapEntries(map, entries);
+        MapEntries(map, entries, mapId);
 
         return map;
     }
 
-    private static void MapEntries<T>(ClassMap<T> map, T[] entries)
+    private static void MapEntries<T>(ClassMap<T> map, T[] entries, bool mapId = false)
         where T : SampleMetadata
     {
-        MapProperty(map, entries, entry => entry.Id, "sample_id");
+        if (mapId)
+            map.Map(entry => entry.Id, "sample_id");
+
+        MapProperty(map, entries, entry => entry.Key, "sample_key");
 
         if (entries.Any(entry => entry.Donor != null))
         {
-            MapProperty(map, entries, entry => entry.Donor.Id, "donor_id");
+            MapProperty(map, entries, entry => entry.Donor.Id, "donor_key");
 
             MapProperty(map, entries, entry => entry.Donor.Age, "donor_age");
             MapProperty(map, entries, entry => entry.Donor.Sex, "donor_sex");
@@ -50,7 +52,7 @@ public class SampleMetadataMapper
 
         if (entries.Any(entry => entry.Image != null))
         {
-            MapProperty(map, entries, entry => entry.Image.Id, "image_id");
+            MapProperty(map, entries, entry => entry.Image.Id, "image_key");
 
             MapProperty(map, entries, entry => entry.Image.Type, "image_type");
 
@@ -65,10 +67,10 @@ public class SampleMetadataMapper
         if (entries.Any(entry => entry.Specimen != null))
         {
             // TODO: Map tumor classification scores.
-            MapProperty(map, entries, entry => entry.Specimen.Id, "specimen_id");
+            MapProperty(map, entries, entry => entry.Specimen.Id, "specimen_key");
 
             MapProperty(map, entries, entry => entry.Specimen.Type, "specimen_type");
-            MapProperty(map, entries, entry => entry.Specimen.Condition, "specimen_condition");
+            MapProperty(map, entries, entry => entry.Specimen.Category, "specimen_condition");
             MapProperty(map, entries, entry => entry.Specimen.TumorType, "specimen_tumor_type");
             MapProperty(map, entries, entry => entry.Specimen.TumorGrade, "specimen_tumor_grade");
             MapProperty(map, entries, entry => entry.Specimen.TumorSuperfamily, "specimen_tumor_superfamily");

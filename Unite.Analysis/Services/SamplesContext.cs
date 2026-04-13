@@ -48,11 +48,16 @@ public class SamplesContext
     {
         var donor = GetSampleDonor(id);
         var specimen = GetSampleSpecimen(id);
+        var specimenType = specimen.TypeId == SpecimenType.Material ? "mat" :
+                           specimen.TypeId == SpecimenType.Line ? "lne" :
+                           specimen.TypeId == SpecimenType.Organoid ? "org" :
+                           specimen.TypeId == SpecimenType.Xenograft ? "xen" :
+                           "spe";
 
         if (SampleType == 1)
             return $"{donor.ReferenceId}";
         else
-            return $"{donor.ReferenceId}-{specimen.ReferenceId}";
+            return $"{donor.ReferenceId}-{specimenType}-{specimen.ReferenceId}";
     }
 
     public Donor GetSampleDonor(int id)

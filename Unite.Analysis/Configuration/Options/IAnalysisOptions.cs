@@ -9,5 +9,6 @@ public interface IAnalysisOptions
     string PcamUrl { get; }
     string DegUrl { get; }
     string DepUrl { get; }
+    string UmappUrl { get; }
     string ScellUrl { get; }
 }

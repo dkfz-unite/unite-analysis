@@ -19,6 +19,7 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Deg.AnalysisService _degAnalysisService;
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
+    private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     
 
@@ -31,6 +32,7 @@ public class AnalysisController : Controller
         Analysis.Services.Deg.AnalysisService degAnalysisService,
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Dep.AnalysisService depAnalysisService,
+        Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
@@ -41,6 +43,7 @@ public class AnalysisController : Controller
         _degAnalysisService = degAnalysisService;
         _gafAnalysisService = gafAnalysisService;
         _depAnalysisService = depAnalysisService;
+        _umappAnalysisService = umappAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
     
@@ -48,85 +51,49 @@ public class AnalysisController : Controller
     [HttpPost("surv")]
     public async Task<IActionResult> CreateSurvTask([FromBody]TypedAnalysis<Analysis.Services.Surv.Models.Criteria.Analysis> model)
     {
-        var entry = GenericAnalysis.From(model);
-
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SURV);
-        
-        return Ok(model.Data.Id);
+        return await RunTask(AnalysisTaskType.SURV, model);
     }
 
     [HttpPost("dm")]
     public async Task<IActionResult> CreateDmTask([FromBody]TypedAnalysis<Analysis.Services.Dm.Models.Criteria.Analysis> model)
     {
-        var entry = GenericAnalysis.From(model);
-
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DM);
-
-        return Ok(model.Data.Id);
+        return await RunTask(AnalysisTaskType.DM, model);
     }
 
     [HttpPost("pcam")]
     public async Task<IActionResult> CreatePcamTask([FromBody]TypedAnalysis<Analysis.Services.Pcam.Models.Criteria.Analysis> model)
     {
-        var entry = GenericAnalysis.From(model);
-
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.PCAM);
-
-        return Ok(model.Data.Id);
+        return await RunTask(AnalysisTaskType.PCAM, model);
     }
 
     [HttpPost("deg")]
     public async Task<IActionResult> CreateDegTask([FromBody]TypedAnalysis<Analysis.Services.Deg.Models.Criteria.Analysis> model)
     {
-        var entry = GenericAnalysis.From(model);
-
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DEG);
-        
-        return Ok(model.Data.Id);
+        return await RunTask(AnalysisTaskType.DEG, model);
     }
 
     [HttpPost("gaf")]
     public async Task<IActionResult> CreateGafTask([FromBody]TypedAnalysis<Analysis.Services.Gaf.Models.Criteria.Analysis> model)
     {
-        var entry = GenericAnalysis.From(model);
-
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.GAF);
-
-        return Ok(model.Data.Id);
+        return await RunTask(AnalysisTaskType.GAF, model);
     }
 
     [HttpPost("dep")]
     public async Task<IActionResult> CreateDepTask([FromBody]TypedAnalysis<Analysis.Services.Dep.Models.Criteria.Analysis> model)
     {
-        var entry = GenericAnalysis.From(model);
+        return await RunTask(AnalysisTaskType.DEP, model);
+    }
 
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.DEP);
-
-        return Ok(model.Data.Id);
+    [HttpPost("umapp")]
+    public async Task<IActionResult> CreateUmappTask([FromBody]TypedAnalysis<Analysis.Services.Umapp.Models.Criteria.Analysis> model)
+    {
+        return await RunTask(AnalysisTaskType.UMAPP, model);
     }
 
     [HttpPost("scell")]
     public async Task<IActionResult> CreateScellTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
     {
-        var entry = GenericAnalysis.From(model);
-
-        model.Data.Id = await _analysisRecordService.Add(entry);
-
-        _analysisTaskService.Create(model.Data.Id, model.Data, AnalysisTaskType.SCELL);
-
-        return Ok(model.Data.Id);
+        return await RunTask(AnalysisTaskType.SCELL, model);
     }
 
     [HttpGet("scell/models")]
@@ -180,6 +147,8 @@ public class AnalysisController : Controller
             return Ok(await _gafAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
             return Ok(await _depAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
+            return Ok(await _umappAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Load(id, file));
         
@@ -206,6 +175,8 @@ public class AnalysisController : Controller
             return Ok(await _gafAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
             return Ok(await _depAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
+            return Ok(await _umappAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Download(id));
 
@@ -239,11 +210,25 @@ public class AnalysisController : Controller
             await _gafAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
             await _depAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
+            await _umappAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             await _scellAnalysisService.Delete(id); 
         
         await _analysisRecordService.Delete(id);
 
         return Ok();
+    }
+
+
+    private async Task<IActionResult> RunTask<T>(AnalysisTaskType type, TypedAnalysis<T> model) where T : AnalysisData
+    {
+        var entry = GenericAnalysis.From(model);
+
+        model.Data.Id = await _analysisRecordService.Add(entry);
+
+        _analysisTaskService.Create(model.Data.Id, model.Data, type);
+
+        return Ok(model.Data.Id);
     }
 }
