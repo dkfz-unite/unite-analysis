@@ -7,13 +7,13 @@ using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
 using Unite.Analysis.Models.Structures;
 using Unite.Analysis.Services.Dep.Models.Criteria.Enums;
-using Unite.Analysis.Services.Dep.Models.Input;
+using Unite.Analysis.Services.Umapp.Models.Input;
 using Unite.Data.Entities.Omics.Analysis.Enums;
 using Unite.Data.Entities.Omics.Analysis.Prot;
 using Unite.Essentials.Extensions;
 using Unite.Essentials.Tsv;
 
-namespace Unite.Analysis.Services.Dep;
+namespace Unite.Analysis.Services.Umapp;
 
 public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
@@ -24,10 +24,10 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string AnnotationsFileName = "annotations.tsv";
     private const string ArchiveFileName = "results.zip";
 
-    private readonly SamplesContextLoader _contextLoader;
+    private readonly SamplesContextLoaderFull _contextLoader;
 
 
-    public AnalysisService(IAnalysisOptions options, SamplesContextLoader contextLoader) : base(options)
+    public AnalysisService(IAnalysisOptions options, SamplesContextLoaderFull contextLoader) : base(options)
     {
         _contextLoader = contextLoader;
     }
@@ -45,55 +45,50 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var data = new Matrix<double>("feature");
         var metadata = new List<MetadataEntry>();
-        var annotations = new Dictionary<int, AnnotationEntry>();
 
         using var dbContext = _contextLoader.DbContextFactory.CreateDbContext();
 
-        foreach (var dataset in model.Datasets)
+        var dataset = model.Datasets.Single();
+        var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
+        var samplesMetadata = SampleMetadataLoader.Load(samplesContext);
+        var samplesMetadataMap = SampleMetadataMapper.Map(samplesMetadata, mapId: true);
+        var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
+
+        var expressions = await dbContext.Set<ProteinExpression>()
+            .AsNoTracking()
+            .Include(expression => expression.Entity.Transcript.Gene)
+            .Where(expression => sampleIds.Contains(expression.SampleId))
+            .ToArrayAsync();
+
+        foreach (var expression in expressions)
         {
-            var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
-            var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
+            data[expression.SampleId.ToString(), expression.Entity.StableId] = expression.Raw;
+        }
 
-            var expressions = await dbContext.Set<ProteinExpression>()
-                .AsNoTracking()
-                .Include(expression => expression.Entity.Transcript.Gene)
-                .Where(expression => sampleIds.Contains(expression.SampleId))
-                .ToArrayAsync();
+        foreach (var sampleId in sampleIds)
+        {
+            if (!data.ContainsColumn(sampleId.ToString()))
+                continue;
 
-            foreach (var expression in expressions)
+            var donor = samplesContext.GetSampleDonor(sampleId);
+            var specimen = samplesContext.GetSampleSpecimen(sampleId);
+            var sample = samplesContext.OmicsSamples[sampleId];
+
+            metadata.Add(new MetadataEntry
             {
-                data[expression.SampleId.ToString(), expression.Entity.StableId] = expression.Raw;
-
-                if (!annotations.ContainsKey(expression.EntityId))
-                    annotations.Add(expression.EntityId, new AnnotationEntry(expression.Entity));
-            }
-
-            foreach (var sampleId in sampleIds)
-            {
-                if (!data.ContainsColumn(sampleId.ToString()))
-                    continue;
-
-                var donor = samplesContext.GetSampleDonor(sampleId);
-                var specimen = samplesContext.GetSampleSpecimen(sampleId);
-                var sample = samplesContext.OmicsSamples[sampleId];
-
-                metadata.Add(new MetadataEntry
-                {
-                    Sample = sampleId,
-                    Condition = dataset.Name,
-                    Batch = sample.Batch,
-                    Donor = donor.ReferenceId,
-                    Specimen = specimen.ReferenceId,
-                    SpecimenType = specimen.TypeId.ToDefinitionString()
-                });
-            }
+                Sample = sampleId,
+                Batch = sample.Batch,
+                Donor = donor.ReferenceId,
+                Specimen = specimen.ReferenceId,
+                SpecimenType = specimen.TypeId.ToDefinitionString()
+            });
         }
 
         var batchValidationError = ValidateBatches(model.Options.BatchCorrectionMethod, metadata);
 
         data.WriteTo(dataFilePath);
         File.WriteAllText(metadatapath, TsvWriter.Write(metadata));
-        File.WriteAllText(annotationsPath, TsvWriter.Write(annotations.Values));
+        File.WriteAllText(annotationsPath, TsvWriter.Write(samplesMetadata, samplesMetadataMap));
         MemberJsonSerializer.Serialize(optionsPath, model.Options);
 
         stopwatch.Stop();
@@ -105,7 +100,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     {
         var path = GetWorkingDirectoryPath(key);
 
-        var url = $"{_options.DepUrl}/api/run?key={key}";
+        var url = $"{_options.UmappUrl}/api/run?key={key}";
 
         var analysisResult = await ProcessRemotely(url);
 

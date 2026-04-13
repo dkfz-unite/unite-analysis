@@ -1,14 +1,11 @@
 using Unite.Essentials.Tsv.Attributes;
 
-namespace Unite.Analysis.Services.Dep.Models.Input;
+namespace Unite.Analysis.Services.Umapp.Models.Input;
 
 public class MetadataEntry
 {
     [Column("sample")]
     public int Sample { get; set; }
-
-    [Column("condition")]
-    public string Condition { get; set; }
 
     [Column("batch")]
     public string Batch { get; set; }

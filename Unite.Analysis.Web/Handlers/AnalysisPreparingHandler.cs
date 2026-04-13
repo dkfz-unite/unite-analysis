@@ -17,6 +17,7 @@ public class AnalysisPreparingHandler
     private readonly Analysis.Services.Deg.AnalysisService _deAnalysisService;
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
+    private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellDcAnalysisService;
     
     private readonly ILogger _logger;
@@ -31,6 +32,7 @@ public class AnalysisPreparingHandler
         Analysis.Services.Deg.AnalysisService deAnalysisService,
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Dep.AnalysisService depAnalysisService,
+        Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Scell.AnalysisService scellDcAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
@@ -42,6 +44,7 @@ public class AnalysisPreparingHandler
         _deAnalysisService = deAnalysisService;
         _gafAnalysisService = gafAnalysisService;
         _depAnalysisService = depAnalysisService;
+        _umappAnalysisService = umappAnalysisService;
         _scellDcAnalysisService = scellDcAnalysisService;
         
         _logger = logger;
@@ -68,6 +71,7 @@ public class AnalysisPreparingHandler
             AnalysisTaskType.DEG => await _deAnalysisService.Prepare(Parse<Analysis.Services.Deg.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.GAF => await _gafAnalysisService.Prepare(Parse<Analysis.Services.Gaf.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.DEP => await _depAnalysisService.Prepare(Parse<Analysis.Services.Dep.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.UMAPP => await _umappAnalysisService.Prepare(Parse<Analysis.Services.Umapp.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.SCELL => await _scellDcAnalysisService.Prepare(Parse<Analysis.Services.Scell.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };

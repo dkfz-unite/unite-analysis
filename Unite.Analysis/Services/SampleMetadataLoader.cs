@@ -11,7 +11,7 @@ public class SampleMetadataLoader
 
         foreach (var sample in context.OmicsSamples)
         {
-            var entry = new T() { Id = context.GetSampleKey(sample.Key) };
+            var entry = new T() { Id = sample.Value.Id, Key = context.GetSampleKey(sample.Key) };
 
             MapEntry(sample.Value, entry, context);
 
@@ -27,7 +27,7 @@ public class SampleMetadataLoader
 
         foreach (var sample in context.OmicsSamples)
         {
-            var entry = new T() { Id = context.GetSampleKey(sample.Key) };
+            var entry = new T() { Id = sample.Value.Id, Key = context.GetSampleKey(sample.Key) };
 
             var mapped = mapper(sample.Value, entry, context);
 
@@ -110,7 +110,7 @@ public class SampleMetadataLoader
                 Id = specimen.ReferenceId,
 
                 Type = specimen.TypeId.ToDefinitionString(),
-                Condition = specimen.CategoryId?.ToDefinitionString(),
+                Category = specimen.CategoryId?.ToDefinitionString(),
                 TumorType = specimen.TumorTypeId?.ToDefinitionString(),
                 TumorGrade = specimen.TumorGrade?.ToString(),
                 TumorSuperfamily = specimen.TumorClassification?.Superfamily?.Name,

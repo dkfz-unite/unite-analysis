@@ -21,15 +21,4 @@ public static class DirectoryManager
             Directory.Delete(path, true);
         }
     }
-
-    public static void DeleteSubdirectories(string path)
-    {
-        if (Directory.Exists(path))
-        {
-            foreach(var directoryPath in Directory.GetDirectories(path))
-            {
-                Directory.Delete(directoryPath, true);
-            }
-        }
-    }
 }

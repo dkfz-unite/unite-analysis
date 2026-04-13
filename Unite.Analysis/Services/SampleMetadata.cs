@@ -2,7 +2,15 @@ namespace Unite.Analysis.Services;
 
 public class SampleMetadata
 {
-    public string Id { get; set; }
+    /// <summary>
+    /// Original internal sample id.
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Self explanatory key to identify the sample, e.g. "D001-MAT-S001", where: D001 = donor id, MAT = material, S001 = specimen id.
+    /// </summary>
+    public string Key { get; set; }
 
     public DonorMetadata Donor { get; set; }
     public ImageMetadata Image { get; set; }
@@ -52,7 +60,7 @@ public class SpecimenMetadata
     public string TertStatus { get; set; }
     public string MgmtStatus { get; set; }
     public string GeneKnockouts { get; set; }
-    public string Condition { get; set; }
+    public string Category { get; set; }
     public string TumorType { get; set; }
     public string TumorGrade { get; set; }
     public string TumorSuperfamily { get; set; }
