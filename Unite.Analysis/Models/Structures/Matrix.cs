@@ -2,7 +2,16 @@ namespace Unite.Analysis.Models.Structures;
 
 public class Matrix<T>
 {
-    private record struct CellIndex(int ColumnIndex, int RowIndex);
+    private record struct CellIndex(int ColumnIndex, int RowIndex)
+    {
+        public override readonly int GetHashCode()
+        {
+            unchecked
+            {
+                return (ColumnIndex * 397) ^ RowIndex;
+            }
+        }
+    }
     
     private readonly string _rootColumnName = "rows/columns";
     private readonly Dictionary<string, int> _columns = [];
