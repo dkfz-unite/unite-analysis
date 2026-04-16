@@ -1,22 +1,11 @@
 namespace Unite.Analysis.Models.Structures;
 
 public class Matrix<T>
-{
-    private record struct CellIndex(int ColumnIndex, int RowIndex)
-    {
-        public override readonly int GetHashCode()
-        {
-            unchecked
-            {
-                return (ColumnIndex * 397) ^ RowIndex;
-            }
-        }
-    }
-    
+{    
     private readonly string _rootColumnName = "rows/columns";
     private readonly Dictionary<string, int> _columns = [];
     private readonly Dictionary<string, int> _rows = [];
-    private readonly Dictionary<CellIndex, T> _values = [];
+    private readonly Dictionary<int, T> _values = [];
 
     public IEnumerable<string> ColumnKeys
     {
@@ -32,15 +21,15 @@ public class Matrix<T>
     {
         get
         {
-            var cellIndex = GetCellIndex(columnKey, rowKey);
+            var cellIndex = FindCell(columnKey, rowKey);
 
             return _values.TryGetValue(cellIndex, out var value) ? value : default;
         }
         set
         {
-            var columnIndex = GetOrAddColumnIndex(columnKey);
-            var rowIndex = GetOrAddRowIndex(rowKey);
-            var cellIndex = new CellIndex(columnIndex, rowIndex);
+            var columnIndex = FindOrAddColumn(columnKey);
+            var rowIndex = FindOrAddRow(rowKey);
+            var cellIndex = BuildCellIndex(columnIndex, rowIndex);
 
             _values[cellIndex] = value;
         }
@@ -81,12 +70,12 @@ public class Matrix<T>
     {
         var row = new Dictionary<string, T>();
 
-        var rowIndex = GetRowIndex(key);
+        var rowIndex = FindRow(key);
 
         foreach (var column in _columns)
         {
             var columnIndex = column.Value;
-            var cellIndex = new CellIndex(columnIndex, rowIndex);
+            var cellIndex = BuildCellIndex(columnIndex, rowIndex);
 
             row[column.Key] = _values.TryGetValue(cellIndex, out var value) ? value : default;
         }
@@ -98,12 +87,12 @@ public class Matrix<T>
     {
         var column = new Dictionary<string, T>();
 
-        var columnIndex = GetColumnIndex(key);
+        var columnIndex = FindColumn(key);
 
         foreach (var row in _rows)
         {
             var rowIndex = row.Value;
-            var cellIndex = new CellIndex(columnIndex, rowIndex);
+            var cellIndex = BuildCellIndex(columnIndex, rowIndex);
 
             column[row.Key] = _values.TryGetValue(cellIndex, out var value) ? value : default;
         }
@@ -111,7 +100,7 @@ public class Matrix<T>
         return column;
     }
 
-    public bool TryGet(string columnKey, string rowKey, out T value)
+    public bool TryGetValue(string columnKey, string rowKey, out T value)
     {
         value = default;
 
@@ -121,7 +110,7 @@ public class Matrix<T>
         if (!_rows.TryGetValue(rowKey, out var rowIndex))
             return false;
 
-        var cellIndex = new CellIndex(columnIndex, rowIndex);
+        var cellIndex = BuildCellIndex(columnIndex, rowIndex);
 
         return _values.TryGetValue(cellIndex, out value);
     }
@@ -134,7 +123,7 @@ public class Matrix<T>
         if (!_rows.TryGetValue(rowKey, out var rowIndex))
             return;
 
-        var cellIndex = new CellIndex(columnIndex, rowIndex);
+        var cellIndex = BuildCellIndex(columnIndex, rowIndex);
 
         _values.Remove(cellIndex);
     }
@@ -163,7 +152,7 @@ public class Matrix<T>
 
             foreach (var columnKey in columnKeys)
             {
-                if (TryGet(columnKey, rowKey, out var value))
+                if (TryGetValue(columnKey, rowKey, out var value))
                     writer.Write(value + "\t");
                 else
                     writer.Write("\t");
@@ -234,7 +223,7 @@ public class Matrix<T>
     }
 
 
-    private CellIndex GetCellIndex(string columnKey, string rowKey)
+    private int FindCell(string columnKey, string rowKey)
     {
         if (!_columns.TryGetValue(columnKey, out var columnIndex))
             throw new KeyNotFoundException($"The specified column '{columnKey}' does not exist.");
@@ -242,10 +231,16 @@ public class Matrix<T>
         if (!_rows.TryGetValue(rowKey, out var rowIndex))
             throw new KeyNotFoundException($"The specified row '{rowKey}' does not exist.");
 
-        return new CellIndex(columnIndex, rowIndex);
+        return BuildCellIndex(columnIndex, rowIndex);
     }
 
-    private int GetColumnIndex(string columnKey)
+    private int BuildCellIndex(int columnIndex, int rowIndex)
+    {
+        return rowIndex * _columns.Count + columnIndex;
+    }
+    
+
+    private int FindColumn(string columnKey)
     {
         if (_columns.TryGetValue(columnKey, out var columnIndex))
             return columnIndex;
@@ -253,7 +248,7 @@ public class Matrix<T>
         throw new KeyNotFoundException($"The specified column '{columnKey}' does not exist.");
     }        
 
-    private int GetOrAddColumnIndex(string columnKey)
+    private int FindOrAddColumn(string columnKey)
     {
         if (_columns.TryGetValue(columnKey, out var columnIndex))
             return columnIndex;
@@ -264,7 +259,7 @@ public class Matrix<T>
         return columnIndex;
     }
 
-    private int GetRowIndex(string rowKey)
+    private int FindRow(string rowKey)
     {
         if (_rows.TryGetValue(rowKey, out var rowIndex))
             return rowIndex;
@@ -272,7 +267,7 @@ public class Matrix<T>
         throw new KeyNotFoundException($"The specified row '{rowKey}' does not exist.");
     }
 
-    private int GetOrAddRowIndex(string rowKey)
+    private int FindOrAddRow(string rowKey)
     {
         if (_rows.TryGetValue(rowKey, out var rowIndex))
             return rowIndex;
