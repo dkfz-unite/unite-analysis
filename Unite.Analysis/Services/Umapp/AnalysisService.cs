@@ -5,6 +5,7 @@ using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 using Unite.Analysis.Models.Enums;
+using Unite.Analysis.Models.Metadata;
 using Unite.Analysis.Models.Structures;
 using Unite.Analysis.Services.Dep.Models.Criteria.Enums;
 using Unite.Analysis.Services.Umapp.Models.Input;
@@ -48,6 +49,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         using var dbContext = _contextLoader.DbContextFactory.CreateDbContext();
 
+        var mappings = new Mappings<SampleMetadata>();
         var dataset = model.Datasets.Single();
         var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
         var samplesMetadata = SampleMetadataLoader.Load(samplesContext);
@@ -73,10 +75,20 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
             var donor = samplesContext.GetSampleDonor(sampleId);
             var specimen = samplesContext.GetSampleSpecimen(sampleId);
             var sample = samplesContext.OmicsSamples[sampleId];
+            var condition = string.Empty;
+            
+            if (model.Options.RequireMinFractionOneClass)
+            {
+                var sampleMetadata = samplesMetadata.FirstOrDefault(entry => entry.Id == sampleId);
+                var conditionMapping = mappings.All.FirstOrDefault(mapping => mapping.Key == model.Options.ClassProperty);
+                var conditionGetter = conditionMapping?.Expression.Compile();
+                condition = conditionGetter?.Invoke(sampleMetadata); 
+            }
 
             metadata.Add(new MetadataEntry
             {
                 Sample = sampleId,
+                Condition = condition,
                 Batch = sample.Batch,
                 Donor = donor.ReferenceId,
                 Specimen = specimen.ReferenceId,
