@@ -2,9 +2,12 @@ namespace Unite.Analysis.Models.Structures;
 
 public class Matrix<T>
 {
+    private record struct CellIndex(int ColumnIndex, int RowIndex);
+    
     private readonly string _rootColumnName = "rows/columns";
-    private readonly Dictionary<string, Dictionary<string, T>> _columns = [];
-    private readonly Dictionary<string, Dictionary<string, T>> _rows = [];
+    private readonly Dictionary<string, int> _columns = [];
+    private readonly Dictionary<string, int> _rows = [];
+    private readonly Dictionary<CellIndex, T> _values = [];
 
     public IEnumerable<string> ColumnKeys
     {
@@ -20,29 +23,28 @@ public class Matrix<T>
     {
         get
         {
-            return _columns[columnKey][rowKey];
+            var cellIndex = GetCellIndex(columnKey, rowKey);
+
+            return _values.TryGetValue(cellIndex, out var value) ? value : default;
         }
         set
         {
-            if (!_columns.ContainsKey(columnKey))
-                _columns[columnKey] = [];
+            var columnIndex = GetOrAddColumnIndex(columnKey);
+            var rowIndex = GetOrAddRowIndex(rowKey);
+            var cellIndex = new CellIndex(columnIndex, rowIndex);
 
-            if (!_rows.ContainsKey(rowKey))
-                _rows[rowKey] = [];
-
-            _columns[columnKey][rowKey] = value;
-            _rows[rowKey][columnKey] = value;
+            _values[cellIndex] = value;
         }
     }
 
     public bool IsEmpty
     {
-        get { return _rows.Count == 0; }
+        get { return _values.Count == 0; }
     }
 
     public bool IsNotEmpty
     {
-        get { return !IsEmpty; }
+        get { return _values.Count > 0; }
     }
 
 
@@ -68,28 +70,64 @@ public class Matrix<T>
 
     public IReadOnlyDictionary<string, T> GetRow(string key)
     {
-        return _rows.TryGetValue(key, out var columns) ? columns : [];
+        var row = new Dictionary<string, T>();
+
+        var rowIndex = GetRowIndex(key);
+
+        foreach (var column in _columns)
+        {
+            var columnIndex = column.Value;
+            var cellIndex = new CellIndex(columnIndex, rowIndex);
+
+            row[column.Key] = _values.TryGetValue(cellIndex, out var value) ? value : default;
+        }
+
+        return row;
     }
 
     public IReadOnlyDictionary<string, T> GetColumn(string key)
     {
-        return _columns.TryGetValue(key, out var rows) ? rows : [];
+        var column = new Dictionary<string, T>();
+
+        var columnIndex = GetColumnIndex(key);
+
+        foreach (var row in _rows)
+        {
+            var rowIndex = row.Value;
+            var cellIndex = new CellIndex(columnIndex, rowIndex);
+
+            column[row.Key] = _values.TryGetValue(cellIndex, out var value) ? value : default;
+        }
+
+        return column;
     }
 
     public bool TryGet(string columnKey, string rowKey, out T value)
     {
         value = default;
 
-        return _columns.TryGetValue(columnKey, out var column) && column.TryGetValue(rowKey, out value);
+        if (!_columns.TryGetValue(columnKey, out var columnIndex))
+            return false;
+
+        if (!_rows.TryGetValue(rowKey, out var rowIndex))
+            return false;
+
+        var cellIndex = new CellIndex(columnIndex, rowIndex);
+
+        return _values.TryGetValue(cellIndex, out value);
     }
 
     public void Remove(string columnKey, string rowKey)
     {
-        _columns.TryGetValue(columnKey, out var column);
-        column?.Remove(rowKey);
+        if (!_columns.TryGetValue(columnKey, out var columnIndex))
+            return;
 
-        _rows.TryGetValue(rowKey, out var row);
-        row?.Remove(columnKey);
+        if (!_rows.TryGetValue(rowKey, out var rowIndex))
+            return;
+
+        var cellIndex = new CellIndex(columnIndex, rowIndex);
+
+        _values.Remove(cellIndex);
     }
 
     public void WriteTo(string path)
@@ -186,6 +224,55 @@ public class Matrix<T>
         return reader.ReadToEnd();
     }
 
+
+    private CellIndex GetCellIndex(string columnKey, string rowKey)
+    {
+        if (!_columns.TryGetValue(columnKey, out var columnIndex))
+            throw new KeyNotFoundException($"The specified column '{columnKey}' does not exist.");
+
+        if (!_rows.TryGetValue(rowKey, out var rowIndex))
+            throw new KeyNotFoundException($"The specified row '{rowKey}' does not exist.");
+
+        return new CellIndex(columnIndex, rowIndex);
+    }
+
+    private int GetColumnIndex(string columnKey)
+    {
+        if (_columns.TryGetValue(columnKey, out var columnIndex))
+            return columnIndex;
+
+        throw new KeyNotFoundException($"The specified column '{columnKey}' does not exist.");
+    }        
+
+    private int GetOrAddColumnIndex(string columnKey)
+    {
+        if (_columns.TryGetValue(columnKey, out var columnIndex))
+            return columnIndex;
+
+        columnIndex = _columns.Count;
+        _columns[columnKey] = columnIndex;
+
+        return columnIndex;
+    }
+
+    private int GetRowIndex(string rowKey)
+    {
+        if (_rows.TryGetValue(rowKey, out var rowIndex))
+            return rowIndex;
+
+        throw new KeyNotFoundException($"The specified row '{rowKey}' does not exist.");
+    }
+
+    private int GetOrAddRowIndex(string rowKey)
+    {
+        if (_rows.TryGetValue(rowKey, out var rowIndex))
+            return rowIndex;
+
+        rowIndex = _rows.Count;
+        _rows[rowKey] = rowIndex;
+
+        return rowIndex;
+    }
 
     private static bool TryParseValue(string valueString, out T value)
     {

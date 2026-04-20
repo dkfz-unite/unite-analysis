@@ -10,4 +10,8 @@
     <PackageReference Include="Unite.Indices.Search" Version="13.8.0" />
     <PackageReference Include="Unite.Essentials.Tsv" Version="4.2.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models/Metadata/" />
+  </ItemGroup>
 </Project>

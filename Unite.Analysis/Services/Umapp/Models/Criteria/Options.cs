@@ -5,6 +5,9 @@ namespace Unite.Analysis.Services.Umapp.Models.Criteria;
 
 public class Options : Dep.Models.Criteria.Options
 {
+    [JsonPropertyName("class_property")]
+    public string ClassProperty { get; set; } = null;
+
     [JsonPropertyName("feature_selection_method")]
     public FeatureSelectionMethod FeatureSelectionMethod { get; set; } = FeatureSelectionMethod.Variance;
 
