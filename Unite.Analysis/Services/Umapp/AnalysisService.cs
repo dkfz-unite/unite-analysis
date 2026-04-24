@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
@@ -26,11 +27,13 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string ArchiveFileName = "results.zip";
 
     private readonly SamplesContextLoaderFull _contextLoader;
+    private readonly ILogger _logger;
 
 
-    public AnalysisService(IAnalysisOptions options, SamplesContextLoaderFull contextLoader) : base(options)
+    public AnalysisService(IAnalysisOptions options, SamplesContextLoaderFull contextLoader, ILogger<AnalysisService> logger) : base(options)
     {
         _contextLoader = contextLoader;
+        _logger = logger;
     }
 
 
@@ -38,74 +41,84 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     {
         var stopwatch = Stopwatch.StartNew();
 
-        var directoryPath = GetWorkingDirectoryPath(model.Id);
-        var dataFilePath = Path.Combine(directoryPath, DataFileName);
-        var metadatapath = Path.Combine(directoryPath, MetadataFileName);
-        var annotationsPath = Path.Combine(directoryPath, AnnotationsFileName);
-        var optionsPath = Path.Combine(directoryPath, OptionsFileName);
-
-        var data = new Matrix<double>("feature");
-        var metadata = new List<MetadataEntry>();
-
-        using var dbContext = _contextLoader.DbContextFactory.CreateDbContext();
-
-        var mappings = new Mappings<SampleMetadata>();
-        var dataset = model.Datasets.Single();
-        var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
-        var samplesMetadata = SampleMetadataLoader.Load(samplesContext);
-        var samplesMetadataMap = SampleMetadataMapper.Map(samplesMetadata, mapId: true);
-        var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
-
-        var expressions = await dbContext.Set<ProteinExpression>()
-            .AsNoTracking()
-            .Include(expression => expression.Entity.Transcript.Gene)
-            .Where(expression => sampleIds.Contains(expression.SampleId))
-            .ToArrayAsync();
-
-        foreach (var expression in expressions)
+        try
         {
-            data[expression.SampleId.ToString(), expression.Entity.StableId] = expression.Raw;
-        }
+            var directoryPath = GetWorkingDirectoryPath(model.Id);
+            var dataFilePath = Path.Combine(directoryPath, DataFileName);
+            var metadatapath = Path.Combine(directoryPath, MetadataFileName);
+            var annotationsPath = Path.Combine(directoryPath, AnnotationsFileName);
+            var optionsPath = Path.Combine(directoryPath, OptionsFileName);
 
-        foreach (var sampleId in sampleIds)
-        {
-            if (!data.ContainsColumn(sampleId.ToString()))
-                continue;
+            var data = new Matrix<double>("feature");
+            var metadata = new List<MetadataEntry>();
 
-            var donor = samplesContext.GetSampleDonor(sampleId);
-            var specimen = samplesContext.GetSampleSpecimen(sampleId);
-            var sample = samplesContext.OmicsSamples[sampleId];
-            var condition = string.Empty;
-            
-            if (model.Options.RequireMinFractionOneClass)
+            using var dbContext = _contextLoader.DbContextFactory.CreateDbContext();
+
+            var mappings = new Mappings<SampleMetadata>();
+            var dataset = model.Datasets.Single();
+            var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
+            var samplesMetadata = SampleMetadataLoader.Load(samplesContext);
+            var samplesMetadataMap = SampleMetadataMapper.Map(samplesMetadata, mapId: true);
+            var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
+
+            var expressions = await dbContext.Set<ProteinExpression>()
+                .AsNoTracking()
+                .Include(expression => expression.Entity.Transcript.Gene)
+                .Where(expression => sampleIds.Contains(expression.SampleId))
+                .ToArrayAsync();
+
+            foreach (var expression in expressions)
             {
-                var sampleMetadata = samplesMetadata.FirstOrDefault(entry => entry.Id == sampleId);
-                var conditionMapping = mappings.All.FirstOrDefault(mapping => mapping.Key == model.Options.ClassProperty);
-                var conditionGetter = conditionMapping?.Expression.Compile();
-                condition = conditionGetter?.Invoke(sampleMetadata); 
+                data[expression.SampleId.ToString(), expression.Entity.StableId] = expression.Raw;
             }
 
-            metadata.Add(new MetadataEntry
+            foreach (var sampleId in sampleIds)
             {
-                Sample = sampleId,
-                Condition = condition,
-                Batch = sample.Batch,
-                Donor = donor.ReferenceId,
-                Specimen = specimen.ReferenceId,
-                SpecimenType = specimen.TypeId.ToDefinitionString()
-            });
+                if (!data.ContainsColumn(sampleId.ToString()))
+                    continue;
+
+                var donor = samplesContext.GetSampleDonor(sampleId);
+                var specimen = samplesContext.GetSampleSpecimen(sampleId);
+                var sample = samplesContext.OmicsSamples[sampleId];
+                var condition = string.Empty;
+                
+                if (model.Options.RequireMinFractionOneClass)
+                {
+                    var sampleMetadata = samplesMetadata.FirstOrDefault(entry => entry.Id == sampleId);
+                    var conditionMapping = mappings.All.FirstOrDefault(mapping => mapping.Key == model.Options.ClassProperty);
+                    var conditionGetter = conditionMapping?.Expression.Compile();
+                    condition = conditionGetter?.Invoke(sampleMetadata); 
+                }
+
+                metadata.Add(new MetadataEntry
+                {
+                    Sample = sampleId,
+                    Condition = condition,
+                    Batch = sample.Batch,
+                    Donor = donor.ReferenceId,
+                    Specimen = specimen.ReferenceId,
+                    SpecimenType = specimen.TypeId.ToDefinitionString()
+                });
+            }
+
+            var batchValidationError = ValidateBatches(model.Options.BatchCorrectionMethod, metadata);
+
+            data.WriteTo(dataFilePath);
+            File.WriteAllText(metadatapath, TsvWriter.Write(metadata));
+            File.WriteAllText(annotationsPath, TsvWriter.Write(samplesMetadata, samplesMetadataMap));
+            MemberJsonSerializer.Serialize(optionsPath, model.Options);
+
+            stopwatch.Stop();
+
+            return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds, batchValidationError);
         }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
 
-        var batchValidationError = ValidateBatches(model.Options.BatchCorrectionMethod, metadata);
-
-        data.WriteTo(dataFilePath);
-        File.WriteAllText(metadatapath, TsvWriter.Write(metadata));
-        File.WriteAllText(annotationsPath, TsvWriter.Write(samplesMetadata, samplesMetadataMap));
-        MemberJsonSerializer.Serialize(optionsPath, model.Options);
-
-        stopwatch.Stop();
-
-        return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds, batchValidationError);
+            _logger.LogError(ex, "Error preparing analysis with id {AnalysisId}", model.Id);
+            return AnalysisTaskResult.Failed(stopwatch.Elapsed.TotalSeconds, ex.Message);
+        }
     }
 
     public override async Task<AnalysisTaskResult> Process(string key, params object[] args)
