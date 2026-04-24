@@ -27,6 +27,8 @@ public class AnalysisPreparingWorker : BackgroundService
         // Delay 5 seconds to let the web api start working
         await Task.Delay(5000, cancellationToken);
 
+        _handler.Prepare();
+
         while (!cancellationToken.IsCancellationRequested)
         {
             try
