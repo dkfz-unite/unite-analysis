@@ -70,7 +70,26 @@ public class AnalysisTaskService
         dbContext.SaveChanges();
     }
 
-    public void Delete (Data.Entities.Tasks.Task task)
+    public void Update(TaskStatusType? from, TaskStatusType? to, string comment = null)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+
+        var tasks = dbContext.Tasks
+            .Where(task => task.AnalysisTypeId != null)
+            .Where(task => task.StatusTypeId == from)
+            .ToArray();
+
+        foreach (var task in tasks)
+        {
+            task.StatusTypeId = to;
+            task.Comment = comment;
+        }
+
+        dbContext.UpdateRange(tasks);
+        dbContext.SaveChanges();
+    }
+
+    public void Delete(Data.Entities.Tasks.Task task)
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 

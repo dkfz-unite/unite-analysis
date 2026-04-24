@@ -48,6 +48,11 @@ public class AnalysisProcessingHandler
     }
 
 
+    public void Prepare()
+    {
+        _analysisTaskService.Update(TaskStatusType.Processing, TaskStatusType.Failed, "Failed due to service reboot");
+    }
+
     public void Handle()
     {
         _analysisTaskService.Iterate(TaskStatusType.Prepared, TaskStatusType.Processing, TaskStatusType.Processed, 10, 2000, task => 

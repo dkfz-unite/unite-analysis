@@ -50,6 +50,11 @@ public class AnalysisPreparingHandler
         _logger = logger;
     }
 
+    public void Prepare()
+    {
+        _analysisTaskService.Update(TaskStatusType.Preparing, TaskStatusType.Failed, "Failed due to service reboot");
+    }
+
 
     public void Handle()
     {
