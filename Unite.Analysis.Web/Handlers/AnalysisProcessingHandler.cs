@@ -6,7 +6,7 @@ using Unite.Data.Entities.Tasks.Enums;
 
 namespace Unite.Analysis.Web.Handlers;
 
-public class AnalysisProcessingHandler
+public class AnalysisProcessingHandler : Handler
 {    
     private readonly ApiOptions _apiOptions;
     private readonly AnalysisTaskService _analysisTaskService;
@@ -48,12 +48,12 @@ public class AnalysisProcessingHandler
     }
 
 
-    public void Prepare()
+    public override void Prepare()
     {
         _analysisTaskService.Update(TaskStatusType.Processing, TaskStatusType.Failed, "Failed due to service reboot");
     }
 
-    public void Handle()
+    public override void Handle()
     {
         _analysisTaskService.Iterate(TaskStatusType.Prepared, TaskStatusType.Processing, TaskStatusType.Processed, 10, 2000, task => 
         {
