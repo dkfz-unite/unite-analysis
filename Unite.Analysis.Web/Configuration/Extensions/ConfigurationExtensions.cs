@@ -60,8 +60,8 @@ public static class ConfigurationExtensions
         services.AddHostedService<AnalysisProcessingWorker>();
         services.AddTransient<AnalysisProcessingHandler>();
 
-        services.AddHostedService<MonitoringWorker>();
-        services.AddTransient<MonitoringHandler>();
+        services.AddHostedService<DockerMonitoringWorker>();
+        services.AddTransient<DockerMonitoringHandler>();
     }
 
     private static void AddOptions(this IServiceCollection services)
