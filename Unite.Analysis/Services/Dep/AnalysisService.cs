@@ -8,6 +8,7 @@ using Unite.Analysis.Models.Enums;
 using Unite.Analysis.Models.Structures;
 using Unite.Analysis.Services.Dep.Models.Criteria.Enums;
 using Unite.Analysis.Services.Dep.Models.Input;
+using Unite.Data.Context;
 using Unite.Data.Entities.Omics.Analysis.Enums;
 using Unite.Data.Entities.Omics.Analysis.Prot;
 using Unite.Essentials.Extensions;
@@ -24,11 +25,14 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string AnnotationsFileName = "annotations.tsv";
     private const string ArchiveFileName = "results.zip";
 
+
+    private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
     private readonly SamplesContextLoader _contextLoader;
 
 
-    public AnalysisService(IAnalysisOptions options, SamplesContextLoader contextLoader) : base(options)
+    public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, SamplesContextLoader contextLoader) : base(options)
     {
+        _dbContextFactory = dbContextFactory;
         _contextLoader = contextLoader;
     }
 
@@ -47,11 +51,11 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         var metadata = new List<MetadataEntry>();
         var annotations = new Dictionary<int, AnnotationEntry>();
 
-        using var dbContext = _contextLoader.DbContextFactory.CreateDbContext();
+        using var dbContext = _dbContextFactory.CreateDbContext();
 
         foreach (var dataset in model.Datasets)
         {
-            var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
+            using var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
             var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
 
             var expressions = await dbContext.Set<ProteinExpression>()

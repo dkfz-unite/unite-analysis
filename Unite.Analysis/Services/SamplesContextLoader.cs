@@ -24,8 +24,6 @@ public class SamplesContextLoader
     protected readonly ISearchService<SpecimenIndex> _specimensSearchService;
     protected readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
 
-    public IDbContextFactory<DomainDbContext> DbContextFactory => _dbContextFactory;
-
 
     public SamplesContextLoader(
         ISearchService<DonorIndex> donorsSearchService,

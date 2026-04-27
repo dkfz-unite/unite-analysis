@@ -10,6 +10,7 @@ using Unite.Analysis.Models.Metadata;
 using Unite.Analysis.Models.Structures;
 using Unite.Analysis.Services.Dep.Models.Criteria.Enums;
 using Unite.Analysis.Services.Umapp.Models.Input;
+using Unite.Data.Context;
 using Unite.Data.Entities.Omics.Analysis.Enums;
 using Unite.Data.Entities.Omics.Analysis.Prot;
 using Unite.Essentials.Extensions;
@@ -26,12 +27,14 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string AnnotationsFileName = "annotations.tsv";
     private const string ArchiveFileName = "results.zip";
 
+    private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
     private readonly SamplesContextLoaderFull _contextLoader;
     private readonly ILogger _logger;
 
 
-    public AnalysisService(IAnalysisOptions options, SamplesContextLoaderFull contextLoader, ILogger<AnalysisService> logger) : base(options)
+    public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, SamplesContextLoaderFull contextLoader, ILogger<AnalysisService> logger) : base(options)
     {
+        _dbContextFactory = dbContextFactory;
         _contextLoader = contextLoader;
         _logger = logger;
     }
@@ -52,11 +55,12 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
             var data = new Matrix<double>("feature");
             var metadata = new List<MetadataEntry>();
 
-            using var dbContext = _contextLoader.DbContextFactory.CreateDbContext();
+            using var dbContext = _dbContextFactory.CreateDbContext();
 
             var mappings = new Mappings<SampleMetadata>();
             var dataset = model.Datasets.Single();
-            var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
+            
+            using var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
             var samplesMetadata = SampleMetadataLoader.Load(samplesContext);
             var samplesMetadataMap = SampleMetadataMapper.Map(samplesMetadata, mapId: true);
             var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
