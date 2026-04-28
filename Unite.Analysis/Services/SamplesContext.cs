@@ -5,7 +5,7 @@ using Unite.Data.Entities.Specimens.Enums;
 
 namespace Unite.Analysis.Services;
 
-public class SamplesContext
+public class SamplesContext : IDisposable
 {
     /// <summary>
     /// Type of the sample: 1 - donor, 2 - image, 3 - specimen.
@@ -112,5 +112,14 @@ public class SamplesContext
         var multiplier = sample.MatchedSampleId != null ? 1 : 2;
 
         return score * multiplier;
+    }
+
+
+    public void Dispose()
+    {
+        Donors.Clear();
+        Images.Clear();
+        Specimens.Clear();
+        OmicsSamples.Clear();
     }
 }

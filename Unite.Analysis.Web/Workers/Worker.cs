@@ -30,7 +30,9 @@ public abstract class Worker<THandler> : BackgroundService
 
         try
         {
-            GetHandler().Prepare();
+            using var scope = _scopeFactory.CreateScope();
+            var handler = scope.ServiceProvider.GetRequiredService<THandler>();
+            handler.Prepare();
         }
         catch (Exception exception)
         {
@@ -41,7 +43,9 @@ public abstract class Worker<THandler> : BackgroundService
         {
             try
             {
-                GetHandler().Handle();
+                using var scope = _scopeFactory.CreateScope();
+                var handler = scope.ServiceProvider.GetRequiredService<THandler>();
+                handler.Handle();
             }
             catch (Exception exception)
             {
@@ -52,12 +56,5 @@ public abstract class Worker<THandler> : BackgroundService
                 await Task.Delay(1000, cancellationToken);
             }
         }
-    }
-
-    private THandler GetHandler()
-    {
-        using var scope = _scopeFactory.CreateScope();
-
-        return scope.ServiceProvider.GetRequiredService<THandler>();
     }
 }

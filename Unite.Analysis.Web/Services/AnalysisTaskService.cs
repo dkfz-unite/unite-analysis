@@ -152,6 +152,10 @@ public class AnalysisTaskService
 
                         Update(task, TaskStatusType.Failed);
                     }
+                    finally
+                    {
+                        jobs.Remove(task.Id);
+                    }
                 });
 
                 jobs.Add(task.Id, job);

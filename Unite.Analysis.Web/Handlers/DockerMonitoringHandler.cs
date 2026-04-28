@@ -4,25 +4,25 @@ using Unite.Orchestrator.Docker.Cache;
 
 namespace Unite.Analysis.Web.Handlers;
 
-public class MonitoringHandler
+public class DockerMonitoringHandler : Handler
 {
     private readonly IOrchestratorOptions _options;
     private readonly DockerService _dockerService;
-    private readonly ILogger _logger;
 
-
-    public MonitoringHandler(
+    public DockerMonitoringHandler(
         IOrchestratorOptions options,
-        DockerService dockerService,
-        ILogger<MonitoringHandler> logger)
+        DockerService dockerService)
     {
         _options = options;
         _dockerService = dockerService;
-        _logger = logger;
     }
 
 
-    public async Task Handle()
+    public override void Prepare()
+    {
+    }
+
+    public override void Handle()
     {
         var idleRecords = ContainerRecords.Records
             .Where(record => IsIdle(record.Value))
@@ -30,7 +30,7 @@ public class MonitoringHandler
 
         foreach (var idleRecord in idleRecords)
         {
-            await _dockerService.Containers.Remove(idleRecord.Value.Id);
+            _dockerService.Containers.Remove(idleRecord.Value.Id).Wait();
 
             ContainerRecords.Remove(idleRecord.Key);
         }
