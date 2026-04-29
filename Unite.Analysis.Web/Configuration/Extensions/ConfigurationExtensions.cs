@@ -26,9 +26,8 @@ public static class ConfigurationExtensions
         services.AddDatabaseFactory(sqlOptions);
         services.AddSearchEngine();
         services.AddSearchServices();
-
-        services.AddTransient<Analysis.Services.SamplesContextLoader>();
-        services.AddTransient<Analysis.Services.SamplesContextLoaderFull>();
+        
+        services.AddTransient<Analysis.Services.GenericSamplesContextLoaderFull>();
 
         services.AddTransient<Analysis.Services.Deg.DataLoader>();
         services.AddTransient<Analysis.Services.Deg.AnalysisService>();
@@ -44,6 +43,7 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.Gaf.ProcessingService>();
         services.AddTransient<Analysis.Services.Gaf.AnalysisService>();
         services.AddTransient<Analysis.Services.Dep.AnalysisService>();
+        services.AddTransient<Analysis.Services.Dep.ContextLoader>();
         services.AddTransient<Analysis.Services.Umapp.AnalysisService>();
 
         services.AddTransient<AnalysisTaskService>();

@@ -28,11 +28,11 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string ArchiveFileName = "results.zip";
 
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
-    private readonly SamplesContextLoaderFull _contextLoader;
+    private readonly GenericSamplesContextLoaderFull _contextLoader;
     private readonly ILogger _logger;
 
 
-    public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, SamplesContextLoaderFull contextLoader, ILogger<AnalysisService> logger) : base(options)
+    public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, GenericSamplesContextLoaderFull contextLoader, ILogger<AnalysisService> logger) : base(options)
     {
         _dbContextFactory = dbContextFactory;
         _contextLoader = contextLoader;
