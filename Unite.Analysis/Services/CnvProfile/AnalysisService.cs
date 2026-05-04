@@ -1,9 +1,10 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
 using Unite.Analysis.Services.CnvProfile.Models.Criteria;
-using Unite.Analysis.Services.Gaf.Models.Output;
+using Unite.Analysis.Services.CnvProfile.Models.Output;
 using Unite.Data.Entities.Omics.Analysis.Enums;
 
 namespace Unite.Analysis.Services.CnvProfile;
@@ -15,10 +16,12 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string ArchiveFileName = "output.zip";
     
     private readonly SamplesContextLoader _contextLoader;
+    private readonly ProcessingService _processingService;
     
-    public AnalysisService(IAnalysisOptions options, SamplesContextLoader contextLoader) : base(options)
+    public AnalysisService(IAnalysisOptions options, SamplesContextLoader contextLoader, ProcessingService processingService) : base(options)
     {
         _contextLoader = contextLoader;
+        _processingService = processingService;
     }
 
     public override async Task<AnalysisTaskResult> Prepare(Models.Criteria.Analysis model, params object[] args)
@@ -31,9 +34,9 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         WriteOptions(model.Options, directoryPath);
 
-        /*var records = _processingService.ProcessData(context, model.Options);
+        var records = await _processingService.ProcessData(context, model.Options);
 
-        WriteRecords(records, directoryPath);*/
+        WriteRecords(records, directoryPath);
 
         stopwatch.Stop();
 
@@ -45,25 +48,44 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         var stopwatch = Stopwatch.StartNew();
         var directoryPath = GetWorkingDirectoryPath(key);
         
-        
+        using var archiveStream = new FileStream(Path.Combine(directoryPath, ArchiveFileName), FileMode.CreateNew);
+        using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
+
+        archive.CreateEntryFromFile(Path.Combine(directoryPath, ResultFileName), ResultFileName);
+        archive.CreateEntryFromFile(Path.Combine(directoryPath, OptionsFileName), OptionsFileName);
         
         stopwatch.Stop();
         return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds);
     }
 
-    public override Task<Stream> Load(string key, params object[] args)
+    public override async Task<Stream> Load(string key, params object[] args)
     {
-        throw new NotImplementedException();
+        var path = Path.Combine(GetWorkingDirectoryPath(key), ResultFileName);
+
+        var stream = File.OpenRead(path);
+
+        return await Task.FromResult(stream);
     }
 
-    public override Task<Stream> Download(string key, params object[] args)
+    public override async Task<Stream> Download(string key, params object[] args)
     {
-        throw new NotImplementedException();
+        var path = Path.Combine(GetWorkingDirectoryPath(key), ArchiveFileName);
+
+        var stream = File.OpenRead(path);
+
+        return await Task.FromResult(stream);
     }
 
     public override Task Delete(string key, params object[] args)
     {
-        throw new NotImplementedException();
+        var path = GetWorkingDirectoryPath(key);
+
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+        }
+
+        return Task.CompletedTask;
     }
     
     private static void WriteOptions(Options options, string path)
@@ -73,7 +95,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         File.WriteAllText(Path.Combine(path, OptionsFileName), json);
     }
 
-    private static void WriteRecords(Records records, string path)
+    private static void WriteRecords(SampleRecords records, string path)
     {
         var json = MemberJsonSerializer.Serialize(records);
 
