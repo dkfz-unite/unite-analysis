@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Unite.Data.Entities.Omics.Enums;
 
 namespace Unite.Analysis.Services.CnvProfile.Models.Output;

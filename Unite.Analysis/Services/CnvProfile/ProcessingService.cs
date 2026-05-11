@@ -50,21 +50,25 @@ public class ProcessingService
 
         var records = new SampleRecords(sampleIds.Length);
         var armsCount = GetArmsCount();
-        
-        foreach (var sampleId in sampleIds)
-        {
-            var record = new SampleRecord(armsCount);
 
-            int i = 0;
+        for (int i = 0; i < sampleIds.Length; i++)
+        {
+            var sampleId = sampleIds[i];
+            
+            var record = new SampleRecord(sampleId, armsCount);
+
+            int j = 0;
             foreach (var mapEntry in _chromosomeArmMap)
             {
                 foreach (var chromosomeArm in mapEntry.Value)
                 {
                     var cnvProfile = cnvProfiles.FirstOrDefault(x => x.SampleId == sampleId && x.ChromosomeId == mapEntry.Key && x.ChromosomeArmId == chromosomeArm);
-                    record.Events[i] = GetEvent(cnvProfile);
-                    ++i;
+                    record.Events[j] = GetEvent(cnvProfile);
+                    ++j;
                 }
             }
+            
+            records.Records[i] = record;
         }
 
         return records;
