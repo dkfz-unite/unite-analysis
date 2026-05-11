@@ -15,10 +15,10 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string ResultFileName = "result.json";
     private const string ArchiveFileName = "output.zip";
     
-    private readonly SamplesContextLoader _contextLoader;
+    private readonly ContextLoader _contextLoader;
     private readonly ProcessingService _processingService;
     
-    public AnalysisService(IAnalysisOptions options, SamplesContextLoader contextLoader, ProcessingService processingService) : base(options)
+    public AnalysisService(IAnalysisOptions options, ContextLoader contextLoader, ProcessingService processingService) : base(options)
     {
         _contextLoader = contextLoader;
         _processingService = processingService;

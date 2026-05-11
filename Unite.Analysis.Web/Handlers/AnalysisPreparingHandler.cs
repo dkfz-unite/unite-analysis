@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Unite.Analysis.Models.Enums;
+using Unite.Analysis.Services.CnvProfile;
 using Unite.Analysis.Web.Configuration.Options;
 using Unite.Analysis.Web.Handlers.Helpers;
 using Unite.Analysis.Web.Services;
@@ -19,6 +20,7 @@ public class AnalysisPreparingHandler : Handler
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
     private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellDcAnalysisService;
+    private readonly Analysis.Services.CnvProfile.AnalysisService _cnvProfileAnalysisService;
     
     private readonly ILogger _logger;
 
@@ -34,6 +36,7 @@ public class AnalysisPreparingHandler : Handler
         Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Scell.AnalysisService scellDcAnalysisService,
+        AnalysisService cnvProfileAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
         _apiOptions = apiOptions;
@@ -46,7 +49,8 @@ public class AnalysisPreparingHandler : Handler
         _depAnalysisService = depAnalysisService;
         _umappAnalysisService = umappAnalysisService;
         _scellDcAnalysisService = scellDcAnalysisService;
-        
+        _cnvProfileAnalysisService = cnvProfileAnalysisService;
+
         _logger = logger;
     }
 
@@ -78,6 +82,7 @@ public class AnalysisPreparingHandler : Handler
             AnalysisTaskType.DEP => await _depAnalysisService.Prepare(Parse<Analysis.Services.Dep.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.UMAPP => await _umappAnalysisService.Prepare(Parse<Analysis.Services.Umapp.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.SCELL => await _scellDcAnalysisService.Prepare(Parse<Analysis.Services.Scell.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.CNV_PROFILE => await _cnvProfileAnalysisService.Prepare(Parse<Analysis.Services.CnvProfile.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 
