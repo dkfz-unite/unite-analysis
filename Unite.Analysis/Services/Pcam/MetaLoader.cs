@@ -43,7 +43,7 @@ public class MetaLoader
                 .Replace("red", "", StringComparison.InvariantCultureIgnoreCase)
                 .Replace(".idat", "", StringComparison.InvariantCultureIgnoreCase);
 
-            entry.Path = Path.Combine(workingDirectoryPath, entry.Key, fileName);
+            entry.Path = Path.Combine(workingDirectoryPath, entry.Id, fileName);
 
             return true;
         });

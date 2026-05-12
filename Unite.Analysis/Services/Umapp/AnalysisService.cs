@@ -86,7 +86,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
             
             if (model.Options.RequireMinFractionOneClass)
             {
-                var sampleMetadata = samplesMetadata.FirstOrDefault(entry => entry.Id == sampleId);
+                var sampleMetadata = samplesMetadata.FirstOrDefault(entry => entry.Key == sampleId);
                 var conditionMapping = mappings.All.FirstOrDefault(mapping => mapping.Key == model.Options.ClassProperty);
                 var conditionGetter = conditionMapping?.Expression.Compile();
                 condition = conditionGetter?.Invoke(sampleMetadata); 
