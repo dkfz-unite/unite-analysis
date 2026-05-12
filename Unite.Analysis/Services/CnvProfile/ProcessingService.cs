@@ -48,8 +48,24 @@ public class ProcessingService
         var sampleIds = context.OmicsSamples.Keys.ToArray();
         var cnvProfiles = await _cnvProfilesRepository.GetRelatedProfiles(sampleIds);
 
-        var records = new SampleRecords(sampleIds.Length);
         var armsCount = GetArmsCount();
+        var records = new SampleRecords(armsCount, sampleIds.Length);
+
+        int k = 0;
+        foreach (var mapEntry in _chromosomeArmMap)
+        {
+            var chromosome = mapEntry.Key;
+            foreach (var arm in mapEntry.Value)
+            {
+                records.ChromosomeArms[k] = new Models.Output.ChromosomeArm
+                {
+                    Chromosome = chromosome,
+                    Arm = arm
+                };
+
+                k++;
+            }
+        }
 
         for (int i = 0; i < sampleIds.Length; i++)
         {
