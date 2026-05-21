@@ -11,7 +11,7 @@ public class SampleMetadataLoader
 
         foreach (var sample in context.OmicsSamples)
         {
-            var entry = new T() { Id = sample.Value.Id, Key = context.GetSampleKey(sample.Key) };
+            var entry = new T() { Key = sample.Value.Id, Id = context.GetSampleKey(sample.Key) };
 
             MapEntry(sample.Value, entry, context);
 
@@ -27,7 +27,7 @@ public class SampleMetadataLoader
 
         foreach (var sample in context.OmicsSamples)
         {
-            var entry = new T() { Id = sample.Value.Id, Key = context.GetSampleKey(sample.Key) };
+            var entry = new T() { Key = sample.Value.Id, Id = context.GetSampleKey(sample.Key) };
 
             var mapped = mapper(sample.Value, entry, context);
 
