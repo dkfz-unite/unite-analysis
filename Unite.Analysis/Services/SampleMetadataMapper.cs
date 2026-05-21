@@ -27,17 +27,17 @@ public class SampleMetadataMapper
         return map;
     }
 
-    private static void MapEntries<T>(ClassMap<T> map, T[] entries, bool mapId = false)
+    private static void MapEntries<T>(ClassMap<T> map, T[] entries, bool mapKey = false)
         where T : SampleMetadata
     {
         // TODO: Improve Essentials.Tsv so that it can take array of mappings to ClassMap<T> constructor.
         // Add option to not map or to not write to tsv columns which have no values or to delete mapping if there are no values for it.
         var mappings = new Mappings<T>();
 
-        if (mapId)
+        if (mapKey)
             map.Map(mappings.SampleId.Expression, mappings.SampleId.Key);
 
-        MapProperty(map, entries, mappings.SampleKey);
+        MapProperty(map, entries, mappings.SampleId);
 
         if (entries.Any(entry => entry.Donor != null))
             MapProperties(map, entries, mappings.Donor);
