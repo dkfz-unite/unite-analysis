@@ -69,6 +69,13 @@ public class OutputWriter
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
+        var inputPath = Path.Combine(path, MetaWriter.InputFileName);
+        if (File.Exists(inputPath))
+        {
+            archive.CreateEntryFromFile(inputPath, MetaWriter.InputFileName);
+            File.Delete(inputPath);
+        }
+
         var resultPath = Path.Combine(path, ResultFileName);
         if (File.Exists(resultPath))
         {
