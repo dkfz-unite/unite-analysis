@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Configuration.Options;
@@ -20,6 +21,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private const string _metadataFileName = "metadata.tsv";
     private const string _resultsFileName = "results.tsv";
     private const string _resultsFinalFileName = "results_final.tsv";
+    private const string _archiveFileName = "results.zip";
 
     private readonly DataLoader _dataLoader;
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
@@ -124,6 +126,8 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
             var tsvFinal = TsvWriter.Write(dataFinal, mapFinal);
 
             await File.WriteAllTextAsync(filePathFinal, tsvFinal);
+
+            ArchiveResults(path);
         }
         
         return result;
@@ -140,7 +144,13 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public override async Task<Stream> Download(string key, params object[] args)
     {
-        var path = Path.Join(GetWorkingDirectoryPath(key), _resultsFinalFileName);
+        // var path = Path.Join(GetWorkingDirectoryPath(key), _resultsFinalFileName);
+
+        // var stream = File.OpenRead(path);
+
+        // return await Task.FromResult(stream);
+
+        var path = Path.Combine(GetWorkingDirectoryPath(key), _archiveFileName);
 
         var stream = File.OpenRead(path);
 
@@ -215,5 +225,15 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         results.Add(expressions.Count(expression => expression > 10) > expressions.Count() / 2);
 
         return results.All(result => result);
+    }
+
+    private static void ArchiveResults(string path)
+    {
+        using var archiveStream = new FileStream(Path.Combine(path, _archiveFileName), FileMode.CreateNew);
+        using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
+
+        archive.CreateEntryFromFile(Path.Combine(path, _dataFileName), _dataFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, _metadataFileName), _metadataFileName);
+        archive.CreateEntryFromFile(Path.Combine(path, _resultsFileName), _resultsFileName);
     }
 }
