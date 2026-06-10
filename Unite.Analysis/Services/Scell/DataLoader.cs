@@ -28,6 +28,9 @@ public class DataLoader
         }
 
         context.RemoveSample(wrongSampleIds.ToArray());
+
+        if (context.OmicsSamples.Count == 0)
+            throw new Exception("No samples with valid resources were found");
     }
 
     private static async Task DownloadResource(Sample sample, string key, string workingDirectoryPath, string token, string host = null)
