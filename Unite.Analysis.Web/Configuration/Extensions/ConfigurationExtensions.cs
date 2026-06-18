@@ -45,6 +45,7 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.Gaf.AnalysisService>();
         services.AddTransient<Analysis.Services.Dep.AnalysisService>();
         services.AddTransient<Analysis.Services.Umapp.AnalysisService>();
+        services.AddTransient<Analysis.Services.Cedp.AnalysisService>();
 
         services.AddTransient<AnalysisTaskService>();
         services.AddTransient<AnalysisRecordService>();

@@ -87,6 +87,14 @@ public class AnalysisOptions : IAnalysisOptions
             return GetOption("UNITE_ANALYSIS_UMAPP_HOST");
         }
     }
+
+    public string CedpUrl
+    {
+        get
+        {
+            return GetOption("UNITE_ANALYSIS_CEDP_HOST");
+        }
+    }
     
 
     public int? Limit { get; }

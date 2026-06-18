@@ -20,6 +20,7 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
     private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
+    private readonly Analysis.Services.Cedp.AnalysisService _cedpAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     
 
@@ -33,6 +34,7 @@ public class AnalysisController : Controller
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
+        Analysis.Services.Cedp.AnalysisService cedpAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService)
     {
         _analysisTaskService = analysisTaskService;
@@ -44,6 +46,7 @@ public class AnalysisController : Controller
         _gafAnalysisService = gafAnalysisService;
         _depAnalysisService = depAnalysisService;
         _umappAnalysisService = umappAnalysisService;
+        _cedpAnalysisService = cedpAnalysisService;
         _scellAnalysisService = scellAnalysisService;
     }
     
@@ -88,6 +91,12 @@ public class AnalysisController : Controller
     public async Task<IActionResult> CreateUmappTask([FromBody]TypedAnalysis<Analysis.Services.Umapp.Models.Criteria.Analysis> model)
     {
         return await RunTask(AnalysisTaskType.UMAPP, model);
+    }
+
+    [HttpPost("cedp")]
+    public async Task<IActionResult> CreateCedpTask([FromBody]TypedAnalysis<Analysis.Services.Cedp.Models.Criteria.Analysis> model)
+    {
+        return await RunTask(AnalysisTaskType.CEDP, model);
     }
 
     [HttpPost("scell")]
@@ -149,6 +158,8 @@ public class AnalysisController : Controller
             return Ok(await _depAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
             return Ok(await _umappAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CEDP)
+            return Ok(await _cedpAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Load(id, file));
         
@@ -177,6 +188,8 @@ public class AnalysisController : Controller
             return Ok(await _depAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
             return Ok(await _umappAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CEDP)
+            return Ok(await _cedpAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Download(id));
 
@@ -212,6 +225,8 @@ public class AnalysisController : Controller
             await _depAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
             await _umappAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.CEDP)
+            await _cedpAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             await _scellAnalysisService.Delete(id); 
         

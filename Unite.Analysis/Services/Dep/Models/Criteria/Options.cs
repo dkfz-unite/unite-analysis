@@ -5,6 +5,7 @@ namespace Unite.Analysis.Services.Dep.Models.Criteria;
 
 public class Options
 {
+    // Pre processing options
     [JsonPropertyName("normalization_log_offset")]
     public double NormalizationLogOffset { get; set; } = 0.1;
 
