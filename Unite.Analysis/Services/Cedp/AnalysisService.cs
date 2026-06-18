@@ -41,8 +41,20 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         _logger = logger;
     }
 
-
     public override async Task<AnalysisTaskResult> Prepare(Models.Criteria.Analysis model, params object[] args)
+    {
+        try
+        {
+            return await PrepareIn(model, args);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error preparing analysis with ID {AnalysisId}", model.Id);
+            return AnalysisTaskResult.Failed(0, ex.Message);
+        }
+    }
+
+    public async Task<AnalysisTaskResult> PrepareIn(Models.Criteria.Analysis model, params object[] args)
     {
         var stopwatch = Stopwatch.StartNew();
 
