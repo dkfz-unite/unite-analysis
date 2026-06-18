@@ -16,7 +16,6 @@ using Unite.Data.Entities.Omics.Analysis.Prot;
 using Unite.Essentials.Extensions;
 using Unite.Essentials.Tsv;
 using Unite.Analysis.Services.Cedp.Models.Criteria.Enums;
-using System.Text.Json;
 
 namespace Unite.Analysis.Services.Cedp;
 
@@ -77,20 +76,23 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         var samplesMetadataMap = SampleMetadataMapper.Map(samplesMetadata, mapId: true);
         var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
 
-        _logger.LogInformation("Loaded sample data for {SampleCount} samples", sampleIds.Length);
-
         var expressions = await dbContext.Set<ProteinExpression>()
             .AsNoTracking()
             .Include(expression => expression.Entity.Transcript.Gene)
             .Where(expression => sampleIds.Contains(expression.SampleId))
             .ToArrayAsync();
 
-        _logger.LogInformation("Loaded expression data for {ExpressionCount} expressions", expressions.Length);
-
-        _logger.LogInformation("Options {options}\n\r", JsonSerializer.Serialize(model.Options));
         if (model.Options.FeatureType == FeatureType.Gene)
         {
-            var expression = expressions.FirstOrDefault(expression => expression.Entity.Transcript.Gene.Symbol.Equals(model.Options.Feature));
+            var expression = expressions.FirstOrDefault(expression =>
+            {
+                if (expression.Entity.Transcript == null)
+                    _logger.LogWarning("Transcript information is missing for {protein}", expression.Entity.Symbol);
+                else if (expression.Entity.Transcript.Gene == null)
+                    _logger.LogWarning("Gene information is missing for transcript {transcript} of protein {protein}", expression.Entity.Transcript.Symbol, expression.Entity.Symbol);
+
+                return expression.Entity.Transcript.Gene.Symbol.Equals(model.Options.Feature);
+            });
             if (expression != null)
                 model.Options.Feature = expression.Entity.Transcript.Gene.StableId;
             else
