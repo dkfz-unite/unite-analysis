@@ -72,19 +72,19 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         if (model.Options.FeatureType == FeatureType.Gene)
         {
-            var expression = expressions.FirstOrDefault(expression => expression.Entity.Transcript.Gene.Symbol.Equals(model.Options.Gene));
+            var expression = expressions.FirstOrDefault(expression => expression.Entity.Transcript.Gene.Symbol.Equals(model.Options.Feature));
             if (expression != null)
-                model.Options.Gene = expression.Entity.Transcript.Gene.StableId;
+                model.Options.Feature = expression.Entity.Transcript.Gene.StableId;
             else
-                throw new InvalidOperationException($"There is no expression data for the specified gene {model.Options.Gene}");
+                throw new InvalidOperationException($"There is no expression data for the specified gene {model.Options.Feature}");
         }
         else if (model.Options.FeatureType == FeatureType.Protein)
         {
-            var expression = expressions.FirstOrDefault(expression => expression.Entity.Symbol.Equals(model.Options.Protein));
+            var expression = expressions.FirstOrDefault(expression => expression.Entity.Symbol.Equals(model.Options.Feature));
             if (expression != null)
-                model.Options.Protein = expression.Entity.StableId;
+                model.Options.Feature = expression.Entity.StableId;
             else
-                throw new InvalidOperationException($"There is no expression data for the specified protein {model.Options.Protein}");
+                throw new InvalidOperationException($"There is no expression data for the specified protein {model.Options.Feature}");
         }
         else
         {

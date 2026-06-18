@@ -9,10 +9,7 @@ public class Options : Dep.Models.Criteria.Options
     public FeatureType FeatureType { get; set; } = FeatureType.Gene;
 
     [JsonPropertyName("feature")]
-    public string Gene { get; set; } = null;
-
-    [JsonPropertyName("protein")]
-    public string Protein { get; set; } = null;
+    public string Feature { get; set; } = null;
 
     [JsonPropertyName("condition_property")]
     public string ConditionProperty { get; set; } = null;
