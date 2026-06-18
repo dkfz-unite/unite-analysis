@@ -16,6 +16,7 @@ using Unite.Data.Entities.Omics.Analysis.Prot;
 using Unite.Essentials.Extensions;
 using Unite.Essentials.Tsv;
 using Unite.Analysis.Services.Cedp.Models.Criteria.Enums;
+using System.Text.Json;
 
 namespace Unite.Analysis.Services.Cedp;
 
@@ -74,6 +75,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         _logger.LogInformation("Loaded expression data for {ExpressionCount} expressions", expressions.Length);
 
+        _logger.LogInformation("Options {options}\n\r", JsonSerializer.Serialize(model.Options));
         if (model.Options.FeatureType == FeatureType.Gene)
         {
             var expression = expressions.FirstOrDefault(expression => expression.Entity.Transcript.Gene.Symbol.Equals(model.Options.Feature));
