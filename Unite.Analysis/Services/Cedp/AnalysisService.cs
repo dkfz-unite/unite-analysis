@@ -64,11 +64,15 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         var samplesMetadataMap = SampleMetadataMapper.Map(samplesMetadata, mapId: true);
         var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
 
+        _logger.LogInformation("Loaded sample data for {SampleCount} samples", sampleIds.Length);
+
         var expressions = await dbContext.Set<ProteinExpression>()
             .AsNoTracking()
             .Include(expression => expression.Entity.Transcript.Gene)
             .Where(expression => sampleIds.Contains(expression.SampleId))
             .ToArrayAsync();
+
+        _logger.LogInformation("Loaded expression data for {ExpressionCount} expressions", expressions.Length);
 
         if (model.Options.FeatureType == FeatureType.Gene)
         {
@@ -77,6 +81,8 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
                 model.Options.Feature = expression.Entity.Transcript.Gene.StableId;
             else
                 throw new InvalidOperationException($"There is no expression data for the specified gene {model.Options.Feature}");
+
+            _logger.LogInformation("Mapped feature {Feature} to gene stable ID {StableId}", model.Options.Feature, expression.Entity.Transcript.Gene.StableId);
         }
         else if (model.Options.FeatureType == FeatureType.Protein)
         {
@@ -85,9 +91,12 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
                 model.Options.Feature = expression.Entity.StableId;
             else
                 throw new InvalidOperationException($"There is no expression data for the specified protein {model.Options.Feature}");
+
+            _logger.LogInformation("Mapped feature {Feature} to protein stable ID {StableId}", model.Options.Feature, expression.Entity.StableId);
         }
         else
         {
+            _logger.LogError("Unsupported feature type: {FeatureType}", model.Options.FeatureType);
             throw new InvalidOperationException($"Unsupported feature type: {model.Options.FeatureType}");
         }
 
@@ -105,6 +114,8 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
             data[column, row] = expression.Raw;
         }
+
+        _logger.LogInformation("Constructed data matrix with {Number} cells", data.ColumnKeys.Count() * data.RowKeys.Count());
 
         foreach (var sampleId in sampleIds)
         {
@@ -130,12 +141,16 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
             });
         }
 
+        _logger.LogInformation("Constructed metadata for {SampleCount} samples", metadata.Count);
+
         var batchValidationError = ValidateBatches(model.Options.BatchCorrectionMethod, metadata);
 
         data.WriteTo(dataFilePath);
         File.WriteAllText(metadatapath, TsvWriter.Write(metadata));
         File.WriteAllText(annotationsPath, TsvWriter.Write(samplesMetadata, samplesMetadataMap));
         MemberJsonSerializer.Serialize(optionsPath, model.Options);
+
+        _logger.LogInformation("Written data, metadata, annotations and options to disk");
 
         stopwatch.Stop();
 
