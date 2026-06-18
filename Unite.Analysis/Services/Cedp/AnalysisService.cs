@@ -84,15 +84,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         if (model.Options.FeatureType == FeatureType.Gene)
         {
-            var expression = expressions.FirstOrDefault(expression =>
-            {
-                if (expression.Entity.Transcript == null)
-                    _logger.LogWarning("Transcript information is missing for {protein}", expression.Entity.Symbol);
-                else if (expression.Entity.Transcript.Gene == null)
-                    _logger.LogWarning("Gene information is missing for transcript {transcript} of protein {protein}", expression.Entity.Transcript.Symbol, expression.Entity.Symbol);
-
-                return expression.Entity.Transcript.Gene.Symbol.Equals(model.Options.Feature);
-            });
+            var expression = expressions.FirstOrDefault(expression => string.Equals(expression.Entity.Transcript.Gene.Symbol, model.Options.Feature));
             if (expression != null)
                 model.Options.Feature = expression.Entity.Transcript.Gene.StableId;
             else
@@ -102,7 +94,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         }
         else if (model.Options.FeatureType == FeatureType.Protein)
         {
-            var expression = expressions.FirstOrDefault(expression => expression.Entity.Symbol.Equals(model.Options.Feature));
+            var expression = expressions.FirstOrDefault(expression => string.Equals(expression.Entity.Symbol, model.Options.Feature));
             if (expression != null)
                 model.Options.Feature = expression.Entity.StableId;
             else
