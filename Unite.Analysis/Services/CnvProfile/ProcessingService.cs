@@ -2,6 +2,7 @@ using Unite.Analysis.Services.CnvProfile.Models.Output;
 using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Omics.Analysis.Dna.Cnv;
 using Unite.Data.Entities.Omics.Enums;
+using Unite.Essentials.Extensions;
 using ChromosomeArm = Unite.Data.Entities.Omics.Enums.ChromosomeArm;
 
 namespace Unite.Analysis.Services.CnvProfile;
@@ -43,21 +44,27 @@ public class ProcessingService
         _cnvProfilesRepository = cnvProfilesRepository;
     }
     
-    public async Task<SampleRecords> ProcessData(SamplesContext context, Models.Criteria.Options options)
+    public async Task<Model> ProcessData(SamplesContext context, Models.Criteria.Options options)
     {
         var sampleIds = context.OmicsSamples.Keys.ToArray();
         var cnvProfiles = await _cnvProfilesRepository.GetRelatedProfiles(sampleIds);
-
+        
         var armsCount = GetArmsCount();
-        var records = new SampleRecords(armsCount, sampleIds.Length);
 
+        var model = new Model
+        {
+            ChromosomeArms = new Models.Output.ChromosomeArm[armsCount],
+            Samples = new Sample[sampleIds.Length],
+            Observations = new List<Observation>()
+        };
+        
         int k = 0;
         foreach (var mapEntry in _chromosomeArmMap)
         {
             var chromosome = mapEntry.Key;
             foreach (var arm in mapEntry.Value)
             {
-                records.ChromosomeArms[k] = new Models.Output.ChromosomeArm
+                model.ChromosomeArms[k] = new Models.Output.ChromosomeArm
                 {
                     Chromosome = chromosome,
                     Arm = arm
@@ -70,8 +77,6 @@ public class ProcessingService
         for (int i = 0; i < sampleIds.Length; i++)
         {
             var sampleId = sampleIds[i];
-            
-            var record = new SampleRecord(sampleId, armsCount);
 
             int j = 0;
             foreach (var mapEntry in _chromosomeArmMap)
@@ -79,15 +84,21 @@ public class ProcessingService
                 foreach (var chromosomeArm in mapEntry.Value)
                 {
                     var cnvProfile = cnvProfiles.FirstOrDefault(x => x.SampleId == sampleId && x.ChromosomeId == mapEntry.Key && x.ChromosomeArmId == chromosomeArm);
-                    record.Events[j] = GetEvent(cnvProfile);
+                    var observationEvent = GetEvent(cnvProfile);
+
+                    if (observationEvent != Event.Neutral)
+                    {
+                        model.Observations.Add(new Observation{ ChromosomeArmIndex = j, SampleId = sampleId, Event = observationEvent });
+                    }
+                    
                     ++j;
                 }
             }
-            
-            records.Records[i] = record;
+
+            model.Samples[i] = new Sample { Id = sampleId, TumorType = context.OmicsSamples[sampleId].Specimen.TumorTypeId.ToDefinitionString() };
         }
 
-        return records;
+        return model;
     }
 
     private Event GetEvent(Profile cnvProfile)

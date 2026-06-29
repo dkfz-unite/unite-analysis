@@ -95,7 +95,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         File.WriteAllText(Path.Combine(path, OptionsFileName), json);
     }
 
-    private static void WriteRecords(SampleRecords records, string path)
+    private static void WriteRecords(Model records, string path)
     {
         var json = MemberJsonSerializer.Serialize(records);
 
