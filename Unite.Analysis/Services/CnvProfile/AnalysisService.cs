@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Text.Json;
 using Unite.Analysis.Configuration.Options;
 using Unite.Analysis.Helpers;
 using Unite.Analysis.Models;
@@ -97,7 +98,12 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     private static void WriteRecords(Model records, string path)
     {
-        var json = MemberJsonSerializer.Serialize(records);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var json = JsonSerializer.Serialize(records, options);
 
         File.WriteAllText(Path.Combine(path, ResultFileName), json);
     }
