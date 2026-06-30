@@ -66,7 +66,7 @@ public class ProcessingService
             {
                 model.DnaRegions[k] = new DnaRegion
                 {
-                    Id = mapEntry.Key.ToDefinitionString() + arm.ToDefinitionString(),
+                    Id = GetDnaRegionId(mapEntry, arm),
                     Chromosome = chromosome,
                     Arm = arm
                 };
@@ -88,7 +88,7 @@ public class ProcessingService
 
                     if (observationEvent != Event.Neutral)
                     {
-                        var dnaRegionId = mapEntry.Key.ToDefinitionString() + chromosomeArm.ToDefinitionString();
+                        var dnaRegionId = GetDnaRegionId(mapEntry, chromosomeArm);
                         model.Observations.Add(new Observation{ DnaRegionId = dnaRegionId, SampleId = sampleId, Event = observationEvent });
                     }
                 }
@@ -106,6 +106,11 @@ public class ProcessingService
         }
 
         return model;
+    }
+
+    private static string GetDnaRegionId(KeyValuePair<Chromosome, ChromosomeArm[]> mapEntry, ChromosomeArm arm)
+    {
+        return mapEntry.Key.ToDefinitionString() + arm.ToDefinitionString();
     }
 
     private Event GetEvent(Profile cnvProfile, double eventThreshold = 0.8)

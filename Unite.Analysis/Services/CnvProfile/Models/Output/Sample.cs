@@ -1,6 +1,6 @@
 namespace Unite.Analysis.Services.CnvProfile.Models.Output;
 
-public class Sample
+public record Sample
 {
     public int Id { get; set; }
     public string TumorType { get; set; }
