@@ -95,7 +95,15 @@ public class ProcessingService
                 }
             }
 
-            model.Samples[i] = new Sample { Id = sampleId, TumorType = context.OmicsSamples[sampleId].Specimen.TumorTypeId.ToDefinitionString() };
+            var sample = context.OmicsSamples[sampleId];
+            var specimen = sample.Specimen;
+            
+            model.Samples[i] = new Sample
+            {
+                Id = sampleId, 
+                TumorType = specimen.TumorTypeId.ToDefinitionString(),
+                DonorId = specimen.DonorId
+            };
         }
 
         return model;
