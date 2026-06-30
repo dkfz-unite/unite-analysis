@@ -44,16 +44,16 @@ public class ProcessingService
         _cnvProfilesRepository = cnvProfilesRepository;
     }
     
-    public async Task<Model> ProcessData(SamplesContext context, Models.Criteria.Options options)
+    public async Task<ResultMatrix> ProcessData(SamplesContext context, Models.Criteria.Options options)
     {
         var sampleIds = context.OmicsSamples.Keys.ToArray();
         var cnvProfiles = await _cnvProfilesRepository.GetRelatedProfiles(sampleIds);
         
         var armsCount = GetArmsCount();
 
-        var model = new Model
+        var model = new ResultMatrix
         {
-            ChromosomeArms = new Models.Output.ChromosomeArm[armsCount],
+            DnaRegions = new Models.Output.DnaRegion[armsCount],
             Samples = new Sample[sampleIds.Length],
             Observations = new List<Observation>()
         };
@@ -64,8 +64,9 @@ public class ProcessingService
             var chromosome = mapEntry.Key;
             foreach (var arm in mapEntry.Value)
             {
-                model.ChromosomeArms[k] = new Models.Output.ChromosomeArm
+                model.DnaRegions[k] = new DnaRegion
                 {
+                    Id = mapEntry.Key.ToDefinitionString() + arm.ToDefinitionString(),
                     Chromosome = chromosome,
                     Arm = arm
                 };
@@ -88,7 +89,8 @@ public class ProcessingService
 
                     if (observationEvent != Event.Neutral)
                     {
-                        model.Observations.Add(new Observation{ ChromosomeArmIndex = j, SampleId = sampleId, Event = observationEvent });
+                        var dnaRegionId = mapEntry.Key.ToDefinitionString() + chromosomeArm.ToDefinitionString();
+                        model.Observations.Add(new Observation{ DnaRegionId = dnaRegionId, SampleId = sampleId, Event = observationEvent });
                     }
                     
                     ++j;

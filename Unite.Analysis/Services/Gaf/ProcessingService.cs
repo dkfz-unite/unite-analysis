@@ -42,9 +42,6 @@ public class ProcessingService
             .IncludeAffectedTranscripts()
             .Where(entry => sampleIds.Contains(entry.SampleId))
             .Where(entry => entry.Entity.AffectedTranscripts.Any(transcript => transcript.Distance == null));
-            
-        var sql = query.ToQueryString(); // EF Core 5+
-        Console.WriteLine(sql);
         
         var entries = query.ToArray();
         
