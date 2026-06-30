@@ -78,22 +78,19 @@ public class ProcessingService
         for (int i = 0; i < sampleIds.Length; i++)
         {
             var sampleId = sampleIds[i];
-
-            int j = 0;
+            
             foreach (var mapEntry in _chromosomeArmMap)
             {
                 foreach (var chromosomeArm in mapEntry.Value)
                 {
                     var cnvProfile = cnvProfiles.FirstOrDefault(x => x.SampleId == sampleId && x.ChromosomeId == mapEntry.Key && x.ChromosomeArmId == chromosomeArm);
-                    var observationEvent = GetEvent(cnvProfile);
+                    var observationEvent = GetEvent(cnvProfile, options.EventThreshold);
 
                     if (observationEvent != Event.Neutral)
                     {
                         var dnaRegionId = mapEntry.Key.ToDefinitionString() + chromosomeArm.ToDefinitionString();
                         model.Observations.Add(new Observation{ DnaRegionId = dnaRegionId, SampleId = sampleId, Event = observationEvent });
                     }
-                    
-                    ++j;
                 }
             }
 
@@ -111,14 +108,14 @@ public class ProcessingService
         return model;
     }
 
-    private Event GetEvent(Profile cnvProfile)
+    private Event GetEvent(Profile cnvProfile, double eventThreshold = 0.8)
     {
         if (cnvProfile != null)
         {
-            if(cnvProfile.Gain > 0.8)
+            if(cnvProfile.Gain > eventThreshold)
                 return Event.Gain;
         
-            if(cnvProfile.Loss > 0.8)
+            if(cnvProfile.Loss > eventThreshold)
                 return Event.Loss;
         }
 
