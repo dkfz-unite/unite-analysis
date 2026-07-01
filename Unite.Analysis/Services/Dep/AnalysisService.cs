@@ -30,7 +30,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private readonly SamplesContextLoader _contextLoader;
 
 
-    public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, SamplesContextLoader contextLoader) : base(options)
+    public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, ContextLoader contextLoader) : base(options)
     {
         _dbContextFactory = dbContextFactory;
         _contextLoader = contextLoader;

@@ -37,12 +37,14 @@ public class ProcessingService
 
         var sampleIds = context.OmicsSamples.Keys.ToArray();
 
-        var entries = dbContext.Set<SM.VariantEntry>()
+        var query = dbContext.Set<SM.VariantEntry>()
             .AsNoTracking()
             .IncludeAffectedTranscripts()
             .Where(entry => sampleIds.Contains(entry.SampleId))
-            .Where(entry => entry.Entity.AffectedTranscripts.Any(transcript => transcript.Distance == null))
-            .ToArray();
+            .Where(entry => entry.Entity.AffectedTranscripts.Any(transcript => transcript.Distance == null));
+        
+        var entries = query.ToArray();
+        
 
         var groups = entries
             .Where(entry => impacts.Contains(entry.Entity.MostAffectedTranscript.MostSevereEffect.Impact))
