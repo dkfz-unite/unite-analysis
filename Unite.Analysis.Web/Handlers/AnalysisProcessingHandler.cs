@@ -1,4 +1,5 @@
 using Unite.Analysis.Models.Enums;
+using Unite.Analysis.Services.CnvProfile;
 using Unite.Analysis.Web.Configuration.Options;
 using Unite.Analysis.Web.Handlers.Helpers;
 using Unite.Analysis.Web.Services;
@@ -18,6 +19,7 @@ public class AnalysisProcessingHandler : Handler
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
     private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
+    private readonly Analysis.Services.CnvProfile.AnalysisService _cnvProfileAnalysisService;
     private readonly ILogger _logger;
 
 
@@ -32,6 +34,7 @@ public class AnalysisProcessingHandler : Handler
         Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService,
+        AnalysisService cnvProfileAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
     {
         _apiOptions = apiOptions;
@@ -44,6 +47,8 @@ public class AnalysisProcessingHandler : Handler
         _depAnalysisService = depAnalysisService;
         _umappAnalysisService = umappAnalysisService;
         _scellAnalysisService = scellAnalysisService;
+        _cnvProfileAnalysisService = cnvProfileAnalysisService;
+        
         _logger = logger;
     }
 
@@ -76,6 +81,7 @@ public class AnalysisProcessingHandler : Handler
             AnalysisTaskType.DEP => await _depAnalysisService.Process(task.Target, token),
             AnalysisTaskType.UMAPP => await _umappAnalysisService.Process(task.Target, token),
             AnalysisTaskType.SCELL => await _scellAnalysisService.Process(task.Target, token),
+            AnalysisTaskType.CNV_PROFILE => await _cnvProfileAnalysisService.Process(task.Target, token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")
         };
 
