@@ -5,12 +5,12 @@ namespace Unite.Analysis.Models.Metadata;
 
 public class Mappings<T> where T : SampleMetadata
 {
-    public Mapping<T, int> SampleId => new("sample_id", entry => entry.Id);
-    public Mapping<T, string> SampleKey => new("sample_key", entry => entry.Key);
-
+    public Mapping<T, int> SampleKey => new("sample_key", entry => entry.Key);
+    public Mapping<T, string> SampleId => new("sample_id", entry => entry.Id);
+    
     public IEnumerable<Mapping<T, string>> Donor =>
     [
-        For("donor_key", "Key", entry => entry.Donor.Id),
+        For("donor_id", "ID", entry => entry.Donor.Id),
         For("donor_age", "Age", entry => entry.Donor.Age),
         For("donor_sex", "Sex", entry => entry.Donor.Sex),
         For("donor_diagnosis", "Diagnosis", entry => entry.Donor.Diagnosis),
@@ -24,7 +24,7 @@ public class Mappings<T> where T : SampleMetadata
 
     public IEnumerable<Mapping<T, string>> Image =>
     [
-        For("image_key", "Key", entry => entry.Image.Id),
+        For("image_id", "ID", entry => entry.Image.Id),
         For("image_type", "Type", entry => entry.Image.Type)
     ];
 
@@ -37,7 +37,7 @@ public class Mappings<T> where T : SampleMetadata
 
     public IEnumerable<Mapping<T, string>> Specimen =>
     [
-        For("specimen_key", "Key", entry => entry.Specimen.Id),
+        For("specimen_id", "ID", entry => entry.Specimen.Id),
         For("specimen_type", "Type", entry => entry.Specimen.Type),
         For("specimen_category", "Category", entry => entry.Specimen.Category),
         For("specimen_tumor_type", "Tumor type", entry => entry.Specimen.TumorType),

@@ -5,12 +5,12 @@ public class SampleMetadata
     /// <summary>
     /// Original internal sample id.
     /// </summary>
-    public int Id { get; set; }
+    public int Key { get; set; }
 
     /// <summary>
     /// Self explanatory key to identify the sample, e.g. "D001-MAT-S001", where: D001 = donor id, MAT = material, S001 = specimen id.
     /// </summary>
-    public string Key { get; set; }
+    public string Id { get; set; }
 
     public DonorMetadata Donor { get; set; }
     public ImageMetadata Image { get; set; }
