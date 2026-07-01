@@ -6,6 +6,7 @@ using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Donors;
 using Unite.Data.Entities.Images;
 using Unite.Data.Entities.Specimens;
+using Unite.Data.Entities.Specimens.Analysis.Enums;
 using Unite.Indices.Search.Services;
 
 using DonorIndex = Unite.Indices.Entities.Donors.DonorIndex;
@@ -71,7 +72,7 @@ public abstract class GenericSamplesContextLoader<TContext>
         var specimenIds = await _donorRepository.GetRelatedSpecimens(donorIds);
         context.Specimens = await LoadSpecimens(specimenIds);
 
-        var sampleIds = await _specimenRepository.GetRelatedSamples(specimenIds, analysisTypes);
+        var sampleIds = await _specimenRepository.GetRelatedSamples(specimenIds, /* analysisTypes*/ new List<AnalysisType>());
         context.OmicsSamples = await LoadSamples(sampleIds);
 
         context.OmicsSamples = context.Donors.Values
