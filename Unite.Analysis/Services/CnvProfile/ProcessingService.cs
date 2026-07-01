@@ -46,6 +46,11 @@ public class ProcessingService
     
     public async Task<ResultMatrix> ProcessData(SamplesContext context, Models.Criteria.Options options)
     {
+        Console.WriteLine($"CNVP Analysis");
+        Console.WriteLine($"Related Donors: {context.Donors.Keys.Count}");
+        Console.WriteLine($"Related Samples: {context.OmicsSamples.Keys.Count}");
+        Console.WriteLine($"Related Specimens: {context.Specimens.Keys.Count}");
+        
         var sampleIds = context.OmicsSamples.Keys.ToArray();
         var cnvProfiles = await _cnvProfilesRepository.GetRelatedProfiles(sampleIds);
         
