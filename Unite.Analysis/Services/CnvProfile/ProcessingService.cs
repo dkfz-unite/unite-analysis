@@ -54,6 +54,8 @@ public class ProcessingService
         var sampleIds = context.OmicsSamples.Keys.ToArray();
         var cnvProfiles = await _cnvProfilesRepository.GetRelatedProfiles(sampleIds);
         
+        Console.WriteLine($"Related CNVPs: {cnvProfiles.Length}");
+        
         var armsCount = GetArmsCount();
 
         var model = new ResultMatrix
