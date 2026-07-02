@@ -77,6 +77,7 @@ public abstract class GenericSamplesContextLoader<TContext>
         Console.WriteLine($"sampleIds: {sampleIds.Length}");
         Console.WriteLine($"analysisTypes: {analysisTypes.Length}");
         context.OmicsSamples = await LoadSamples(sampleIds);
+        Console.WriteLine($"First OmicsSamples count: {context.OmicsSamples.Count}");
 
         context.OmicsSamples = context.Donors.Values
             .Select(donor => context.OmicsSamples.Values
