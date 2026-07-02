@@ -73,7 +73,7 @@ public abstract class GenericSamplesContextLoader<TContext>
         context.Specimens = await LoadSpecimens(specimenIds);
 
         Console.WriteLine($"specimenIds: {specimenIds.Length}");
-        var sampleIds = await _specimenRepository.GetRelatedSamples(specimenIds, /* analysisTypes*/ new List<AnalysisType>());
+        var sampleIds = await _specimenRepository.GetRelatedSamples(specimenIds, /* analysisTypes*/ new Data.Entities.Omics.Analysis.Enums.AnalysisType[0]);
         Console.WriteLine($"sampleIds: {sampleIds.Length}");
         Console.WriteLine($"analysisTypes: {analysisTypes.Length}");
         context.OmicsSamples = await LoadSamples(sampleIds);
