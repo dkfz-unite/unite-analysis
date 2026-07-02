@@ -194,13 +194,19 @@ public abstract class GenericSamplesContextLoader<TContext>
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        return await dbContext.Set<Data.Entities.Omics.Analysis.Sample>()
+        Console.WriteLine("Loading samples");
+        Console.WriteLine($"Ids count: {ids.Length}");
+        
+        var query = dbContext.Set<Data.Entities.Omics.Analysis.Sample>()
             .AsNoTracking()
             .Include(sample => sample.Specimen)
             .Include(sample => sample.Analysis)
             .Include(sample => sample.Resources)
-            .Where(sample => ids.Contains(sample.Id))
-            .ToDictionaryAsync(sample => sample.Id);
+            .Where(sample => ids.Contains(sample.Id));
+
+        Console.WriteLine(query.ToQueryString());
+        
+        return await query.ToDictionaryAsync(sample => sample.Id);
     }
 
     protected virtual IQueryable<Donor> Include(IQueryable<Donor> query)
