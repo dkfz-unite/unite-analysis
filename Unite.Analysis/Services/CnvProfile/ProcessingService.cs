@@ -105,7 +105,7 @@ public class ProcessingService
             model.Samples[i] = new Sample
             {
                 Id = sampleId, 
-                TumorType = specimen.TumorTypeId.ToDefinitionString(),
+                TumorType = specimen.TumorTypeId.HasValue ? specimen.TumorTypeId.ToDefinitionString() : "Undefined",
                 DonorId = specimen.DonorId
             };
         }
