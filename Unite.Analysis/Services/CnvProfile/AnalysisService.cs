@@ -32,7 +32,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var directoryPath = GetWorkingDirectoryPath(model.Id);
 
-        var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault(), [AnalysisType.WGS, AnalysisType.WES]);
+        var context = await _contextLoader.LoadDatasetData(model.Datasets.SingleOrDefault(), [/*AnalysisType.WGS, AnalysisType.WES*/]);
 
         WriteOptions(model.Options, directoryPath);
 
