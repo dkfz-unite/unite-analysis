@@ -103,11 +103,17 @@ public class ProcessingService
 
             var sample = context.OmicsSamples[sampleId];
             var specimen = sample.Specimen;
+
+            var tumorFamily = specimen.TumorClassification?.Family?.Name;
+            if (String.IsNullOrWhiteSpace(tumorFamily))
+            {
+                tumorFamily = "Undefined";
+            }
             
             model.Samples[i] = new Sample
             {
                 Id = sampleId, 
-                TumorType = specimen.TumorTypeId.HasValue ? specimen.TumorTypeId.ToDefinitionString() : "Undefined",
+                TumorType = tumorFamily,
                 DonorId = specimen.DonorId
             };
         }
