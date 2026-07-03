@@ -71,13 +71,9 @@ public abstract class GenericSamplesContextLoader<TContext>
 
         var specimenIds = await _donorRepository.GetRelatedSpecimens(donorIds);
         context.Specimens = await LoadSpecimens(specimenIds);
-
-        Console.WriteLine($"specimenIds: {specimenIds.Length}");
+        
         var sampleIds = await _specimenRepository.GetRelatedSamples(specimenIds, analysisTypes);
-        Console.WriteLine($"sampleIds: {sampleIds.Length}");
-        Console.WriteLine($"analysisTypes: {analysisTypes.Length}");
         context.OmicsSamples = await LoadSamples(sampleIds);
-        Console.WriteLine($"First OmicsSamples count: {context.OmicsSamples.Count}");
 
         context.OmicsSamples = context.Donors.Values
             .Select(donor => context.OmicsSamples.Values
@@ -195,9 +191,6 @@ public abstract class GenericSamplesContextLoader<TContext>
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        Console.WriteLine("Loading samples");
-        Console.WriteLine($"Ids count: {ids.Length}");
-        
         var query = dbContext.Set<Data.Entities.Omics.Analysis.Sample>()
             .AsNoTracking()
             .Include(sample => sample.Specimen)
@@ -206,8 +199,6 @@ public abstract class GenericSamplesContextLoader<TContext>
             .Include(sample => sample.Analysis)
             .Include(sample => sample.Resources)
             .Where(sample => ids.Contains(sample.Id));
-
-        Console.WriteLine(query.ToQueryString());
         
         return await query.ToDictionaryAsync(sample => sample.Id);
     }
