@@ -201,6 +201,8 @@ public abstract class GenericSamplesContextLoader<TContext>
         var query = dbContext.Set<Data.Entities.Omics.Analysis.Sample>()
             .AsNoTracking()
             .Include(sample => sample.Specimen)
+                .ThenInclude(specimen => specimen.TumorClassification)
+                    .ThenInclude(tc => tc.Family)
             .Include(sample => sample.Analysis)
             .Include(sample => sample.Resources)
             .Where(sample => ids.Contains(sample.Id));
