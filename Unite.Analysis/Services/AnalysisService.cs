@@ -14,6 +14,14 @@ public abstract class AnalysisService<TModel> where TModel : class
 {
     protected readonly IAnalysisOptions _options;
 
+    public static readonly string InputDirectoryName = "input";
+    public static readonly string OutputDirectoryName = "output";
+    public static readonly string OptionsFileName = Path.Combine(InputDirectoryName, "options.json");
+    public static readonly string DataFileName = Path.Combine(InputDirectoryName, "data.tsv");
+    public static readonly string MetadataFileName = Path.Combine(InputDirectoryName, "metadata.tsv");
+    public static readonly string ArchiveFileName = "analysis.zip";
+
+
 
     public AnalysisService(IAnalysisOptions options)
     {
@@ -88,6 +96,48 @@ public abstract class AnalysisService<TModel> where TModel : class
 
     protected string GetWorkingDirectoryPath(string key)
     {
-        return DirectoryManager.EnsureCreated(_options.DataPath, key);
+        var path = DirectoryManager.EnsureCreated(_options.DataPath, key);
+        DirectoryManager.EnsureCreated(path, InputDirectoryName);
+        DirectoryManager.EnsureCreated(path, OutputDirectoryName);
+        return path;
+    }
+}
+
+public class GenericAnalysisService : AnalysisService<object>
+{
+    public GenericAnalysisService(IAnalysisOptions options) : base(options)
+    {
+    }
+
+    public override Task<AnalysisTaskResult> Prepare(object model, params object[] args)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task<AnalysisTaskResult> Process(string key, params object[] args)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task<Stream> Load(string key, params object[] args)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task<Stream> Download(string key, params object[] args)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Task Delete(string key, params object[] args)
+    {
+        var directoryPath = Path.Combine(_options.DataPath, key);
+
+        if (Directory.Exists(directoryPath))
+        {
+            Directory.Delete(directoryPath, true);
+        }
+
+        return Task.CompletedTask;
     }
 }

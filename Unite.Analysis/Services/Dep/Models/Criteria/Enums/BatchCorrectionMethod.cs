@@ -5,8 +5,8 @@ namespace Unite.Analysis.Services.Dep.Models.Criteria.Enums;
 public enum BatchCorrectionMethod
 {
     [EnumMember(Value = "combat")]
-    ComBat,
+    ComBat = 0,
 
     [EnumMember(Value = "limma")]
-    Limma
+    Limma = 1
 }

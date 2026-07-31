@@ -13,6 +13,7 @@ public class AnalysisController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
     private readonly AnalysisRecordService _analysisRecordService;
+    private readonly Analysis.Services.GenericAnalysisService _analysisService;
     private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
     private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
@@ -22,11 +23,13 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Cedp.AnalysisService _cedpAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
+    private readonly ILogger _logger;
     
 
     public AnalysisController(
         AnalysisTaskService analysisTaskService,
         AnalysisRecordService analysisRecordService,
+        Analysis.Services.GenericAnalysisService analysisService,
         Analysis.Services.Surv.AnalysisService survSceAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
         Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
@@ -35,10 +38,12 @@ public class AnalysisController : Controller
         Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Cedp.AnalysisService cedpAnalysisService,
-        Analysis.Services.Scell.AnalysisService scellAnalysisService)
+        Analysis.Services.Scell.AnalysisService scellAnalysisService,
+        ILogger<AnalysisController> logger)
     {
         _analysisTaskService = analysisTaskService;
         _analysisRecordService = analysisRecordService;
+        _analysisService = analysisService;
         _survAnalysisService = survSceAnalysisService;
         _dmAnalysisService = dmAnalysisService;
         _pcamAnalysisService = pcamAnalysisService;
@@ -48,6 +53,7 @@ public class AnalysisController : Controller
         _umappAnalysisService = umappAnalysisService;
         _cedpAnalysisService = cedpAnalysisService;
         _scellAnalysisService = scellAnalysisService;
+        _logger = logger;
     }
     
     
@@ -238,12 +244,34 @@ public class AnalysisController : Controller
 
     private async Task<IActionResult> RunTask<T>(AnalysisTaskType type, TypedAnalysis<T> model) where T : AnalysisData
     {
-        var entry = GenericAnalysis.From(model);
+        var record = GenericAnalysis.From(model);
 
-        model.Data.Id = await _analysisRecordService.Add(entry);
+        if (string.IsNullOrEmpty(model.Id))
+        {
+            _logger.LogInformation("Creating new analysis task of type {Type}", type);   
+            model.Data.Id = await _analysisRecordService.Add(record);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, type);
+            _analysisTaskService.Create(model.Data.Id, model.Data, type);
 
-        return Ok(model.Data.Id);
+            return Ok(model.Data.Id);
+        }
+        else
+        {
+            _logger.LogInformation("Restarting analysis task with id {Id} of type {Type}", model.Id, type);
+            var task = _analysisTaskService.Get(model.Id);
+
+            if (task == null)
+                return NotFound();
+
+            if (task.StatusTypeId != TaskStatusType.Processed && task.StatusTypeId != TaskStatusType.Failed)
+                return BadRequest("Can't restart a task in progress.");
+
+            await _analysisService.Delete(model.Id);
+            await _analysisRecordService.Update(model.Id, record);
+
+            _analysisTaskService.Update(task, null);
+
+            return Ok(model.Data.Id);
+        }
     }
 }

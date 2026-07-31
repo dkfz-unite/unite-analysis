@@ -21,16 +21,13 @@ namespace Unite.Analysis.Services.Cedp;
 
 public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
-    private const string DataFileName = "data.tsv";
-    private const string MetadataFileName = "metadata.tsv";
-    private const string OptionsFileName = "options.json";
-    private const string ResultsFileName = "results.tsv";
-    private const string AnnotationsFileName = "annotations.tsv";
-    private const string ArchiveFileName = "results.zip";
-
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
     private readonly SamplesContextLoaderFull _contextLoader;
     private readonly ILogger _logger;
+
+    private static readonly string SamplesFileName = Path.Combine(InputDirectoryName, "samples.tsv");
+    private static readonly string ValuesFileName = Path.Combine(OutputDirectoryName, "values.tsv");
+    private static readonly string ContrastsFileName = Path.Combine(OutputDirectoryName, "contrasts.tsv");
 
 
     public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, SamplesContextLoaderFull contextLoader, ILogger<AnalysisService> logger) : base(options)
@@ -58,23 +55,51 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         var stopwatch = Stopwatch.StartNew();
 
         var directoryPath = GetWorkingDirectoryPath(model.Id);
+
+        var optionsPath = Path.Combine(directoryPath, OptionsFileName);
         var dataFilePath = Path.Combine(directoryPath, DataFileName);
         var metadatapath = Path.Combine(directoryPath, MetadataFileName);
-        var annotationsPath = Path.Combine(directoryPath, AnnotationsFileName);
-        var optionsPath = Path.Combine(directoryPath, OptionsFileName);
+        var samplesPath = Path.Combine(directoryPath, SamplesFileName);
+        
 
         var data = new Matrix<double>("feature");
         var metadata = new List<MetadataEntry>();
 
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var mappings = new Mappings<SampleMetadata>();
+        var mappings = new MetadataMappings<SampleMetadata>();
         var dataset = model.Datasets.Single();
         
         using var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);
         var samplesMetadata = SampleMetadataLoader.Load(samplesContext);
         var samplesMetadataMap = SampleMetadataMapper.Map(samplesMetadata, mapId: true);
-        var sampleIds = samplesContext.OmicsSamples.Keys.ToArray();
+        var sampleIds = new List<int>();
+
+        foreach (var sampleId in samplesContext.OmicsSamples.Keys.ToArray())
+        {
+            var donor = samplesContext.GetSampleDonor(sampleId);
+            var specimen = samplesContext.GetSampleSpecimen(sampleId);
+            var sample = samplesContext.OmicsSamples[sampleId];
+            var sampleMetadata = samplesMetadata.FirstOrDefault(entry => entry.Key == sampleId);
+            var conditionMapping = mappings.All.FirstOrDefault(mapping => mapping.Key == model.Options.ConditionProperty);
+            var conditionGetter = conditionMapping?.Expression.Compile();
+            var condition = conditionGetter?.Invoke(sampleMetadata);
+
+            if (model.Options.ConditionValue?.Length > 0 && !model.Options.ConditionValue.Contains(condition))
+                continue;
+
+            metadata.Add(new MetadataEntry
+            {
+                Sample = sampleId,
+                Condition = condition,
+                Batch = sample.Batch,
+                Donor = donor.ReferenceId,
+                Specimen = specimen.ReferenceId,
+                SpecimenType = specimen.TypeId.ToDefinitionString()
+            });
+
+            sampleIds.Add(sampleId);
+        }
 
         var expressions = await dbContext.Set<ProteinExpression>()
             .AsNoTracking()
@@ -84,27 +109,22 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         if (model.Options.FeatureType == FeatureType.Gene)
         {
-            var expression = expressions.FirstOrDefault(expression => string.Equals(expression.Entity.Transcript.Gene.Symbol, model.Options.Feature));
+            var expression = expressions.FirstOrDefault(expression => string.Equals(expression.Entity.Transcript.Gene.Symbol, model.Options.FeatureName));
             if (expression != null)
                 model.Options.Feature = expression.Entity.Transcript.Gene.StableId;
             else
-                throw new InvalidOperationException($"There is no expression data for the specified gene {model.Options.Feature}");
-
-            _logger.LogInformation("Mapped feature {Feature} to gene stable ID {StableId}", model.Options.Feature, expression.Entity.Transcript.Gene.StableId);
+                throw new InvalidOperationException($"There is no expression data for the specified gene {model.Options.FeatureName}");
         }
         else if (model.Options.FeatureType == FeatureType.Protein)
         {
-            var expression = expressions.FirstOrDefault(expression => string.Equals(expression.Entity.Symbol, model.Options.Feature));
+            var expression = expressions.FirstOrDefault(expression => string.Equals(expression.Entity.Symbol, model.Options.FeatureName));
             if (expression != null)
                 model.Options.Feature = expression.Entity.StableId;
             else
-                throw new InvalidOperationException($"There is no expression data for the specified protein {model.Options.Feature}");
-
-            _logger.LogInformation("Mapped feature {Feature} to protein stable ID {StableId}", model.Options.Feature, expression.Entity.StableId);
+                throw new InvalidOperationException($"There is no expression data for the specified protein {model.Options.FeatureName}");
         }
         else
         {
-            _logger.LogError("Unsupported feature type: {FeatureType}", model.Options.FeatureType);
             throw new InvalidOperationException($"Unsupported feature type: {model.Options.FeatureType}");
         }
 
@@ -123,42 +143,18 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
             data[column, row] = expression.Raw;
         }
 
-        _logger.LogInformation("Constructed data matrix with {Number} cells", data.ColumnKeys.Count() * data.RowKeys.Count());
-
         foreach (var sampleId in sampleIds)
         {
             if (!data.ContainsColumn(sampleId.ToString()))
-                continue;
-
-            var donor = samplesContext.GetSampleDonor(sampleId);
-            var specimen = samplesContext.GetSampleSpecimen(sampleId);
-            var sample = samplesContext.OmicsSamples[sampleId];
-            var sampleMetadata = samplesMetadata.FirstOrDefault(entry => entry.Key == sampleId);
-            var conditionMapping = mappings.All.FirstOrDefault(mapping => mapping.Key == model.Options.ConditionProperty);
-            var conditionGetter = conditionMapping?.Expression.Compile();
-            var condition = conditionGetter?.Invoke(sampleMetadata);
-
-            metadata.Add(new MetadataEntry
-            {
-                Sample = sampleId,
-                Condition = condition,
-                Batch = sample.Batch,
-                Donor = donor.ReferenceId,
-                Specimen = specimen.ReferenceId,
-                SpecimenType = specimen.TypeId.ToDefinitionString()
-            });
+                metadata.Remove(metadata.First(entry => entry.Sample == sampleId));
         }
-
-        _logger.LogInformation("Constructed metadata for {SampleCount} samples", metadata.Count);
 
         var batchValidationError = ValidateBatches(model.Options.BatchCorrectionMethod, metadata);
 
         data.WriteTo(dataFilePath);
         File.WriteAllText(metadatapath, TsvWriter.Write(metadata));
-        File.WriteAllText(annotationsPath, TsvWriter.Write(samplesMetadata, samplesMetadataMap));
+        File.WriteAllText(samplesPath, TsvWriter.Write(samplesMetadata, samplesMetadataMap));
         MemberJsonSerializer.Serialize(optionsPath, model.Options);
-
-        _logger.LogInformation("Written data, metadata, annotations and options to disk");
 
         stopwatch.Stop();
 
@@ -183,7 +179,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
     public override async Task<Stream> Load(string key, params object[] args)
     {
-        var file = args.IsNotEmpty() && args[0] != null ? args[0].ToString() : ResultsFileName; 
+        var file = args.IsNotEmpty() && args[0] != null ? args[0].ToString() : ValuesFileName; 
             
         var path = Path.Combine(GetWorkingDirectoryPath(key), file);
 
@@ -228,15 +224,23 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         return null;
     }
     
-    private static void ArchiveResults(string path)
+    protected static void ArchiveResults(string path)
     {
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
 
-        archive.CreateEntryFromFile(Path.Combine(path, DataFileName), DataFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, MetadataFileName), MetadataFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, AnnotationsFileName), AnnotationsFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, OptionsFileName), OptionsFileName);
-        archive.CreateEntryFromFile(Path.Combine(path, ResultsFileName), ResultsFileName);
+        var inputDirectory = Path.Combine(path, InputDirectoryName);
+        foreach (var inputFile in Directory.GetFiles(inputDirectory))
+        {
+            var entryName = Path.Combine(InputDirectoryName, Path.GetFileName(inputFile));
+            archive.CreateEntryFromFile(inputFile, entryName);
+        }
+
+        var outputDirectory = Path.Combine(path, OutputDirectoryName);
+        foreach (var outputFile in Directory.GetFiles(outputDirectory))
+        {
+            var entryName = Path.Combine(OutputDirectoryName, Path.GetFileName(outputFile));
+            archive.CreateEntryFromFile(outputFile, entryName);
+        }
     }
 }

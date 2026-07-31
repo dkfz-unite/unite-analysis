@@ -30,6 +30,7 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.SamplesContextLoader>();
         services.AddTransient<Analysis.Services.SamplesContextLoaderFull>();
 
+        services.AddTransient<Analysis.Services.GenericAnalysisService>();
         services.AddTransient<Analysis.Services.Deg.DataLoader>();
         services.AddTransient<Analysis.Services.Deg.AnalysisService>();
         services.AddTransient<Analysis.Services.Scell.ContextLoader>();

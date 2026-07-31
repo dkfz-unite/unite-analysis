@@ -55,7 +55,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        var mappings = new Mappings<SampleMetadata>();
+        var mappings = new MetadataMappings<SampleMetadata>();
         var dataset = model.Datasets.Single();
         
         using var samplesContext = await _contextLoader.LoadDatasetData(dataset, AnalysisType.MS);

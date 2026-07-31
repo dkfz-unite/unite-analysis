@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Unite.Analysis.Helpers;
 
 namespace Unite.Analysis.Models;
 
@@ -26,11 +27,6 @@ public record TypedAnalysis<T> : Analysis where T : AnalysisData
 
 public record GenericAnalysis : Analysis
 {
-    private static readonly JsonSerializerOptions _serializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
     public string Data { get; set; }
 
     public static GenericAnalysis From<T>(TypedAnalysis<T> analysis) where T : AnalysisData
@@ -44,7 +40,7 @@ public record GenericAnalysis : Analysis
             Date = analysis.Date,
             Status = analysis.Status,
             Type = analysis.Type,
-            Data = JsonSerializer.Serialize(analysis.Data, _serializerOptions)
+            Data = JsonSerializer.Serialize(analysis.Data, MemberJsonSerializer.Options)
         };
     }
 }

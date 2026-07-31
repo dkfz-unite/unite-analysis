@@ -5,15 +5,16 @@ namespace Unite.Analysis.Helpers;
 
 public static class MemberJsonSerializer
 {
-    private static readonly JsonSerializerOptions _options = new()
+    public static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters = { new JsonStringEnumMemberConverter() }
     };
 
     public static string Serialize<T>(T value)
     {
-       return JsonSerializer.Serialize(value, _options);
+       return JsonSerializer.Serialize(value, Options);
     }
 
     public static void Serialize<T>(string path, T value)

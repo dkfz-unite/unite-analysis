@@ -32,10 +32,10 @@ public class SampleMetadataMapper
     {
         // TODO: Improve Essentials.Tsv so that it can take array of mappings to ClassMap<T> constructor.
         // Add option to not map or to not write to tsv columns which have no values or to delete mapping if there are no values for it.
-        var mappings = new Mappings<T>();
+        var mappings = new MetadataMappings<T>();
 
         if (mapKey)
-            map.Map(mappings.SampleId.Expression, mappings.SampleId.Key);
+            map.Map(mappings.SampleKey.Expression, mappings.SampleKey.Key);
 
         MapProperty(map, entries, mappings.SampleId);
 
