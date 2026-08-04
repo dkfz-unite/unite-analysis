@@ -5,19 +5,14 @@ using Unite.Indices.Search.Services;
 using ImageIndex = Unite.Indices.Entities.Images.ImageIndex;
 using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
 
-namespace Unite.Analysis.Services;
+namespace Unite.Analysis.Services.Dep;
 
-public class SamplesContextLoader : GenericSamplesContextLoader<SamplesContext>
+public class ContextLoader : SamplesContextLoader
 {
-    public SamplesContextLoader(ISearchService<DonorIndex> donorsSearchService, 
+    public ContextLoader(ISearchService<DonorIndex> donorsSearchService, 
         ISearchService<ImageIndex> imagesSearchService, 
         ISearchService<SpecimenIndex> specimensSearchService, 
         IDbContextFactory<DomainDbContext> dbContextFactory) : base(donorsSearchService, imagesSearchService, specimensSearchService, dbContextFactory)
     {
-    }
-
-    protected override SamplesContext BuildContext(SampleType sampleType)
-    {
-        return new SamplesContext(sampleType);
     }
 }

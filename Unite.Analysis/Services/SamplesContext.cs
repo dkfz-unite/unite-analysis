@@ -5,12 +5,19 @@ using Unite.Data.Entities.Specimens.Enums;
 
 namespace Unite.Analysis.Services;
 
+public enum SampleType : byte
+{
+    Donor = 1,
+    Image = 2,
+    Specimen = 3
+}
+
 public class SamplesContext : IDisposable
 {
     /// <summary>
     /// Type of the sample: 1 - donor, 2 - image, 3 - specimen.
     /// </summary>
-    public byte SampleType { get; set; }
+    public SampleType SampleType { get; set; }
 
     /// <summary>
     /// Donors cached per donor identifier.
@@ -33,7 +40,7 @@ public class SamplesContext : IDisposable
     public Dictionary<int, Data.Entities.Omics.Analysis.Sample> OmicsSamples { get; set; }
 
 
-    public SamplesContext(byte sampleType)
+    public SamplesContext(SampleType sampleType)
     {
         SampleType = sampleType;
 
@@ -42,8 +49,7 @@ public class SamplesContext : IDisposable
         Specimens = [];
         OmicsSamples = [];
     }
-
-
+    
     public string GetSampleKey(int id)
     {
         var donor = GetSampleDonor(id);
@@ -54,7 +60,7 @@ public class SamplesContext : IDisposable
                            specimen.TypeId == SpecimenType.Xenograft ? "xen" :
                            "spe";
 
-        if (SampleType == 1)
+        if (SampleType == SampleType.Donor)
             return $"{donor.ReferenceId}";
         else
             return $"{donor.ReferenceId}-{specimenType}-{specimen.ReferenceId}";

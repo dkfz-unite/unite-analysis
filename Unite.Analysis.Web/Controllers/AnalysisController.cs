@@ -23,6 +23,7 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
     private readonly Analysis.Services.Cedp.AnalysisService _cedpAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
+    private readonly Analysis.Services.CnvProfile.AnalysisService _cnvProfileAnalysisService;
     private readonly ILogger _logger;
     
 
@@ -39,6 +40,7 @@ public class AnalysisController : Controller
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Cedp.AnalysisService cedpAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService,
+        Analysis.Services.CnvProfile.AnalysisService cnvProfileAnalysisService,
         ILogger<AnalysisController> logger)
     {
         _analysisTaskService = analysisTaskService;
@@ -53,6 +55,7 @@ public class AnalysisController : Controller
         _umappAnalysisService = umappAnalysisService;
         _cedpAnalysisService = cedpAnalysisService;
         _scellAnalysisService = scellAnalysisService;
+        _cnvProfileAnalysisService = cnvProfileAnalysisService;
         _logger = logger;
     }
     
@@ -109,6 +112,12 @@ public class AnalysisController : Controller
     public async Task<IActionResult> CreateScellTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
     {
         return await RunTask(AnalysisTaskType.SCELL, model);
+    }
+    
+    [HttpPost("cnv-profile")]
+    public async Task<IActionResult> CreateCnvProfileTask([FromBody]TypedAnalysis<Analysis.Services.CnvProfile.Models.Criteria.Analysis> model)
+    {
+        return await RunTask(AnalysisTaskType.CNV_PROFILE, model);
     }
 
     [HttpGet("scell/models")]
@@ -168,6 +177,8 @@ public class AnalysisController : Controller
             return Ok(await _cedpAnalysisService.Load(id, file));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CNV_PROFILE)
+            return Ok(await _cnvProfileAnalysisService.Load(id, file));
         
         return BadRequest("Task analysis type is not supported");
     }
@@ -198,6 +209,8 @@ public class AnalysisController : Controller
             return Ok(await _cedpAnalysisService.Download(id));
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
             return Ok(await _scellAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CNV_PROFILE)
+            return Ok(await _cnvProfileAnalysisService.Download(id));
 
         return BadRequest("Task analysis type is not supported");
     }
@@ -234,7 +247,9 @@ public class AnalysisController : Controller
         else if (task.AnalysisTypeId == AnalysisTaskType.CEDP)
             await _cedpAnalysisService.Delete(id);
         else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
-            await _scellAnalysisService.Delete(id); 
+            await _scellAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.CNV_PROFILE)
+            await _cnvProfileAnalysisService.Delete(id);
         
         await _analysisRecordService.Delete(id);
 
