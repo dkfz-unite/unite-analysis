@@ -6,7 +6,6 @@ using Unite.Analysis.Web.Services;
 using Unite.Cache.Configuration.Options;
 using Unite.Data.Context.Configuration.Extensions;
 using Unite.Data.Context.Configuration.Options;
-using Unite.Data.Context.Repositories;
 using Unite.Indices.Context.Configuration.Options;
 using Unite.Indices.Search.Configuration.Extensions;
 using Unite.Orchestrator;
@@ -25,10 +24,11 @@ public static class ConfigurationExtensions
         services.AddOptions();
         services.AddDatabase();
         services.AddDatabaseFactory(sqlOptions);
+        services.AddRepositories();
         services.AddSearchEngine();
         services.AddSearchServices();
         
-        services.AddTransient<Analysis.Services.GenericSamplesContextLoaderFull>();
+        services.AddTransient<Analysis.Services.SamplesContextLoaderFull>();
 
         services.AddTransient<Analysis.Services.GenericAnalysisService>();
         services.AddTransient<Analysis.Services.Deg.DataLoader>();
@@ -49,9 +49,7 @@ public static class ConfigurationExtensions
         services.AddTransient<Analysis.Services.Umapp.AnalysisService>();
         services.AddTransient<Analysis.Services.Cedp.AnalysisService>();
         services.AddTransient<Analysis.Services.CnvProfile.AnalysisService>();
-        services.AddTransient<Analysis.Services.CnvProfile.ContextLoader>();
         services.AddTransient<Analysis.Services.CnvProfile.ProcessingService>();
-        services.AddTransient<CnvProfilesRepository>();
 
         services.AddTransient<AnalysisTaskService>();
         services.AddTransient<AnalysisRecordService>();

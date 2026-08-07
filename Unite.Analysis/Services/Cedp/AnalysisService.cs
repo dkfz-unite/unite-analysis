@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.IO.Compression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Unite.Analysis.Configuration.Options;
@@ -25,12 +24,19 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private readonly SamplesContextLoaderFull _contextLoader;
     private readonly ILogger _logger;
 
-    private static readonly string SamplesFileName = Path.Combine(InputDirectoryName, "samples.tsv");
-    private static readonly string ValuesFileName = Path.Combine(OutputDirectoryName, "values.tsv");
-    private static readonly string ContrastsFileName = Path.Combine(OutputDirectoryName, "contrasts.tsv");
+    public static readonly string DataFileName = InputFile("data.tsv");
+    public static readonly string MetadataFileName = InputFile ("metadata.tsv");
+    public static readonly string SamplesFileName = InputFile("samples.tsv");
+    public static readonly string ValuesFileName = OutputFile("values.tsv");
+    public static readonly string ContrastsFileName = OutputFile("contrasts.tsv");
+    public override string DefaultLoadFileName => ValuesFileName;
 
 
-    public AnalysisService(IAnalysisOptions options, IDbContextFactory<DomainDbContext> dbContextFactory, SamplesContextLoaderFull contextLoader, ILogger<AnalysisService> logger) : base(options)
+    public AnalysisService(
+        IAnalysisOptions options,
+        IDbContextFactory<DomainDbContext> dbContextFactory,
+        SamplesContextLoaderFull contextLoader,
+        ILogger<AnalysisService> logger) : base(options)
     {
         _dbContextFactory = dbContextFactory;
         _contextLoader = contextLoader;
@@ -177,38 +183,6 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         return analysisResult;
     }
 
-    public override async Task<Stream> Load(string key, params object[] args)
-    {
-        var file = args.IsNotEmpty() && args[0] != null ? args[0].ToString() : ValuesFileName; 
-            
-        var path = Path.Combine(GetWorkingDirectoryPath(key), file);
-
-        var stream = File.OpenRead(path);
-
-        return await Task.FromResult(stream);
-    }
-
-    public override async Task<Stream> Download(string key, params object[] args)
-    {
-        var path = Path.Combine(GetWorkingDirectoryPath(key), ArchiveFileName);
-
-        var stream = File.OpenRead(path);
-
-        return await Task.FromResult(stream);
-    }
-
-    public override Task Delete(string key, params object[] args)
-    {
-        var path = GetWorkingDirectoryPath(key);
-
-        if (Directory.Exists(path))
-        {
-            Directory.Delete(path, true);
-        }
-
-        return Task.CompletedTask;
-    }
-
 
     private static string ValidateBatches(BatchCorrectionMethod? method, IEnumerable<MetadataEntry> metadata)
     {
@@ -222,25 +196,5 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
             return "Some samples do not have batch information. Batch correction could not be provied.";
         
         return null;
-    }
-    
-    protected static void ArchiveResults(string path)
-    {
-        using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
-        using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
-
-        var inputDirectory = Path.Combine(path, InputDirectoryName);
-        foreach (var inputFile in Directory.GetFiles(inputDirectory))
-        {
-            var entryName = Path.Combine(InputDirectoryName, Path.GetFileName(inputFile));
-            archive.CreateEntryFromFile(inputFile, entryName);
-        }
-
-        var outputDirectory = Path.Combine(path, OutputDirectoryName);
-        foreach (var outputFile in Directory.GetFiles(outputDirectory))
-        {
-            var entryName = Path.Combine(OutputDirectoryName, Path.GetFileName(outputFile));
-            archive.CreateEntryFromFile(outputFile, entryName);
-        }
     }
 }

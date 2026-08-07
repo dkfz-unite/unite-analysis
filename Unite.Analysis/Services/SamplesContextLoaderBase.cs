@@ -14,7 +14,7 @@ using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
 
 namespace Unite.Analysis.Services;
 
-public abstract class GenericSamplesContextLoader<TContext> 
+public abstract class SamplesContextLoaderBase<TContext> 
     where TContext: SamplesContext
 {
     protected readonly DonorsRepository _donorRepository;
@@ -26,7 +26,7 @@ public abstract class GenericSamplesContextLoader<TContext>
     protected readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
 
 
-    public GenericSamplesContextLoader(
+    public SamplesContextLoaderBase(
         ISearchService<DonorIndex> donorsSearchService,
         ISearchService<ImageIndex> imagesSearchService,
         ISearchService<SpecimenIndex> specimensSearchService,

@@ -1,134 +1,87 @@
+using Unite.Analysis.Models.Metadata;
 using Unite.Analysis.Services.CnvProfile.Models.Output;
 using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Omics.Analysis.Dna.Cnv;
+using Unite.Data.Entities.Omics.Analysis.Dna.Cnv.Enums;
 using Unite.Data.Entities.Omics.Enums;
 using Unite.Essentials.Extensions;
-using ChromosomeArm = Unite.Data.Entities.Omics.Enums.ChromosomeArm;
 
 namespace Unite.Analysis.Services.CnvProfile;
 
 public class ProcessingService
 {
     private readonly CnvProfilesRepository _cnvProfilesRepository;
-
-    private readonly Dictionary<Chromosome, ChromosomeArm[]> _chromosomeArmMap = new()
-    {
-        { Chromosome.Chr1, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr2, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr3, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr4, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr5, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr6, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr7, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr8, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr9, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr10, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr11, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr12, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr13, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr14, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr15, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr16, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr17, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr18, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr19, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr20, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr21, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.Chr22, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.ChrX, [ChromosomeArm.P, ChromosomeArm.Q] },
-        { Chromosome.ChrY, [ChromosomeArm.P, ChromosomeArm.Q] }
-    };
     
     public ProcessingService(CnvProfilesRepository cnvProfilesRepository)
     {
         _cnvProfilesRepository = cnvProfilesRepository;
     }
     
-    public async Task<ResultMatrix> ProcessData(SamplesContext context, Models.Criteria.Options options)
+    public async Task<GridData> ProcessData(SamplesContext context, Models.Criteria.Options options)
     {
+        var gridSamples = new List<GridSample>();
+        var gridObservations = new List<GridObservation>();
+        var gridRegions = Enum.GetValues<Chromosome>()
+            .Where(chromosome => chromosome != Chromosome.ChrMT)
+            .SelectMany(chromosome => new GridRegion[] { new(chromosome, ChromosomeArm.P), new(chromosome, ChromosomeArm.Q) })
+            .ToArray();
+
+        var mappings = new MetadataMappings<SampleMetadata>();
+        var metadata = SampleMetadataLoader.Load(context);
         var sampleIds = context.OmicsSamples.Keys.ToArray();
         var cnvProfiles = await _cnvProfilesRepository.GetRelatedProfiles(sampleIds);
-        
-        var armsCount = GetArmsCount();
 
-        var model = new ResultMatrix
+        foreach (var sampleId in sampleIds)
         {
-            DnaRegions = new Models.Output.DnaRegion[armsCount],
-            Samples = new Sample[sampleIds.Length],
-            Observations = new List<Observation>()
-        };
-        
-        int k = 0;
-        foreach (var mapEntry in _chromosomeArmMap)
-        {
-            var chromosome = mapEntry.Key;
-            foreach (var arm in mapEntry.Value)
+            foreach (var region in gridRegions)
             {
-                model.DnaRegions[k] = new DnaRegion
-                {
-                    Id = GetDnaRegionId(mapEntry, arm),
-                    Chromosome = chromosome,
-                    Arm = arm
-                };
+                var cnvProfile = cnvProfiles.FirstOrDefault(profile =>
+                    profile.SampleId == sampleId &&
+                    profile.ChromosomeId == region.Chromosome &&
+                    profile.ChromosomeArmId == region.Arm
+                );
 
-                k++;
-            }
-        }
-
-        for (int i = 0; i < sampleIds.Length; i++)
-        {
-            var sampleId = sampleIds[i];
-            
-            foreach (var mapEntry in _chromosomeArmMap)
-            {
-                foreach (var chromosomeArm in mapEntry.Value)
-                {
-                    var cnvProfile = cnvProfiles.FirstOrDefault(x => x.SampleId == sampleId && x.ChromosomeId == mapEntry.Key && x.ChromosomeArmId == chromosomeArm);
-                    var observationEvent = GetEvent(cnvProfile, options.EventThreshold);
-
-                    if (observationEvent != Event.Neutral)
-                    {
-                        var dnaRegionId = GetDnaRegionId(mapEntry, chromosomeArm);
-                        model.Observations.Add(new Observation{ DnaRegionId = dnaRegionId, SampleId = sampleId, Event = observationEvent });
-                    }
-                }
+                var observationEvent = GetEvent(cnvProfile, options.EventThreshold);
+                if (observationEvent != CnvType.Neutral)
+                    gridObservations.Add(new GridObservation(sampleId, region.Id, observationEvent));
             }
 
+            var donor = context.GetSampleDonor(sampleId);
+            var specimen = context.GetSampleSpecimen(sampleId);
             var sample = context.OmicsSamples[sampleId];
-            var specimen = sample.Specimen;
-            
-            model.Samples[i] = new Sample
+            var tracks = new Dictionary<string, string>();
+
+            foreach (var propertyKey in options.TrackProperty)
             {
-                Id = sampleId, 
-                TumorType = specimen.TumorTypeId.ToDefinitionString(),
-                DonorId = specimen.DonorId
-            };
+                var sampleMetadata = metadata.FirstOrDefault(entry => entry.Key == sampleId);
+                var propertyMapping = mappings.All.FirstOrDefault(mapping => mapping.Key == propertyKey);
+                var propertyGetter = propertyMapping?.Expression.Compile();
+                var propertyValue = propertyGetter?.Invoke(sampleMetadata);
+
+                if (options.TrackPropertyValue.IsNotEmpty())
+                    if (!options.TrackPropertyValue.Contains(propertyValue))
+                        continue;
+                
+                tracks.Add(propertyKey, propertyValue);
+            }
+
+            gridSamples.Add(new GridSample(sampleId, donor.Id, specimen.Id, tracks));
         }
 
-        return model;
+        return new GridData(gridSamples.ToArray(), gridRegions.ToArray(), gridObservations.ToArray());
     }
 
-    private static string GetDnaRegionId(KeyValuePair<Chromosome, ChromosomeArm[]> mapEntry, ChromosomeArm arm)
-    {
-        return mapEntry.Key.ToDefinitionString() + arm.ToDefinitionString();
-    }
-
-    private Event GetEvent(Profile cnvProfile, double eventThreshold = 0.8)
+    private static CnvType GetEvent(Profile cnvProfile, double eventThreshold = 0.8)
     {
         if (cnvProfile != null)
         {
             if(cnvProfile.Gain > eventThreshold)
-                return Event.Gain;
+                return CnvType.Gain;
         
             if(cnvProfile.Loss > eventThreshold)
-                return Event.Loss;
+                return CnvType.Loss;
         }
 
-        return Event.Neutral;
-    }
-
-    private int GetArmsCount()
-    {
-        return _chromosomeArmMap.Values.Sum(arms => arms.Length);
+        return CnvType.Neutral;
     }
 }
