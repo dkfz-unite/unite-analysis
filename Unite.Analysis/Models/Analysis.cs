@@ -17,6 +17,8 @@ public abstract record Analysis
 
     public string Status { get; set; }
 
+    public string Comment { get; set; }
+
     public string Type { get; set; }
 }
 
@@ -39,6 +41,7 @@ public record GenericAnalysis : Analysis
             Description = analysis.Description,
             Date = analysis.Date,
             Status = analysis.Status,
+            Comment = analysis.Comment,
             Type = analysis.Type,
             Data = JsonSerializer.Serialize(analysis.Data, MemberJsonSerializer.Options)
         };

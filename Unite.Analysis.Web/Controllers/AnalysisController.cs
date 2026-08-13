@@ -4,6 +4,7 @@ using Unite.Analysis.Web.Services;
 using Unite.Analysis.Models;
 using Unite.Data.Entities.Tasks.Enums;
 using Unite.Essentials.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Unite.Analysis.Web.Controllers;
 
@@ -25,6 +26,8 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.CnvProfile.AnalysisService _cnvProfileAnalysisService;
     private readonly ILogger _logger;
+
+    private record StatusResponse(TaskStatusType? Status, string Comment);
     
 
     public AnalysisController(
@@ -146,9 +149,11 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
         
-        await _analysisRecordService.Update(id, task.StatusTypeId.Value.ToDefinitionString());
+        await _analysisRecordService.Update(id, task.StatusTypeId.Value.ToDefinitionString(), task.Comment);
         
-        return Ok(task.StatusTypeId);
+        var response = new StatusResponse(task.StatusTypeId, task.Comment);
+
+        return Ok(response);
     }
 
     [HttpGet("{id}/meta")]
