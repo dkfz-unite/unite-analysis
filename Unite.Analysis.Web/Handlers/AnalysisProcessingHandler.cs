@@ -1,5 +1,4 @@
 using Unite.Analysis.Models.Enums;
-using Unite.Analysis.Services.CnvProfile;
 using Unite.Analysis.Web.Configuration.Options;
 using Unite.Analysis.Web.Handlers.Helpers;
 using Unite.Analysis.Web.Services;
@@ -36,7 +35,7 @@ public class AnalysisProcessingHandler : Handler
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
         Analysis.Services.Cedp.AnalysisService cedpAnalysisService,
         Analysis.Services.Scell.AnalysisService scellAnalysisService,
-        AnalysisService cnvProfileAnalysisService,
+        Analysis.Services.CnvProfile.AnalysisService cnvProfileAnalysisService,
         ILogger<AnalysisProcessingHandler> logger)
     {
         _apiOptions = apiOptions;
