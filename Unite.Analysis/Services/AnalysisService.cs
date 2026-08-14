@@ -101,12 +101,13 @@ public abstract class AnalysisService<TModel> where TModel : class
 
         var request = new HttpRequestMessage(HttpMethod.Post, url);
         var response = await httpClient.SendAsync(request);
+        var content = await response.Content?.ReadAsStringAsync();
 
         stopwatch.Stop();
 
         if (response.IsSuccessStatusCode)
         {
-            return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds);
+            return AnalysisTaskResult.Success(stopwatch.Elapsed.TotalSeconds, content);
         }
         else
         {
@@ -115,7 +116,7 @@ public abstract class AnalysisService<TModel> where TModel : class
             if (statusCode == 501)
                 return AnalysisTaskResult.Rejected();
             else if (statusCode == 500)
-                return AnalysisTaskResult.Failed();
+                return AnalysisTaskResult.Failed(message: content);
             else 
                 throw new NotImplementedException();
         }
