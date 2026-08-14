@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Unite.Analysis.Web.Services;
 using Unite.Analysis.Models;
-using Unite.Analysis.Services.CnvProfile;
 using Unite.Data.Entities.Tasks.Enums;
 using Unite.Essentials.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Unite.Analysis.Web.Controllers;
 
@@ -14,6 +14,7 @@ public class AnalysisController : Controller
 {
     private readonly AnalysisTaskService _analysisTaskService;
     private readonly AnalysisRecordService _analysisRecordService;
+    private readonly Analysis.Services.GenericAnalysisService _analysisService;
     private readonly Analysis.Services.Surv.AnalysisService _survAnalysisService;
     private readonly Analysis.Services.Dm.AnalysisService _dmAnalysisService;
     private readonly Analysis.Services.Pcam.AnalysisService _pcamAnalysisService;
@@ -21,13 +22,18 @@ public class AnalysisController : Controller
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
     private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
+    private readonly Analysis.Services.Cedp.AnalysisService _cedpAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellAnalysisService;
     private readonly Analysis.Services.CnvProfile.AnalysisService _cnvProfileAnalysisService;
+    private readonly ILogger _logger;
+
+    private record StatusResponse(TaskStatusType? Status, string Comment);
     
 
     public AnalysisController(
         AnalysisTaskService analysisTaskService,
         AnalysisRecordService analysisRecordService,
+        Analysis.Services.GenericAnalysisService analysisService,
         Analysis.Services.Surv.AnalysisService survSceAnalysisService,
         Analysis.Services.Dm.AnalysisService dmAnalysisService,
         Analysis.Services.Pcam.AnalysisService pcamAnalysisService,
@@ -35,11 +41,14 @@ public class AnalysisController : Controller
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
-        Analysis.Services.Scell.AnalysisService scellAnalysisService, 
-        AnalysisService cnvProfileAnalysisService)
+        Analysis.Services.Cedp.AnalysisService cedpAnalysisService,
+        Analysis.Services.Scell.AnalysisService scellAnalysisService,
+        Analysis.Services.CnvProfile.AnalysisService cnvProfileAnalysisService,
+        ILogger<AnalysisController> logger)
     {
         _analysisTaskService = analysisTaskService;
         _analysisRecordService = analysisRecordService;
+        _analysisService = analysisService;
         _survAnalysisService = survSceAnalysisService;
         _dmAnalysisService = dmAnalysisService;
         _pcamAnalysisService = pcamAnalysisService;
@@ -47,8 +56,10 @@ public class AnalysisController : Controller
         _gafAnalysisService = gafAnalysisService;
         _depAnalysisService = depAnalysisService;
         _umappAnalysisService = umappAnalysisService;
+        _cedpAnalysisService = cedpAnalysisService;
         _scellAnalysisService = scellAnalysisService;
         _cnvProfileAnalysisService = cnvProfileAnalysisService;
+        _logger = logger;
     }
     
     
@@ -94,6 +105,12 @@ public class AnalysisController : Controller
         return await RunTask(AnalysisTaskType.UMAPP, model);
     }
 
+    [HttpPost("cedp")]
+    public async Task<IActionResult> CreateCedpTask([FromBody]TypedAnalysis<Analysis.Services.Cedp.Models.Criteria.Analysis> model)
+    {
+        return await RunTask(AnalysisTaskType.CEDP, model);
+    }
+
     [HttpPost("scell")]
     public async Task<IActionResult> CreateScellTask([FromBody]TypedAnalysis<Analysis.Services.Scell.Models.Criteria.Analysis> model)
     {
@@ -132,9 +149,11 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
         
-        await _analysisRecordService.Update(id, task.StatusTypeId.Value.ToDefinitionString());
+        await _analysisRecordService.Update(id, task.StatusTypeId.Value.ToDefinitionString(), task.Comment);
         
-        return Ok(task.StatusTypeId);
+        var response = new StatusResponse(task.StatusTypeId, task.Comment);
+
+        return Ok(response);
     }
 
     [HttpGet("{id}/meta")]
@@ -145,19 +164,28 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
 
-        return task.AnalysisTypeId switch
-        {
-            AnalysisTaskType.SURV => Ok(await _survAnalysisService.Load(id, file)),
-            AnalysisTaskType.DM => Ok(await _dmAnalysisService.Load(id, file)),
-            AnalysisTaskType.PCAM => Ok(await _pcamAnalysisService.Load(id, file)),
-            AnalysisTaskType.DEG => Ok(await _degAnalysisService.Load(id, file)),
-            AnalysisTaskType.GAF => Ok(await _gafAnalysisService.Load(id, file)),
-            AnalysisTaskType.DEP => Ok(await _depAnalysisService.Load(id, file)),
-            AnalysisTaskType.UMAPP => Ok(await _umappAnalysisService.Load(id, file)),
-            AnalysisTaskType.SCELL => Ok(await _scellAnalysisService.Load(id, file)),
-            AnalysisTaskType.CNV_PROFILE => Ok(await _cnvProfileAnalysisService.Load(id, file)),
-            _ => BadRequest("Task analysis type is not supported")
-        };
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            return Ok(await _survAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            return Ok(await _dmAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
+            return Ok(await _pcamAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEG)
+            return Ok(await _degAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
+            return Ok(await _gafAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
+            return Ok(await _depAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
+            return Ok(await _umappAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CEDP)
+            return Ok(await _cedpAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            return Ok(await _scellAnalysisService.Load(id, file));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CNV_PROFILE)
+            return Ok(await _cnvProfileAnalysisService.Load(id, file));
+        
+        return BadRequest("Task analysis type is not supported");
     }
 
     [HttpGet("{id}/data")]
@@ -168,19 +196,28 @@ public class AnalysisController : Controller
         if (task == null)
             return NotFound();
 
-        return task.AnalysisTypeId switch
-        {
-            AnalysisTaskType.SURV => Ok(await _survAnalysisService.Download(id)),
-            AnalysisTaskType.DM => Ok(await _dmAnalysisService.Download(id)),
-            AnalysisTaskType.PCAM => Ok(await _pcamAnalysisService.Download(id)),
-            AnalysisTaskType.DEG => Ok(await _degAnalysisService.Download(id)),
-            AnalysisTaskType.GAF => Ok(await _gafAnalysisService.Download(id)),
-            AnalysisTaskType.DEP => Ok(await _depAnalysisService.Download(id)),
-            AnalysisTaskType.UMAPP => Ok(await _umappAnalysisService.Download(id)),
-            AnalysisTaskType.SCELL => Ok(await _scellAnalysisService.Download(id)),
-            AnalysisTaskType.CNV_PROFILE => Ok(await _cnvProfileAnalysisService.Download(id)),
-            _ => BadRequest("Task analysis type is not supported")
-        };
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            return Ok(await _survAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            return Ok(await _dmAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
+            return Ok(await _pcamAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEG)
+            return Ok(await _degAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
+            return Ok(await _gafAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
+            return Ok(await _depAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
+            return Ok(await _umappAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CEDP)
+            return Ok(await _cedpAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            return Ok(await _scellAnalysisService.Download(id));
+        else if (task.AnalysisTypeId == AnalysisTaskType.CNV_PROFILE)
+            return Ok(await _cnvProfileAnalysisService.Download(id));
+
+        return BadRequest("Task analysis type is not supported");
     }
 
     [HttpDelete("{id}")]
@@ -198,36 +235,26 @@ public class AnalysisController : Controller
 
         _analysisTaskService.Delete(task);
 
-        switch (task.AnalysisTypeId)
-        {
-            case AnalysisTaskType.SURV:
-                await _survAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.DM:
-                await _dmAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.PCAM:
-                await _pcamAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.DEG:
-                await _degAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.GAF:
-                await _gafAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.DEP:
-                await _depAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.UMAPP:
-                await _umappAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.SCELL:
-                await _scellAnalysisService.Delete(id);
-                break;
-            case AnalysisTaskType.CNV_PROFILE:
-                await _cnvProfileAnalysisService.Delete(id);
-                break;
-        } 
+        if (task.AnalysisTypeId == AnalysisTaskType.SURV)
+            await _survAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DM)
+            await _dmAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.PCAM)
+            await _pcamAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEG)
+            await _degAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.GAF)
+            await _gafAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.DEP)
+            await _depAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.UMAPP)
+            await _umappAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.CEDP)
+            await _cedpAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.SCELL)
+            await _scellAnalysisService.Delete(id);
+        else if (task.AnalysisTypeId == AnalysisTaskType.CNV_PROFILE)
+            await _cnvProfileAnalysisService.Delete(id);
         
         await _analysisRecordService.Delete(id);
 
@@ -237,12 +264,34 @@ public class AnalysisController : Controller
 
     private async Task<IActionResult> RunTask<T>(AnalysisTaskType type, TypedAnalysis<T> model) where T : AnalysisData
     {
-        var entry = GenericAnalysis.From(model);
+        var record = GenericAnalysis.From(model);
 
-        model.Data.Id = await _analysisRecordService.Add(entry);
+        if (string.IsNullOrEmpty(model.Id))
+        {
+            _logger.LogInformation("Creating new analysis task of type {Type}", type);   
+            model.Data.Id = await _analysisRecordService.Add(record);
 
-        _analysisTaskService.Create(model.Data.Id, model.Data, type);
+            _analysisTaskService.Create(model.Data.Id, model.Data, type);
 
-        return Ok(model.Data.Id);
+            return Ok(model.Data.Id);
+        }
+        else
+        {
+            _logger.LogInformation("Restarting analysis task with id {Id} of type {Type}", model.Id, type);
+            var task = _analysisTaskService.Get(model.Id);
+
+            if (task == null)
+                return NotFound();
+
+            if (task.StatusTypeId != TaskStatusType.Processed && task.StatusTypeId != TaskStatusType.Failed)
+                return BadRequest("Can't restart a task in progress.");
+
+            await _analysisService.Delete(model.Id);
+            await _analysisRecordService.Update(model.Id, record);
+
+            _analysisTaskService.Update(task, null);
+
+            return Ok(model.Data.Id);
+        }
     }
 }

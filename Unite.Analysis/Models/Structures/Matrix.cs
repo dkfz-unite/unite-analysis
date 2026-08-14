@@ -130,6 +130,40 @@ public class Matrix<T>
         _values.Remove(cellIndex);
     }
 
+    public void RemoveColumn(string columnKey)
+    {
+        if (!_columns.TryGetValue(columnKey, out var columnIndex))
+            return;
+
+        var cellIndicesToRemove = _values.Keys
+            .Where(cellIndex => cellIndex.ColumnIndex == columnIndex)
+            .ToArray();
+
+        foreach (var cellIndex in cellIndicesToRemove)
+        {
+            _values.Remove(cellIndex);
+        }
+
+        _columns.Remove(columnKey);
+    }
+
+    public void RemoveRow(string rowKey)
+    {
+        if (!_rows.TryGetValue(rowKey, out var rowIndex))
+            return;
+
+        var cellIndicesToRemove = _values.Keys
+            .Where(cellIndex => cellIndex.RowIndex == rowIndex)
+            .ToArray();
+
+        foreach (var cellIndex in cellIndicesToRemove)
+        {
+            _values.Remove(cellIndex);
+        }
+
+        _rows.Remove(rowKey);
+    }
+
     public void WriteTo(string path)
     {
         using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Unite.Analysis.Models.Enums;
-using Unite.Analysis.Services.CnvProfile;
 using Unite.Analysis.Web.Configuration.Options;
 using Unite.Analysis.Web.Handlers.Helpers;
 using Unite.Analysis.Web.Services;
@@ -19,6 +18,7 @@ public class AnalysisPreparingHandler : Handler
     private readonly Analysis.Services.Gaf.AnalysisService _gafAnalysisService;
     private readonly Analysis.Services.Dep.AnalysisService _depAnalysisService;
     private readonly Analysis.Services.Umapp.AnalysisService _umappAnalysisService;
+    private readonly Analysis.Services.Cedp.AnalysisService _cedpAnalysisService;
     private readonly Analysis.Services.Scell.AnalysisService _scellDcAnalysisService;
     private readonly Analysis.Services.CnvProfile.AnalysisService _cnvProfileAnalysisService;
     
@@ -35,8 +35,9 @@ public class AnalysisPreparingHandler : Handler
         Analysis.Services.Gaf.AnalysisService gafAnalysisService,
         Analysis.Services.Dep.AnalysisService depAnalysisService,
         Analysis.Services.Umapp.AnalysisService umappAnalysisService,
+        Analysis.Services.Cedp.AnalysisService cedpAnalysisService,
         Analysis.Services.Scell.AnalysisService scellDcAnalysisService,
-        AnalysisService cnvProfileAnalysisService,
+        Analysis.Services.CnvProfile.AnalysisService cnvProfileAnalysisService,
         ILogger<AnalysisPreparingHandler> logger)
     {
         _apiOptions = apiOptions;
@@ -48,6 +49,7 @@ public class AnalysisPreparingHandler : Handler
         _gafAnalysisService = gafAnalysisService;
         _depAnalysisService = depAnalysisService;
         _umappAnalysisService = umappAnalysisService;
+        _cedpAnalysisService = cedpAnalysisService;
         _scellDcAnalysisService = scellDcAnalysisService;
         _cnvProfileAnalysisService = cnvProfileAnalysisService;
 
@@ -81,6 +83,7 @@ public class AnalysisPreparingHandler : Handler
             AnalysisTaskType.GAF => await _gafAnalysisService.Prepare(Parse<Analysis.Services.Gaf.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.DEP => await _depAnalysisService.Prepare(Parse<Analysis.Services.Dep.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.UMAPP => await _umappAnalysisService.Prepare(Parse<Analysis.Services.Umapp.Models.Criteria.Analysis>(task.Data), token),
+            AnalysisTaskType.CEDP => await _cedpAnalysisService.Prepare(Parse<Analysis.Services.Cedp.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.SCELL => await _scellDcAnalysisService.Prepare(Parse<Analysis.Services.Scell.Models.Criteria.Analysis>(task.Data), token),
             AnalysisTaskType.CNV_PROFILE => await _cnvProfileAnalysisService.Prepare(Parse<Analysis.Services.CnvProfile.Models.Criteria.Analysis>(task.Data), token),
             _ => throw new NotImplementedException($"Analysis task '{task.AnalysisTypeId}' is not supported")

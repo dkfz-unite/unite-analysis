@@ -5,8 +5,8 @@ namespace Unite.Analysis.Services.Dep.Models.Criteria.Enums;
 public enum ImputationMethod
 {
     [EnumMember(Value = "mindet")]
-    MinDet,
+    MinDet = 0,
 
     [EnumMember(Value = "minprob")]
-    MinProb
+    MinProb = 1
 }

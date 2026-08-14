@@ -11,13 +11,15 @@ namespace Unite.Analysis.Services.Gaf;
 
 public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
-    private const string OptionsFileName = "options.json";
+    private new const string OptionsFileName = "options.json";
     private const string ResultFileName = "result.json";
-    private const string ArchiveFileName = "output.zip";
-
+    private new const string ArchiveFileName = "output.zip";
 
     private readonly ContextLoader _contextLoader;
     private readonly ProcessingService _processingService;
+
+    public override string DefaultLoadFileName => ResultFileName;
+
 
     public AnalysisService(
         IAnalysisOptions options,

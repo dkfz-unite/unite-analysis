@@ -20,10 +20,12 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
     private const string DataFileName = "data.tsv";
     private const string MetadataFileName = "metadata.tsv";
-    private const string OptionsFileName = "options.json";
+    private new const string OptionsFileName = "options.json";
     private const string ResultsFileName = "results.tsv";
     private const string AnnotationsFileName = "annotations.tsv";
-    private const string ArchiveFileName = "results.zip";
+    private new const string ArchiveFileName = "results.zip";
+
+    public override string DefaultLoadFileName => ResultsFileName;
 
 
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
@@ -168,7 +170,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         return null;
     }
     
-    private static void ArchiveResults(string path)
+    private new static void ArchiveResults(string path)
     {
         using var archiveStream = new FileStream(Path.Combine(path, ArchiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);
