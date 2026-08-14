@@ -5,15 +5,18 @@ namespace Unite.Analysis.Services.Umapp.Models.Criteria;
 
 public class Options : Dep.Models.Criteria.Options
 {
+    // Pre processing options
     [JsonPropertyName("class_property")]
     public string ClassProperty { get; set; } = null;
 
+    // Feature selection options
     [JsonPropertyName("feature_selection_method")]
     public FeatureSelectionMethod FeatureSelectionMethod { get; set; } = FeatureSelectionMethod.Variance;
 
     [JsonPropertyName("feature_selection_n_features")]
     public int FeatureSelectionFeaturesNumber { get; set; } = 1000;
 
+    // Umap options
     [JsonPropertyName("umap_n_neighbors")]
     public int UmapNeighborsNumber { get; set; } = 15;
 

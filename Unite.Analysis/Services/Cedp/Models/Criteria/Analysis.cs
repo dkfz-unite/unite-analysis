@@ -1,8 +1,11 @@
 using Unite.Analysis.Models;
 
-namespace Unite.Analysis.Services.CnvProfile.Models.Criteria;
+namespace Unite.Analysis.Services.Cedp.Models.Criteria;
 
 public record Analysis : AnalysisData
 {
+    /// <summary>
+    /// Analysis options.
+    /// </summary>
     public Options Options { get; set; } = new();
 }

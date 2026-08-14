@@ -26,6 +26,8 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
     private readonly DataLoader _dataLoader;
     private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
 
+    public override string DefaultLoadFileName => _resultsFinalFileName;
+
 
     public AnalysisService(
         IAnalysisOptions options,
@@ -227,7 +229,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
         return results.All(result => result);
     }
 
-    private static void ArchiveResults(string path)
+    private new static void ArchiveResults(string path)
     {
         using var archiveStream = new FileStream(Path.Combine(path, _archiveFileName), FileMode.CreateNew);
         using var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, false);

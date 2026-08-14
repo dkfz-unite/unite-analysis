@@ -10,5 +10,6 @@ public interface IAnalysisOptions
     string DegUrl { get; }
     string DepUrl { get; }
     string UmappUrl { get; }
+    string CedpUrl { get; }
     string ScellUrl { get; }
 }

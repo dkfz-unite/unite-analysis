@@ -18,10 +18,16 @@ public class AnalysisRecordService
 		return await _analysesRepository.AddAsync(data);
 	}
 
-    public async Task Update(string id, string status)
+	public async Task Update(string id, GenericAnalysis data)
+	{   
+        await _analysesRepository.UpdateAsync(id, data);
+	}
+
+    public async Task Update(string id, string status, string comment)
 	{
 		var entry = _analysesRepository.Find(id).Document;
         entry.Status = status;
+		entry.Comment = comment;
         
         await _analysesRepository.UpdateAsync(id, entry);
 	}

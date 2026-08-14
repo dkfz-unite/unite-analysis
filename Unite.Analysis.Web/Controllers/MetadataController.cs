@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Unite.Analysis.Models.Metadata;
 using Unite.Analysis.Services;
+using Unite.Data.Context;
 
 namespace Unite.Analysis.Web.Controllers;
 
@@ -9,13 +11,22 @@ namespace Unite.Analysis.Web.Controllers;
 [Authorize]
 public class MetadataController : Controller
 {
+    private readonly IDbContextFactory<DomainDbContext> _dbContextFactory;
+
     public record MappingOption(string Label, string Value);
     public record MappingGroup(string Key, string Name, MappingOption[] Options, MappingGroup[] Children = null);
     
+
+    public MetadataController(IDbContextFactory<DomainDbContext> dbContextFactory)
+    {
+        _dbContextFactory = dbContextFactory;
+    }
+
+
     [HttpGet("options")]
     public IActionResult GetOptions()
     {
-        var mappings = new Mappings<SampleMetadata>();
+        var mappings = new MetadataMappings<SampleMetadata>();
 
         string[] options =
         [
@@ -49,6 +60,26 @@ public class MetadataController : Controller
 
         // return Ok(groups);
     }
+
+    [HttpGet("values")]
+    public IActionResult GetValues(string key)
+    {
+        var mappings = new DataMappings();
+
+        var mapping = mappings.All.FirstOrDefault(mapping => mapping.Key == key);
+
+        if (mapping != null)
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            return Ok(mapping.Autocomplete(dbContext));
+        }
+        else
+        {
+            return Ok(Array.Empty<string>());
+        }
+    }
+   
 
     private static MappingOption[] GetMappingOptions(IEnumerable<Mapping<SampleMetadata, string>> mappings)
     {

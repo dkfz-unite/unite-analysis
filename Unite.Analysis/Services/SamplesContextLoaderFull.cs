@@ -12,9 +12,9 @@ using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
 
 namespace Unite.Analysis.Services;
 
-public class GenericSamplesContextLoaderFull : SamplesContextLoader
+public class SamplesContextLoaderFull : SamplesContextLoader
 {
-    public GenericSamplesContextLoaderFull(
+    public SamplesContextLoaderFull(
         ISearchService<DonorIndex> donorsSearchService,
         ISearchService<ImageIndex> imagesSearchService,
         ISearchService<SpecimenIndex> specimensSearchService,

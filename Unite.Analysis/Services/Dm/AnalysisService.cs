@@ -12,6 +12,8 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 {
     private readonly ContextLoader _contextLoader;
 
+    public override string DefaultLoadFileName => OutputWriter.ResultsHeatmapArchiveFileName;
+
 
     public AnalysisService(IAnalysisOptions options, ContextLoader contextLoader) : base(options)
     {
