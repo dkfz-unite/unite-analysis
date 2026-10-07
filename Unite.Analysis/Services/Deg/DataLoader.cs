@@ -7,6 +7,7 @@ using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Omics.Analysis;
 using Unite.Data.Entities.Omics.Analysis.Rna;
 using Unite.Indices.Search.Services;
+using Unite.Indices.Search.Services.Filters.Criteria;
 
 using GeneExpressions = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>; // GeneStableId, SampleId, Reads
 using SampleExpressions = (int, Unite.Data.Entities.Omics.Analysis.Rna.GeneExpression[]); // SampleId, BulkExpression[]
@@ -58,7 +59,7 @@ public class DataLoader
 
     private async Task<GeneExpressions> LoadDonorsDatasetData(DatasetCriteria model)
     {
-        var stats = await _donorsSearchService.Stats(model.Criteria);
+        var stats = await _donorsSearchService.Stats(new PersonalSearchCriteria(model.UserId, model.IsRoot, model.Criteria));
 
         var ids = stats.Keys.Cast<int>().ToArray();
 
@@ -74,7 +75,7 @@ public class DataLoader
 
     private async Task<GeneExpressions> LoadImagesDatasetData(DatasetCriteria model)
     {
-        var stats = await _imagesSearchService.Stats(model.Criteria);
+        var stats = await _imagesSearchService.Stats(new PersonalSearchCriteria(model.UserId, model.IsRoot, model.Criteria));
 
         var ids = stats.Keys.Cast<int>().ToArray();
 
@@ -90,7 +91,7 @@ public class DataLoader
 
     private async Task<GeneExpressions> LoadSpecimensDatasetData(DatasetCriteria model)
     {
-        var stats = await _specimensSearchService.Stats(model.Criteria);
+        var stats = await _specimensSearchService.Stats(new PersonalSearchCriteria(model.UserId, model.IsRoot, model.Criteria));
 
         var ids = stats.Keys.Cast<int>().ToArray();
 

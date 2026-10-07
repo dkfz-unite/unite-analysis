@@ -5,6 +5,7 @@ using Unite.Analysis.Services.Surv.Models.Context;
 using Unite.Data.Context;
 using Unite.Data.Context.Repositories.Extensions.Queryable;
 using Unite.Indices.Search.Services;
+using Unite.Indices.Search.Services.Filters.Criteria;
 
 namespace Unite.Analysis.Services.Surv;
 
@@ -49,7 +50,7 @@ public class ContextLoader
 
     private async Task<DatasetContext> LoadDonorsDatasetData(DatasetCriteria model)
     {
-        var stats = await _donorsSearchService.Stats(model.Criteria);
+        var stats = await _donorsSearchService.Stats(new PersonalSearchCriteria(model.UserId, model.IsRoot, model.Criteria));
 
         var context = new DatasetContext(model.Name);
         context.Keys = stats.Keys.Cast<int>().ToArray();
