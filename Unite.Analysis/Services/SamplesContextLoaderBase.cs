@@ -8,7 +8,7 @@ using Unite.Data.Entities.Images;
 using Unite.Data.Entities.Specimens;
 using Unite.Data.Entities.Specimens.Analysis.Enums;
 using Unite.Indices.Search.Services;
-
+using Unite.Indices.Search.Services.Filters.Criteria;
 using DonorIndex = Unite.Indices.Entities.Donors.DonorIndex;
 using ImageIndex = Unite.Indices.Entities.Images.ImageIndex;
 using SpecimenIndex = Unite.Indices.Entities.Specimens.SpecimenIndex;
@@ -62,7 +62,7 @@ public abstract class SamplesContextLoaderBase<TContext>
 
     protected virtual async Task<TContext> LoadDonorsDatasetData(DatasetCriteria model, params Data.Entities.Omics.Analysis.Enums.AnalysisType[] analysisTypes)
     {
-        var stats = await _donorsSearchService.Stats(model.Criteria);
+        var stats = await _donorsSearchService.Stats(new PersonalSearchCriteria(model.UserId, model.IsRoot, model.Criteria));
 
         var context = BuildContext(SampleType.Donor);
 
@@ -89,7 +89,7 @@ public abstract class SamplesContextLoaderBase<TContext>
 
     protected virtual async Task<TContext> LoadImagesDatasetData(DatasetCriteria model, params Data.Entities.Omics.Analysis.Enums.AnalysisType[] analysisTypes)
     {
-        var stats = await _imagesSearchService.Stats(model.Criteria);
+        var stats = await _imagesSearchService.Stats(new PersonalSearchCriteria(model.UserId, model.IsRoot, model.Criteria));
 
         var context = BuildContext(SampleType.Image);
 
@@ -122,7 +122,7 @@ public abstract class SamplesContextLoaderBase<TContext>
 
     protected virtual async Task<TContext> LoadSpecimensDatasetData(DatasetCriteria model, params Data.Entities.Omics.Analysis.Enums.AnalysisType[] analysisTypes)
     {
-        var stats = await _specimensSearchService.Stats(model.Criteria);
+        var stats = await _specimensSearchService.Stats(new PersonalSearchCriteria(model.UserId, model.IsRoot, model.Criteria));
 
         var context = BuildContext(SampleType.Specimen);
 

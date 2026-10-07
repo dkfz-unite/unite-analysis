@@ -29,4 +29,14 @@ public record DatasetCriteria
     /// Dataset criteria. Used to filter dataset data.
     /// </summary>
     public SearchCriteria Criteria { get; set; }
+
+    /// <summary>
+    /// Id of the user who created the analysis. Taken from the JWT token.
+    /// </summary>
+    public int? UserId { get; set; }
+
+    /// <summary>
+    /// Whether the user who created the analysis has 'Root' role. Taken from the JWT token.
+    /// </summary>
+    public bool IsRoot { get; set; }
 }

@@ -70,7 +70,7 @@ public class AnalysisService : AnalysisService<Models.Criteria.Analysis>
 
         var data = new Matrix<double>("feature");
         var metadata = new List<MetadataEntry>();
-
+        
         using var dbContext = _dbContextFactory.CreateDbContext();
 
         var mappings = new MetadataMappings<SampleMetadata>();

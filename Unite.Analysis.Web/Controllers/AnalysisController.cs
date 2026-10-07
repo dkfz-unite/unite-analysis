@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Unite.Analysis.Web.Extensions;
 using Unite.Analysis.Web.Services;
 using Unite.Analysis.Models;
 using Unite.Data.Entities.Tasks.Enums;
@@ -264,6 +265,15 @@ public class AnalysisController : Controller
 
     private async Task<IActionResult> RunTask<T>(AnalysisTaskType type, TypedAnalysis<T> model) where T : AnalysisData
     {
+        var userId = User.GetUserId();
+        var isRoot = User.GetIsRoot();
+
+        foreach (var dataset in model.Data.Datasets ?? [])
+        {
+            dataset.UserId = userId;
+            dataset.IsRoot = isRoot;
+        }
+
         var record = GenericAnalysis.From(model);
 
         if (string.IsNullOrEmpty(model.Id))
