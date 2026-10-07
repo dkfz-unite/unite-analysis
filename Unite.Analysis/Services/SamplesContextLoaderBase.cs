@@ -6,6 +6,7 @@ using Unite.Data.Context.Repositories;
 using Unite.Data.Entities.Donors;
 using Unite.Data.Entities.Images;
 using Unite.Data.Entities.Specimens;
+using Unite.Data.Entities.Specimens.Analysis.Enums;
 using Unite.Indices.Search.Services;
 using Unite.Indices.Search.Services.Filters.Criteria;
 using DonorIndex = Unite.Indices.Entities.Donors.DonorIndex;
@@ -70,7 +71,7 @@ public abstract class SamplesContextLoaderBase<TContext>
 
         var specimenIds = await _donorRepository.GetRelatedSpecimens(donorIds);
         context.Specimens = await LoadSpecimens(specimenIds);
-
+        
         var sampleIds = await _specimenRepository.GetRelatedSamples(specimenIds, analysisTypes);
         context.OmicsSamples = await LoadSamples(sampleIds);
 
@@ -190,13 +191,16 @@ public abstract class SamplesContextLoaderBase<TContext>
     {
         using var dbContext = _dbContextFactory.CreateDbContext();
 
-        return await dbContext.Set<Data.Entities.Omics.Analysis.Sample>()
+        var query = dbContext.Set<Data.Entities.Omics.Analysis.Sample>()
             .AsNoTracking()
             .Include(sample => sample.Specimen)
+                .ThenInclude(specimen => specimen.TumorClassification)
+                    .ThenInclude(tc => tc.Family)
             .Include(sample => sample.Analysis)
             .Include(sample => sample.Resources)
-            .Where(sample => ids.Contains(sample.Id))
-            .ToDictionaryAsync(sample => sample.Id);
+            .Where(sample => ids.Contains(sample.Id));
+        
+        return await query.ToDictionaryAsync(sample => sample.Id);
     }
 
     protected virtual IQueryable<Donor> Include(IQueryable<Donor> query)
