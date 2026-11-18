@@ -123,9 +123,9 @@ The image of the service is available in our [registry](https://github.com/dkfz-
 
 [Dockerfile](./Dockerfile) is used to build an image of the application. The build restores UNITE NuGet packages from GitHub Packages, so a GitHub user and a token with `read:packages` scope are required. To build an image run the following command:
 ```bash
-docker build \
+GITHUB_TOKEN=[github_token] docker build \
 --build-arg USER=[github_user] \
---build-arg TOKEN=[github_token] \
+--secret id=github_token,env=GITHUB_TOKEN \
 -t unite.analysis:latest .
 ```
 
